@@ -22,21 +22,46 @@ class HeaderTable extends FontTable {
     this.yMax,
     this.macStyle,
     this.lowestRecPPEM,
-    this.indexToLocFormat,
-    this.glyphDataFormat
+    this.indexToLocFormat
   ) : 
     majorVersion = 1,
     minorVersion = 0,
     fontDirectionHint = 2,
+    glyphDataFormat = 0,
     magicNumber = _kMagicNumber,
     super.fromTableRecordEntry(entry);
 
+  HeaderTable._(
+    TableRecordEntry entry, 
+    this.majorVersion, 
+    this.minorVersion, 
+    this.fontRevision,
+    this.checkSumAdjustment, 
+    this.magicNumber, 
+    this.flags, 
+    this.unitsPerEm, 
+    this.created, 
+    this.modified, 
+    this.xMin, 
+    this.yMin, 
+    this.xMax, 
+    this.yMax, 
+    this.macStyle,
+    this.lowestRecPPEM,
+    this.fontDirectionHint, 
+    this.indexToLocFormat, 
+    this.glyphDataFormat
+  ) : super.fromTableRecordEntry(entry);
+
   factory HeaderTable.fromByteData(ByteData data, TableRecordEntry entry) => 
-    HeaderTable(
+    HeaderTable._(
       entry,
+      data.getUint16(entry.offset),
+      data.getUint16(entry.offset + 2),
       data.getInt32(entry.offset + 4),
       data.getUint32(entry.offset + 8),
       data.getUint32(entry.offset + 12),
+      data.getUint16(entry.offset + 16),
       data.getUint16(entry.offset + 18),
       ttf_utils.getDateTime(data.getInt64(entry.offset + 20)),
       ttf_utils.getDateTime(data.getInt64(entry.offset + 28)),
@@ -46,8 +71,9 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 42),
       data.getUint16(entry.offset + 44),
       data.getUint16(entry.offset + 46),
+      data.getInt16(entry.offset + 48),
       data.getInt16(entry.offset + 50),
-      data.getInt16(entry.offset + 52),
+      data.getInt16(entry.offset + 52)
     );
 
   final int majorVersion;
