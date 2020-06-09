@@ -17,8 +17,8 @@ class SimpleGlyphFlag {
     this.xShortVector,
     this.yShortVector,
     this.repeat,
-    this.xIsSameOrPositiveXshortVector,
-    this.yIsSameOrPositiveYshortVector,
+    this.xIsSameOrPositive,
+    this.yIsSameOrPositive,
     this.overlapSimple,
     this.reserved
   );
@@ -44,8 +44,8 @@ class SimpleGlyphFlag {
   final bool xShortVector;
   final bool yShortVector;
   final int repeat;
-  final bool xIsSameOrPositiveXshortVector;
-  final bool yIsSameOrPositiveYshortVector;
+  final bool xIsSameOrPositive;
+  final bool yIsSameOrPositive;
   final bool overlapSimple;
   final bool reserved;
   

@@ -91,6 +91,10 @@ void main() {
         glyphCalendRainbow.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, true, false, true, false, false]
       );
+      expect(glyphCalendRainbow.xCoordinates.first, 936);
+      expect(glyphCalendRainbow.xCoordinates.last, 681);
+      expect(glyphCalendRainbow.yCoordinates.first, 110);
+      expect(glyphCalendRainbow.yCoordinates.last, 94);
 
       final glyphReport = table.glyphList[73];
       expect(glyphReport.header.numberOfContours, 4);
@@ -102,6 +106,10 @@ void main() {
         glyphReport.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, false, true, true, false, false]
       );
+      expect(glyphReport.xCoordinates.first, 63);
+      expect(glyphReport.xCoordinates.last, 563);
+      expect(glyphReport.yCoordinates.first, 788);
+      expect(glyphReport.yCoordinates.last, 350);
 
       final glyphPdf = table.glyphList[165];
       expect(glyphPdf.header.numberOfContours, 5);
@@ -113,6 +121,10 @@ void main() {
         glyphPdf.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, false, true, true, false, false]
       );
+      expect(glyphPdf.xCoordinates.first, 63);
+      expect(glyphPdf.xCoordinates.last, 448);
+      expect(glyphPdf.yCoordinates.first, 788);
+      expect(glyphPdf.yCoordinates.last, 208);
     });
   });
 }
