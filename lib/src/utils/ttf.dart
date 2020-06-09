@@ -22,3 +22,6 @@ DateTime getDateTime(int seconds) =>
 
 int getLongDateTime(DateTime dateTime) => 
   dateTime.difference(_longDateTimeStart).inSeconds;
+
+bool checkBitMask(int value, int mask) => 
+  (value & mask) == mask;

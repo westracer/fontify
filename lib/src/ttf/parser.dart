@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import '../utils/ttf.dart' as ttf_utils;
 
 import 'table/abstract.dart';
+import 'table/glyf.dart';
 import 'table/head.dart';
 import 'table/loca.dart';
 import 'table/maxp.dart';
@@ -23,10 +24,10 @@ class TTFParser {
   final _tableMap = <String, FontTable>{};
 
   /// Ordered set of table tags
-  final _tags = <String>{ttf_utils.kHeadTag, ttf_utils.kMaxpTag};
+  final _tagsParseOrder = <String>{ttf_utils.kHeadTag, ttf_utils.kMaxpTag, ttf_utils.kLocaTag};
   
   int get _indexToLocFormat => (_tableMap[ttf_utils.kHeadTag] as HeaderTable).indexToLocFormat;
-  int get _numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
+  int get numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
 
   TrueTypeFont parse() {
     final entryMap = <String, TableRecordEntry>{};
@@ -44,7 +45,7 @@ class TTFParser {
     for (int i = 0; i < _offsetTable.numTables; i++) {
       final entry = TableRecordEntry.fromByteData(_byteData, offset);
       outputMap[entry.tag] = entry;
-      _tags.add(entry.tag);
+      _tagsParseOrder.add(entry.tag);
 
       offset += kTableRecordEntryLength;
     }
@@ -53,7 +54,7 @@ class TTFParser {
   }
 
   void _readTables(Map<String, TableRecordEntry> entryMap) {
-    for (final tag in _tags) {
+    for (final tag in _tagsParseOrder) {
       _tableMap[tag] = _createTableFromEntry(entryMap[tag]);
     }
   }
@@ -65,7 +66,10 @@ class TTFParser {
       case ttf_utils.kMaxpTag:
         return MaximumProfileTable.fromByteData(_byteData, entry);
       case ttf_utils.kLocaTag:
-        return IndexToLocationTable.fromByteData(_byteData, entry, _indexToLocFormat, _numGlyphs);
+        return IndexToLocationTable.fromByteData(_byteData, entry, _indexToLocFormat, numGlyphs);
+      case ttf_utils.kGlyfTag:
+        final loca = _tableMap[ttf_utils.kLocaTag] as IndexToLocationTable;
+        return GlyphDataTable.fromByteData(_byteData, entry, loca, numGlyphs);
       default:
         print('Unsupported table: ${entry.tag}');
         return null;

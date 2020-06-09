@@ -6,7 +6,7 @@ import 'table_record_entry.dart';
 class IndexToLocationTable extends FontTable {
   IndexToLocationTable(
     TableRecordEntry entry,
-    this.offsets,
+    this.glyphOffsets,
   ) : super.fromTableRecordEntry(entry);
 
   factory IndexToLocationTable.fromByteData(
@@ -20,12 +20,12 @@ class IndexToLocationTable extends FontTable {
     final offsets = <int>[
       for (int i = 0; i < numGlyphs + 1; i++)
         isShort 
-          ? byteData.getUint16(entry.offset + 2 * i) 
+          ? byteData.getUint16(entry.offset + 2 * i) * 2
           : byteData.getUint32(entry.offset + 4 * i)
     ];
 
     return IndexToLocationTable(entry, offsets);
   }
 
-  final List<int> offsets;
+  final List<int> glyphOffsets;
 }

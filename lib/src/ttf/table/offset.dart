@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'abstract.dart';
 
 const kOffsetTableLength = 12;
+const kOffsetTableOTTOversion = 0x4F54544F;
 
 class OffsetTable extends FontTable {
   OffsetTable(
@@ -28,5 +29,5 @@ class OffsetTable extends FontTable {
   final int entrySelector;
   final int rangeShift;
 
-  bool get isOTTO => sfntVersion == 0x4F54544F;
+  bool get isOTTO => sfntVersion == kOffsetTableOTTOversion;
 }
