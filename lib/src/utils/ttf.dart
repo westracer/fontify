@@ -25,3 +25,8 @@ int getLongDateTime(DateTime dateTime) =>
 
 bool checkBitMask(int value, int mask) => 
   (value & mask) == mask;
+
+extension TTFByteDateExt on ByteData {
+  int readFixed(int offset) => getUint16(offset);
+  int readFWord(int offset) => getInt16(offset);
+}

@@ -3,13 +3,7 @@ import 'dart:typed_data';
 
 import '../utils/ttf.dart' as ttf_utils;
 
-import 'table/abstract.dart';
-import 'table/glyf.dart';
-import 'table/head.dart';
-import 'table/loca.dart';
-import 'table/maxp.dart';
-import 'table/offset.dart';
-import 'table/table_record_entry.dart';
+import 'table/all.dart';
 import 'ttf.dart';
 
 class TTFParser {
@@ -70,6 +64,12 @@ class TTFParser {
       case ttf_utils.kGlyfTag:
         final loca = _tableMap[ttf_utils.kLocaTag] as IndexToLocationTable;
         return GlyphDataTable.fromByteData(_byteData, entry, loca, numGlyphs);
+      case ttf_utils.kGSUBTag:
+        return GlyphSubstitutionTable.fromByteData(_byteData, entry);
+      case ttf_utils.kOS2Tag:
+        return OS2TableV1.fromByteData(_byteData, entry);
+      case ttf_utils.kPostTag:
+        return PostScriptTable.fromByteData(_byteData, entry);
       default:
         print('Unsupported table: ${entry.tag}');
         return null;
