@@ -182,6 +182,17 @@ void main() {
       expect(format20.glyphNameIndex, _kFormat20indicies);
       expect(format20.glyphNames.map((ps) => ps.string).toList(), _kFormat20names);
     });
+
+    test('Naming table', () {
+      final table = font.tableMap[ttf_utils.kNameTag] as NamingTable;
+      expect(table, isNotNull);
+
+      expect(table.header.format, 0);
+      expect(table.header.count, 18);
+      expect(table.stringList.contains('Regular'), isTrue);
+      expect(table.stringList.contains('TestFont'), isTrue);
+      expect(table.stringList.contains('Version 1.0'), isTrue);
+    });
   });
 }
 

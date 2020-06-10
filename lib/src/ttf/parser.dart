@@ -70,6 +70,8 @@ class TTFParser {
         return OS2TableV1.fromByteData(_byteData, entry);
       case ttf_utils.kPostTag:
         return PostScriptTable.fromByteData(_byteData, entry);
+      case ttf_utils.kNameTag:
+        return NamingTable.fromByteData(_byteData, entry);
       default:
         print('Unsupported table: ${entry.tag}');
         return null;

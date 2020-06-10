@@ -4,6 +4,7 @@ export 'gsub.dart';
 export 'head.dart';
 export 'loca.dart';
 export 'maxp.dart';
+export 'name.dart';
 export 'offset.dart';
 export 'os2.dart';
 export 'post.dart';
