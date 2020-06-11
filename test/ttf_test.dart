@@ -289,6 +289,23 @@ void main() {
       expect(featureTable.featureTables[0].featureParams, 0);
       expect(featureTable.featureTables[0].lookupIndexCount, 1);
       expect(featureTable.featureTables[0].lookupListIndices, [0]);
+
+      final lookupListTable = table.lookupListTable;
+      expect(lookupListTable.lookupCount, 1);
+
+      final lookupTable = lookupListTable.lookupTables.first;
+      expect(lookupTable.lookupFlag, 0);
+      expect(lookupTable.lookupType, 4);
+
+      final lookupSubtable = lookupTable.subtables.first as LigatureSubstitutionSubtable;
+      expect(lookupSubtable.ligatureSetCount, 0);
+      expect(lookupSubtable.ligatureSetOffsets, isEmpty);
+      expect(lookupSubtable.substFormat, 1);
+
+      final coverageTable = lookupSubtable.coverageTable as CoverageTableFormat1;
+      expect(coverageTable.coverageFormat, 1);
+      expect(coverageTable.glyphCount, 0);
+      expect(coverageTable.glyphArray, isEmpty);
     });
   });
 }

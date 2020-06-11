@@ -1,5 +1,6 @@
 export 'abstract.dart';
 export 'cmap.dart';
+export 'coverage.dart';
 export 'feature_list.dart';
 export 'glyf.dart';
 export 'gsub.dart';
@@ -8,6 +9,7 @@ export 'hhea.dart';
 export 'hmtx.dart';
 export 'language_system.dart';
 export 'loca.dart';
+export 'lookup.dart';
 export 'maxp.dart';
 export 'name.dart';
 export 'offset.dart';
