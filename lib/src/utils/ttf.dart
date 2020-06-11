@@ -27,6 +27,7 @@ bool checkBitMask(int value, int mask) =>
   (value & mask) == mask;
 
 extension TTFByteDateExt on ByteData {
-  int readFixed(int offset) => getUint16(offset);
-  int readFWord(int offset) => getInt16(offset);
+  int getFixed(int offset) => getUint16(offset);
+  int getFWord(int offset) => getInt16(offset);
+  int getUFWord(int offset) => getUint16(offset);
 }

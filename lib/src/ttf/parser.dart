@@ -17,8 +17,10 @@ class TTFParser {
   /// Tables by tags
   final _tableMap = <String, FontTable>{};
 
-  /// Ordered set of table tags
-  final _tagsParseOrder = <String>{ttf_utils.kHeadTag, ttf_utils.kMaxpTag, ttf_utils.kLocaTag};
+  /// Ordered set of table tags to parse first
+  final _tagsParseOrder = <String>{
+    ttf_utils.kHeadTag, ttf_utils.kMaxpTag, ttf_utils.kLocaTag, ttf_utils.kHheaTag
+  };
   
   int get _indexToLocFormat => (_tableMap[ttf_utils.kHeadTag] as HeaderTable).indexToLocFormat;
   int get numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
@@ -72,6 +74,13 @@ class TTFParser {
         return PostScriptTable.fromByteData(_byteData, entry);
       case ttf_utils.kNameTag:
         return NamingTable.fromByteData(_byteData, entry);
+      case ttf_utils.kCmapTag:
+        return CharacterToGlyphTable.fromByteData(_byteData, entry);
+      case ttf_utils.kHheaTag:
+        return HorizontalHeaderTable.fromByteData(_byteData, entry);
+      case ttf_utils.kHmtxTag:
+        final hhea = _tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
+        return HorizontalMetricsTable.fromByteData(_byteData, entry, hhea, numGlyphs);
       default:
         print('Unsupported table: ${entry.tag}');
         return null;

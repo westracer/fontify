@@ -26,13 +26,13 @@ class PostScriptTableHeader {
     ByteData byteData,
     TableRecordEntry entry
   ) {
-    final version = byteData.readFixed(entry.offset);
+    final version = byteData.getFixed(entry.offset);
 
     return PostScriptTableHeader(
       version,
-      byteData.readFixed(entry.offset + 4),
-      byteData.readFWord(entry.offset + 8),
-      byteData.readFWord(entry.offset + 10),
+      byteData.getFixed(entry.offset + 4),
+      byteData.getFWord(entry.offset + 8),
+      byteData.getFWord(entry.offset + 10),
       byteData.getUint32(entry.offset + 12),
       byteData.getUint32(entry.offset + 16),
       byteData.getUint32(entry.offset + 20),
