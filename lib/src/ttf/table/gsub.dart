@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'abstract.dart';
+import 'feature_list.dart';
 import 'script_list.dart';
 import 'table_record_entry.dart';
 
@@ -48,6 +49,7 @@ class GlyphSubstitutionTable extends FontTable {
     TableRecordEntry entry,
     this.header,
     this.scriptListTable,
+    this.featureListTable,
   ) : super.fromTableRecordEntry(entry);
 
   factory GlyphSubstitutionTable.fromByteData(
@@ -57,14 +59,17 @@ class GlyphSubstitutionTable extends FontTable {
     final header = GlyphSubstitutionTableHeader.fromByteData(byteData, entry);
 
     final scriptListTable = ScriptListTable.fromByteData(byteData, entry.offset + header.scriptListOffset);
+    final featureListTable = FeatureListTable.fromByteData(byteData, entry.offset + header.featureListOffset);
 
     return GlyphSubstitutionTable(
       entry,
       header,
       scriptListTable,
+      featureListTable,
     );
   }
 
   final GlyphSubstitutionTableHeader header;
   final ScriptListTable scriptListTable;
+  final FeatureListTable featureListTable;
 }

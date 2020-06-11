@@ -282,6 +282,13 @@ void main() {
       expect(scriptTable.scriptTables[1].defaultLangSys.featureIndices, [0]);
       expect(scriptTable.scriptTables[1].defaultLangSys.lookupOrder, 0);
       expect(scriptTable.scriptTables[1].defaultLangSys.requiredFeatureIndex, 0);
+
+      final featureTable = table.featureListTable;
+      expect(featureTable.featureCount, 1);
+      expect(featureTable.featureRecords[0].featureTag, 'liga');
+      expect(featureTable.featureTables[0].featureParams, 0);
+      expect(featureTable.featureTables[0].lookupIndexCount, 1);
+      expect(featureTable.featureTables[0].lookupListIndices, [0]);
     });
   });
 }

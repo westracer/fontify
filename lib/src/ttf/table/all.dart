@@ -1,5 +1,6 @@
 export 'abstract.dart';
 export 'cmap.dart';
+export 'feature_list.dart';
 export 'glyf.dart';
 export 'gsub.dart';
 export 'head.dart';
