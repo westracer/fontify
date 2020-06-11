@@ -260,6 +260,29 @@ void main() {
       expect(table.hMetrics.map((m) => m.advanceWidth).toList(), _kHMTXadvWidth);
       expect(table.hMetrics.map((m) => m.lsb).toList(), _kHMTXlsb);
     });
+
+    test('Glyph Substitution table', () {
+      final table = font.tableMap[ttf_utils.kGSUBTag] as GlyphSubstitutionTable;
+      expect(table, isNotNull);
+
+      final scriptTable = table.scriptListTable;
+
+      expect(scriptTable.scriptCount, 2);
+      
+      expect(scriptTable.scriptRecords[0].scriptTag, 'DFLT');
+      expect(scriptTable.scriptTables[0].langSysCount, 0);
+      expect(scriptTable.scriptTables[0].defaultLangSys.featureIndexCount, 1);
+      expect(scriptTable.scriptTables[0].defaultLangSys.featureIndices, [0]);
+      expect(scriptTable.scriptTables[0].defaultLangSys.lookupOrder, 0);
+      expect(scriptTable.scriptTables[0].defaultLangSys.requiredFeatureIndex, 0);
+
+      expect(scriptTable.scriptRecords[1].scriptTag, 'latn');
+      expect(scriptTable.scriptTables[1].langSysCount, 0);
+      expect(scriptTable.scriptTables[1].defaultLangSys.featureIndexCount, 1);
+      expect(scriptTable.scriptTables[1].defaultLangSys.featureIndices, [0]);
+      expect(scriptTable.scriptTables[1].defaultLangSys.lookupOrder, 0);
+      expect(scriptTable.scriptTables[1].defaultLangSys.requiredFeatureIndex, 0);
+    });
   });
 }
 
