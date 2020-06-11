@@ -14,7 +14,7 @@ const String kPostTag = 'post';
 
 final _longDateTimeStart = DateTime.parse('1904-01-01T00:00:00.000Z');
 
-String convertTag(Uint8List bytes) => 
+String convertTagToString(Uint8List bytes) => 
   String.fromCharCodes(bytes);
 
 DateTime getDateTime(int seconds) => 
