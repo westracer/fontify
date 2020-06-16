@@ -14,7 +14,7 @@ class SimpleGlyph {
   );
 
   factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header) {
-    int offset = header.offset + kGlyphHeaderSize;
+    int offset = header.offset + header.size;
 
     final endPtsOfContours = [
       for (int i = 0; i < header.numberOfContours; i++)
@@ -107,4 +107,45 @@ class SimpleGlyph {
   final List<SimpleGlyphFlag> flags;
   final List<int> xCoordinates;
   final List<int> yCoordinates;
+
+  int get _coordinatesSize {
+    int coordinatesSize = 0;
+
+    for (int i = 0; i < flags.length; i++) {
+      final xShort = flags[i].xShortVector;
+      final yShort = flags[i].yShortVector;
+      final xSame = flags[i].xIsSameOrPositive;
+      final ySame = flags[i].yIsSameOrPositive;
+
+      coordinatesSize += xShort ? 1 : (xSame ? 0 : 2);
+      coordinatesSize += yShort ? 1 : (ySame ? 0 : 2);
+    }
+
+    return coordinatesSize;
+  }
+
+  int get _flagsSize {
+    int flagsSize = 0;
+
+    for (int i = 0; i < flags.length; i++) {
+      final flag = flags[i];
+
+      flagsSize += flag.size;
+
+      if (flag.repeatTimes > 0) {
+        i += flag.repeatTimes;
+      }
+    }
+
+    return flagsSize;
+  }
+
+  int get _descriptionSize {
+    final endPointsSize = endPtsOfContours.length * 2;
+    final instructionsSize = 2 + instructions.length;
+
+    return endPointsSize + instructionsSize + _flagsSize + _coordinatesSize;
+  }
+
+  int get size => header.size + _descriptionSize;
 }

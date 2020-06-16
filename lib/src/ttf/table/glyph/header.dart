@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-const kGlyphHeaderSize = 10;
+const _kGlyphHeaderSize = 10;
 
 class GlyphHeader {
   GlyphHeader(
@@ -32,4 +32,6 @@ class GlyphHeader {
   final int yMax;
 
   bool get isComposite => numberOfContours.isNegative;
+
+  int get size => _kGlyphHeaderSize;
 }

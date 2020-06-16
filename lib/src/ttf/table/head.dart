@@ -1,11 +1,21 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../utils/ttf.dart' as ttf_utils;
 
 import 'abstract.dart';
+import 'all.dart';
 import 'table_record_entry.dart';
 
 const _kMagicNumber = 0x5F0F3CF5;
+const _kMacStyleRegular = 0;
+const _kIndexToLocFormatShort = 0;
+const _kIndexToLocFormatLong = 1;
+
+const _kUnitsPerEmDefault = 1000;
+const _kLowestRecPPEMdefault = 8;
+
+const _kHeaderTableSize = 54;
 
 class HeaderTable extends FontTable {
   HeaderTable(
@@ -76,6 +86,33 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 52)
     );
 
+  factory HeaderTable.create(GlyphDataTable glyf, {int revision = 1}) {
+    final now = DateTime.now();
+    final glyphList = glyf.glyphList;
+
+    final xMin = glyphList.fold<int>(0, (prev, glyph) => math.min(prev, glyph.header.xMin));
+    final yMin = glyphList.fold<int>(0, (prev, glyph) => math.min(prev, glyph.header.yMin));
+    final xMax = glyphList.fold<int>(0, (prev, glyph) => math.max(prev, glyph.header.xMax));
+    final yMax = glyphList.fold<int>(0, (prev, glyph) => math.max(prev, glyph.header.yMax));
+    
+    return HeaderTable(
+      null,
+      revision * 0x10000,
+      0,
+      0x000B,
+      _kUnitsPerEmDefault,
+      now,
+      now,
+      xMin,
+      yMin,
+      xMax,
+      yMax,
+      _kMacStyleRegular,
+      _kLowestRecPPEMdefault,
+      glyf.size < 0x20000 ? _kIndexToLocFormatShort : _kIndexToLocFormatLong
+    );
+  }
+
   final int majorVersion;
   final int minorVersion;
   final int fontRevision;
@@ -94,4 +131,6 @@ class HeaderTable extends FontTable {
   final int fontDirectionHint;
   final int indexToLocFormat;
   final int glyphDataFormat;
+
+  int get size => _kHeaderTableSize;
 }
