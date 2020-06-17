@@ -13,6 +13,10 @@ class SimpleGlyph {
     this.yCoordinates
   );
 
+  factory SimpleGlyph.empty([GlyphHeader header]) {
+    return SimpleGlyph(header, [], [], [], [], []);
+  }
+
   factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header) {
     int offset = header.offset + header.size;
 

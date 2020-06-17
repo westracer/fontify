@@ -22,14 +22,17 @@ class GlyphDataTable extends FontTable {
   ) {
     final glyphList = <SimpleGlyph>[];
 
-    for (int i = 0; i < numGlyphs + 1; i++) {
+    for (int i = 0; i < numGlyphs; i++) {
       final headerOffset = entry.offset + locationTable.glyphOffsets[i];
+      final nextHeaderOffset = entry.offset + locationTable.glyphOffsets[i + 1];
+      final isEmpty = headerOffset == nextHeaderOffset;
+
       final header = GlyphHeader.fromByteData(byteData, headerOffset);
 
       if (header.isComposite) {
         TTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
       } else {
-        final glyph = SimpleGlyph.fromByteData(byteData, header);
+        final glyph = isEmpty ? SimpleGlyph.empty(header) : SimpleGlyph.fromByteData(byteData, header);
         glyphList.add(glyph);
       }
     }

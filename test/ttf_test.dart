@@ -78,9 +78,9 @@ void main() {
     test('Glyph Data table', () {
       final table = font.tableMap[ttf_utils.kGlyfTag] as GlyphDataTable;
       expect(table, isNotNull);
-      expect(table.glyphList.length, 166 + 1);
+      expect(table.glyphList.length, 166);
 
-      final glyphCalendRainbow = table.glyphList[0];
+      final glyphCalendRainbow = table.glyphList[1];
       expect(glyphCalendRainbow.header.numberOfContours, 3);
       expect(glyphCalendRainbow.header.xMin, 0);
       expect(glyphCalendRainbow.header.yMin, 0);
