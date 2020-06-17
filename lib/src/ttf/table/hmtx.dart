@@ -76,10 +76,10 @@ class HorizontalMetricsTable extends FontTable {
 
   int get advanceWidthMax => hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
 
-  int get minLeftSideBearing => hMetrics.fold<int>(kInt64max, (p, v) => math.min(p, v.lsb));
+  int get minLeftSideBearing => hMetrics.fold<int>(kInt64Max, (p, v) => math.min(p, v.lsb));
 
   int getMinRightSideBearing(GlyphDataTable glyf) {
-    int minRsb = kInt64max;
+    int minRsb = kInt64Max;
 
     for (int i = 0; i < glyf.glyphList.length; i++) {
       final g = glyf.glyphList[i];
@@ -92,7 +92,7 @@ class HorizontalMetricsTable extends FontTable {
   }
 
   int getMaxExtent(GlyphDataTable glyf) {
-    int maxExtent = kInt64min;
+    int maxExtent = kInt64Min;
 
     for (int i = 0; i < glyf.glyphList.length; i++) {
       final g = glyf.glyphList[i];
