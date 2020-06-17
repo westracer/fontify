@@ -6,9 +6,23 @@ import '../../utils/ttf.dart' as ttf_utils;
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
-const _kOS2V1 = 0x1;
+abstract class OS2Table extends FontTable {
+  OS2Table.fromTableRecordEntry(TableRecordEntry entry) : 
+    super.fromTableRecordEntry(entry);
 
-class OS2TableV1 extends FontTable {
+  static OS2Table fromByteData(ByteData byteData, TableRecordEntry entry) {
+    final version = byteData.getUint16(entry.offset);
+
+    switch (version) {
+      case 1:
+        return OS2TableV1.fromByteData(byteData, entry);
+      default:
+        throw UnsupportedTableVersionException(entry.tag, version);
+    }
+  }
+}
+
+class OS2TableV1 extends OS2Table {
   OS2TableV1(
     TableRecordEntry entry,
     this.version,
@@ -46,18 +60,12 @@ class OS2TableV1 extends FontTable {
   ) : super.fromTableRecordEntry(entry);
 
   factory OS2TableV1.fromByteData(
-    ByteData byteData, 
+    ByteData byteData,
     TableRecordEntry entry
   ) {
-    final version = byteData.getUint16(entry.offset);
-
-    if (version != _kOS2V1) {
-      throw TableVersionException(entry.tag, version);
-    }
-
     return OS2TableV1(
       entry,
-      version,
+      byteData.getInt16(entry.offset),
       byteData.getInt16(entry.offset + 2),
       byteData.getUint16(entry.offset + 4),
       byteData.getUint16(entry.offset + 6),

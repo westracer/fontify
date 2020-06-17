@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import '../utils/exception.dart';
 import '../utils/ttf.dart' as ttf_utils;
 
 import 'table/all.dart';
@@ -25,6 +26,12 @@ class TTFParser {
   int get _indexToLocFormat => (_tableMap[ttf_utils.kHeadTag] as HeaderTable).indexToLocFormat;
   int get numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
 
+  /// Reads an OpenType font file and returns [TrueTypeFont] instance
+  /// 
+  /// Throws [UnsupportedTableException]
+  /// Throws [UnsupportedTableVersionException]
+  /// Throws [UnsupportedTableFormatException]
+  /// Throws [UnsupportedFeatureException]
   TrueTypeFont parse() {
     final entryMap = <String, TableRecordEntry>{};
 
@@ -69,7 +76,7 @@ class TTFParser {
       case ttf_utils.kGSUBTag:
         return GlyphSubstitutionTable.fromByteData(_byteData, entry);
       case ttf_utils.kOS2Tag:
-        return OS2TableV1.fromByteData(_byteData, entry);
+        return OS2Table.fromByteData(_byteData, entry);
       case ttf_utils.kPostTag:
         return PostScriptTable.fromByteData(_byteData, entry);
       case ttf_utils.kNameTag:
@@ -82,8 +89,7 @@ class TTFParser {
         final hhea = _tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
         return HorizontalMetricsTable.fromByteData(_byteData, entry, hhea, numGlyphs);
       default:
-        print('Unsupported table: ${entry.tag}');
-        return null;
+        throw UnsupportedTableException(entry.tag);
     }
   }
 }

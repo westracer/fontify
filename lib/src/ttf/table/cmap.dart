@@ -84,6 +84,21 @@ abstract class CmapData {
   CmapData(this.format);
 
   final int format;
+
+  static CmapData fromByteData(ByteData byteData, int offset) {
+    final format = byteData.getUint16(offset);
+
+    switch (format) {
+      case 0:
+        return CmapByteEncodingTable.fromByteData(byteData, offset);
+      case 4:
+        return CmapSegmentMappingToDeltaValuesTable.fromByteData(byteData, offset);
+      case 12:
+        return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
+      default:
+        throw UnsupportedTableVersionException(ttf_utils.kCmapTag, format);
+    }
+  }
 }
 
 class CmapByteEncodingTable extends CmapData {
@@ -245,25 +260,10 @@ class CharacterToGlyphTable extends FontTable {
     final header = CharacterToGlyphTableHeader.fromByteData(byteData, entry);
     final data = List.generate(
       header.numTables, 
-      (i) => _parseDataTable(byteData, entry.offset + header.encodingRecords[i].offset)
+      (i) => CmapData.fromByteData(byteData, entry.offset + header.encodingRecords[i].offset)
     );
 
     return CharacterToGlyphTable(entry, header, data);
-  }
-
-  static CmapData _parseDataTable(ByteData byteData, int offset) {
-    final format = byteData.getUint16(offset);
-
-    switch (format) {
-      case 0:
-        return CmapByteEncodingTable.fromByteData(byteData, offset);
-      case 4:
-        return CmapSegmentMappingToDeltaValuesTable.fromByteData(byteData, offset);
-      case 12:
-        return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
-      default:
-        throw TableVersionException(ttf_utils.kCmapTag, format);
-    }
   }
 
   final CharacterToGlyphTableHeader header;

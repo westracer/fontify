@@ -76,7 +76,7 @@ class MaximumProfileTable extends FontTable {
         data.getUint16(entry.offset + 30),
       );
     } else {
-      throw TableVersionException(entry.tag, version);
+      throw UnsupportedTableVersionException(entry.tag, version);
     }
   }
 

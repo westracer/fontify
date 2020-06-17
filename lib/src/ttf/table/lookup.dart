@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import '../../utils/exception.dart';
+
 import 'coverage.dart';
 
 const kLookupListTableSize = 4;
@@ -51,8 +53,7 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       case 1:
         return CoverageTableFormat1.fromByteData(byteData, offset);
       default:
-        print('Unsupported Coverage Table format: $format');
-        return null;
+        throw UnsupportedTableFormatException('Coverage', format);
     }
   }
 }
@@ -107,8 +108,7 @@ class LookupTable {
       case 4:
         return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
       default:
-        print('Unsupported lookup type: $lookupType');
-        return null;
+        throw UnsupportedTableFormatException('Lookup', lookupType);
     }
   }
 }

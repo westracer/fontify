@@ -64,7 +64,7 @@ class NamingTableHeader {
     final format = byteData.getUint16(entry.offset);
 
     if (format != _kFormat0) {
-      throw TableVersionException(entry.tag, format);
+      throw UnsupportedTableVersionException(entry.tag, format);
     }
 
     final count = byteData.getUint16(entry.offset + 2);
