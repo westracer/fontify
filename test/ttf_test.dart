@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fontify/src/ttf/parser.dart';
+import 'package:fontify/src/ttf/reader.dart';
 import 'package:fontify/src/ttf/table/all.dart';
 import 'package:fontify/src/ttf/table/hhea.dart';
 import 'package:fontify/src/ttf/ttf.dart';

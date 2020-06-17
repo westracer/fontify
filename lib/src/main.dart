@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'ttf/parser.dart';
+import 'ttf/reader.dart';
 import 'ttf/table/all.dart';
 import 'ttf/ttf.dart';
 
