@@ -1,6 +1,11 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../utils/misc.dart';
+
 import 'abstract.dart';
+import 'glyf.dart';
+import 'glyph/simple.dart';
 import 'hhea.dart';
 import 'table_record_entry.dart';
 
@@ -15,9 +20,17 @@ class LongHorMetric {
       byteData.getInt16(offset + 2),
     );
   }
+
+  factory LongHorMetric.createForGlyph(SimpleGlyph glyph) {
+    return LongHorMetric(glyph.header.xMax - glyph.header.xMin, 0);
+  }
   
   final int advanceWidth;
   final int lsb;
+
+  int getRsb(int xMax, int xMin) => advanceWidth - (lsb + xMax - xMin);
+
+  int get size => _kLongHorMetricSize;
 }
 
 class HorizontalMetricsTable extends FontTable {
@@ -46,6 +59,48 @@ class HorizontalMetricsTable extends FontTable {
     return HorizontalMetricsTable(entry, hMetrics, leftSideBearings);
   }
 
+  factory HorizontalMetricsTable.create(GlyphDataTable glyf) {
+    final hMetrics = List.generate(
+      glyf.glyphList.length,
+      (i) => LongHorMetric.createForGlyph(glyf.glyphList[i])
+    );
+
+    return HorizontalMetricsTable(null, hMetrics, []);
+  }
+
   final List<LongHorMetric> hMetrics;
   final List<int> leftSideBearings;
+
+  // TODO: subtract _kLongHorMetricSize?
+  int get size => hMetrics.length * _kLongHorMetricSize + leftSideBearings.length * 2;  
+
+  int get advanceWidthMax => hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
+
+  int get minLeftSideBearing => hMetrics.fold<int>(kInt64max, (p, v) => math.min(p, v.lsb));
+
+  int getMinRightSideBearing(GlyphDataTable glyf) {
+    int minRsb = kInt64max;
+
+    for (int i = 0; i < glyf.glyphList.length; i++) {
+      final g = glyf.glyphList[i];
+      final rsb = hMetrics[i].getRsb(g.header.xMax, g.header.xMin);
+
+      minRsb = math.min(minRsb, rsb);
+    }
+
+    return minRsb;
+  }
+
+  int getMaxExtent(GlyphDataTable glyf) {
+    int maxExtent = kInt64min;
+
+    for (int i = 0; i < glyf.glyphList.length; i++) {
+      final g = glyf.glyphList[i];
+      final extent = hMetrics[i].lsb + (g.header.xMax - g.header.xMin);
+
+      maxExtent = math.max(maxExtent, extent);
+    }
+
+    return maxExtent;
+  }
 }

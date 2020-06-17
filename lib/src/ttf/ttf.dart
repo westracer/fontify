@@ -9,6 +9,8 @@ class TrueTypeFont {
   factory TrueTypeFont.fromGlyphs(List<SimpleGlyph> glyphList) {
     final glyf = GlyphDataTable.fromGlyphs(glyphList);
     final head = HeaderTable.create(glyf, revision: 1);
+    final hmtx = HorizontalMetricsTable.create(glyf);
+    final hhea = HorizontalHeaderTable.create(glyf, hmtx);
 
     // TODO: rest of tables
     return TrueTypeFont(null, {});

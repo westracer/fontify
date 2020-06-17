@@ -3,7 +3,11 @@ import 'dart:typed_data';
 import '../../utils/ttf.dart';
 
 import 'abstract.dart';
+import 'glyf.dart';
+import 'hmtx.dart';
 import 'table_record_entry.dart';
+
+const _kHheaTableSize = 36;
 
 class HorizontalHeaderTable extends FontTable {
   HorizontalHeaderTable(
@@ -44,6 +48,26 @@ class HorizontalHeaderTable extends FontTable {
     );
   }
 
+  factory HorizontalHeaderTable.create(GlyphDataTable glyf, HorizontalMetricsTable hmtx) {
+    return HorizontalHeaderTable(
+      null,
+      1, // major version 1
+      0, // minor version 0
+      1000,
+      0,
+      0, // 0 line gap
+      hmtx.advanceWidthMax,
+      hmtx.minLeftSideBearing,
+      hmtx.getMinRightSideBearing(glyf),
+      hmtx.getMaxExtent(glyf),
+      1, // caretSlopeRise - vertical
+      0, // caretSlopeRun - vertical
+      0, // non-slanted font - no offset
+      0, // 0 for current metric format
+      glyf.glyphList.length
+    );
+  }
+
   final int majorVersion;
   final int minorVersion;
   final int	ascender;
@@ -59,4 +83,6 @@ class HorizontalHeaderTable extends FontTable {
   
   final int	metricDataFormat;
   final int	numberOfHMetrics;
+
+  int get size => _kHheaTableSize;
 }

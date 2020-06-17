@@ -41,7 +41,6 @@ class GlyphDataTable extends FontTable {
 
   final List<SimpleGlyph> glyphList;
 
-  int get size => 
-    glyphList.fold<int>(0, (p, v) => p + v.size) 
-    - (glyphList.isNotEmpty ? glyphList.last.size : 0); // TODO: last glyph's size not taken in table's length?
+  // TODO: subtract last glyph's size?
+  int get size => glyphList.fold<int>(0, (p, v) => p + v.size) ;
 }

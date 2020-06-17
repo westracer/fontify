@@ -1,0 +1,2 @@
+const int kInt64Max = 0x7FFFFFFFFFFFFFFF;
+const int kInt64Min = 0x8000000000000000;
