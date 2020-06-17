@@ -10,11 +10,11 @@ import 'package:test/test.dart';
 const _kTestFontAssetPath = './test_assets/test_font.ttf';
 
 void main() {
-  group('Parser', () {
+  group('Reader', () {
     TrueTypeFont font;
 
     setUpAll(() {
-      font = TTFParser(File(_kTestFontAssetPath)).parse();
+      font = TTFReader(File(_kTestFontAssetPath)).parse();
     });
 
     test('Offset table', () {

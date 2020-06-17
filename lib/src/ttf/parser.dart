@@ -7,8 +7,8 @@ import '../utils/ttf.dart' as ttf_utils;
 import 'table/all.dart';
 import 'ttf.dart';
 
-class TTFParser {
-  TTFParser(File file) 
+class TTFReader {
+  TTFReader(File file) 
     : _byteData = ByteData.view(file.readAsBytesSync().buffer);
 
   final ByteData _byteData;
