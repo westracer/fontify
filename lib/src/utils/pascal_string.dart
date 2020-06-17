@@ -9,6 +9,9 @@ class PascalString {
     return PascalString(String.fromCharCodes(bytes), length);
   }
 
+  factory PascalString.fromString(String string) => 
+    PascalString(string, string.length);
+
   final String string;
   final int length;
 
