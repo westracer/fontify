@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/exception.dart';
+import '../debugger.dart';
 
 import 'abstract.dart';
 import 'glyph/header.dart';
@@ -27,7 +27,7 @@ class GlyphDataTable extends FontTable {
       final header = GlyphHeader.fromByteData(byteData, headerOffset);
 
       if (header.isComposite) {
-        throw UnsupportedFeatureException('Composite glyph (glyph header offset $headerOffset)');
+        TTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
       } else {
         final glyph = SimpleGlyph.fromByteData(byteData, header);
         glyphList.add(glyph);

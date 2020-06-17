@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/exception.dart';
+import '../debugger.dart';
 
 import 'abstract.dart';
 import 'table_record_entry.dart';
@@ -76,7 +76,8 @@ class MaximumProfileTable extends FontTable {
         data.getUint16(entry.offset + 30),
       );
     } else {
-      throw UnsupportedTableVersionException(entry.tag, version);
+      TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
+      return null;
     }
   }
 

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
-import '../../utils/exception.dart';
 import '../../utils/ttf.dart' as ttf_utils;
+import '../debugger.dart';
 
 import 'abstract.dart';
 import 'table_record_entry.dart';
@@ -17,7 +17,8 @@ abstract class OS2Table extends FontTable {
       case 1:
         return OS2TableV1.fromByteData(byteData, entry);
       default:
-        throw UnsupportedTableVersionException(entry.tag, version);
+        TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
+        return null;
     }
   }
 }

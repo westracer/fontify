@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/exception.dart';
+import '../debugger.dart';
 
 import 'abstract.dart';
 import 'table_record_entry.dart';
@@ -64,7 +64,8 @@ class NamingTableHeader {
     final format = byteData.getUint16(entry.offset);
 
     if (format != _kFormat0) {
-      throw UnsupportedTableVersionException(entry.tag, format);
+      TTFDebugger.debugUnsupportedTableFormat(entry.tag, format);
+      return null;
     }
 
     final count = byteData.getUint16(entry.offset + 2);

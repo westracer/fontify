@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/exception.dart';
+import '../debugger.dart';
 
 import 'coverage.dart';
 
@@ -53,7 +53,8 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       case 1:
         return CoverageTableFormat1.fromByteData(byteData, offset);
       default:
-        throw UnsupportedTableFormatException('Coverage', format);
+        TTFDebugger.debugUnsupportedTableFormat('Coverage', format);
+        return null;
     }
   }
 }
@@ -108,7 +109,8 @@ class LookupTable {
       case 4:
         return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
       default:
-        throw UnsupportedTableFormatException('Lookup', lookupType);
+        TTFDebugger.debugUnsupportedTableFormat('Lookup', lookupType);
+        return null;
     }
   }
 }

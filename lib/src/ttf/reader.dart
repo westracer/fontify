@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../utils/exception.dart';
 import '../utils/ttf.dart' as ttf_utils;
 
+import 'debugger.dart';
 import 'table/all.dart';
 import 'ttf.dart';
 
@@ -27,12 +27,7 @@ class TTFReader {
   int get numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
 
   /// Reads an OpenType font file and returns [TrueTypeFont] instance
-  /// 
-  /// Throws [UnsupportedTableException]
-  /// Throws [UnsupportedTableVersionException]
-  /// Throws [UnsupportedTableFormatException]
-  /// Throws [UnsupportedFeatureException]
-  TrueTypeFont parse() {
+  TrueTypeFont read() {
     final entryMap = <String, TableRecordEntry>{};
 
     _offsetTable = OffsetTable.fromByteData(_byteData);
@@ -89,7 +84,8 @@ class TTFReader {
         final hhea = _tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
         return HorizontalMetricsTable.fromByteData(_byteData, entry, hhea, numGlyphs);
       default:
-        throw UnsupportedTableException(entry.tag);
+        TTFDebugger.debugUnsupportedTable(entry.tag);
+        return null;
     }
   }
 }

@@ -14,7 +14,7 @@ void main() {
     TrueTypeFont font;
 
     setUpAll(() {
-      font = TTFReader(File(_kTestFontAssetPath)).parse();
+      font = TTFReader(File(_kTestFontAssetPath)).read();
     });
 
     test('Offset table', () {
