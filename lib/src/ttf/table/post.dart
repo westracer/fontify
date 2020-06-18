@@ -7,7 +7,7 @@ import '../debugger.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
-const _kFormat2 = 0x2;
+const _kVersion20 = 0x2;
 const _kHeaderSize = 32;
 
 class PostScriptTableHeader {
@@ -42,6 +42,20 @@ class PostScriptTableHeader {
     );
   }
 
+  factory PostScriptTableHeader.create(int version) {
+    return PostScriptTableHeader(
+      version,
+      0,  // italicAngle - upright text
+      0,  // underlinePosition
+      0,  // underlineThickness
+      0,  // isFixedPitch - proportionally spaced
+      0,
+      0,
+      0,
+      0,
+    );
+  }
+
   final int version;
   final int italicAngle;
   final int underlinePosition;
@@ -51,17 +65,21 @@ class PostScriptTableHeader {
   final int maxMemType42;
   final int minMemType1;
   final int maxMemType1;
+
+  int get size => _kHeaderSize;
 }
 
-abstract class PostScriptFormatData {
-  static PostScriptFormatData fromByteData(
+abstract class PostScriptData {
+  int get size;
+
+  static PostScriptData fromByteData(
     ByteData byteData,
     int offset,
     PostScriptTableHeader header
   ) {
     switch (header.version) {
-      case _kFormat2:
-        return PostScriptFormat20.fromByteData(byteData, offset);
+      case _kVersion20:
+        return PostScriptVersion20.fromByteData(byteData, offset);
       default:
         TTFDebugger.debugUnsupportedTableVersion(ttf_utils.kPostTag, header.version);
         return null;
@@ -69,14 +87,14 @@ abstract class PostScriptFormatData {
   }
 }
 
-class PostScriptFormat20 extends PostScriptFormatData {
-  PostScriptFormat20(
+class PostScriptVersion20 extends PostScriptData {
+  PostScriptVersion20(
     this.numberOfGlyphs, 
     this.glyphNameIndex, 
     this.glyphNames
   );
 
-  factory PostScriptFormat20.fromByteData(
+  factory PostScriptVersion20.fromByteData(
     ByteData byteData,
     int offset
   ) {
@@ -93,9 +111,8 @@ class PostScriptFormat20 extends PostScriptFormatData {
       numberOfGlyphs,
       (i) {
         final glyphIndex = glyphNameIndex[i];
-        final isStandard = glyphIndex < _kMacStandardGlyphNames.length;
 
-        if (isStandard) {
+        if (_isGlyphNameStandard(glyphIndex)) {
           return PascalString.fromString(_kMacStandardGlyphNames[glyphIndex]);
         }
 
@@ -105,16 +122,45 @@ class PostScriptFormat20 extends PostScriptFormatData {
       }
     );
 
-    return PostScriptFormat20(
+    return PostScriptVersion20(
       numberOfGlyphs,
       glyphNameIndex,
       glyphNames
     );
   }
 
+  factory PostScriptVersion20.create(List<String> glyphNameList) {
+    final numberOfGlyphs = glyphNameList.length;
+
+    final glyphNameIndex = List.generate(
+      numberOfGlyphs, 
+      (i) => _kMacStandardGlyphNames.length + i
+    );
+
+    final glyphNames = glyphNameList.map((s) => PascalString.fromString(s)).toList();
+
+    return PostScriptVersion20(
+      numberOfGlyphs,
+      glyphNameIndex,
+      glyphNames,
+    );
+  }
+
   final int numberOfGlyphs;
   final List<int> glyphNameIndex;
   final List<PascalString> glyphNames;
+
+  @override
+  int get size {
+    final glyphNamesSizeList = List.generate(
+      numberOfGlyphs, 
+      (i) => _isGlyphNameStandard(glyphNameIndex[i]) ? 0 : glyphNames[i].length
+    );
+
+    final glyphNamesSize = glyphNamesSizeList.fold<int>(0, (p, v) => p + v);
+
+    return 2 + numberOfGlyphs * 2 + glyphNamesSize;
+  }
 }
 
 class PostScriptTable extends FontTable {
@@ -133,13 +179,38 @@ class PostScriptTable extends FontTable {
     return PostScriptTable(
       entry, 
       header,
-      PostScriptFormatData.fromByteData(byteData, entry.offset + _kHeaderSize, header)
+      PostScriptData.fromByteData(byteData, entry.offset + _kHeaderSize, header)
+    );
+  }
+
+  // TODO: maybe create v3 post?
+  factory PostScriptTable.create(List<String> glyphNameList, {int version = _kVersion20}) {
+    PostScriptData data;
+
+    switch (version) {
+      case _kVersion20:
+        data = PostScriptVersion20.create(glyphNameList);
+        break;
+      default:
+        TTFDebugger.debugUnsupportedTableVersion(ttf_utils.kPostTag, version);
+        return null;
+    }
+
+    return PostScriptTable(
+      null, 
+      PostScriptTableHeader.create(version), 
+      data
     );
   }
 
   final PostScriptTableHeader header;
-  final PostScriptFormatData data;
+  final PostScriptData data;
+
+  int get size => header.size + data.size;
 }
+
+bool _isGlyphNameStandard(int glyphIndex) => 
+    glyphIndex < _kMacStandardGlyphNames.length;
 
 const _kMacStandardGlyphNames = [
   '.notdef', '.null', 'nonmarkingreturn', 'space', 'exclam', 'quotedbl', 'numbersign',

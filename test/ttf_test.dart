@@ -178,7 +178,7 @@ void main() {
       expect(table.header.minMemType1, 0);
       expect(table.header.maxMemType1, 0);
 
-      final format20 = table.data as PostScriptFormat20;
+      final format20 = table.data as PostScriptVersion20;
       expect(format20.numberOfGlyphs, 166);
       expect(format20.glyphNameIndex, _kPOSTformat20indicies);
       expect(format20.glyphNames.map((ps) => ps.string).toList(), _kPOSTformat20names);

@@ -8,14 +8,27 @@ import 'table/offset.dart';
 class TrueTypeFont {
   TrueTypeFont(this.offsetTable, this.tableMap);
 
-  factory TrueTypeFont.fromGlyphs(List<SimpleGlyph> glyphList) {
+  // TODO: introduce generic glyph class later
+  factory TrueTypeFont.fromGlyphs(List<SimpleGlyph> glyphList, List<String> glyphNameList) {
+    assert(
+      glyphNameList.length == glyphList.length, 
+      'Lengths of glyph list and glyph name list are different'
+    );
+
     final glyf = GlyphDataTable.fromGlyphs(glyphList);
     final head = HeaderTable.create(glyf, revision: 1);
     final hmtx = HorizontalMetricsTable.create(glyf);
     final hhea = HorizontalHeaderTable.create(glyf, hmtx);
+    final post = PostScriptTable.create(glyphNameList);
 
     // TODO: rest of tables
-    return TrueTypeFont(null, {});
+    return TrueTypeFont(null, {
+      ttf_utils.kGlyfTag: glyf,
+      ttf_utils.kHeadTag: head,
+      ttf_utils.kHmtxTag: hmtx,
+      ttf_utils.kHheaTag: hhea,
+      ttf_utils.kPostTag: post,
+    });
   }
   
   final OffsetTable offsetTable;
