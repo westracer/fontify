@@ -14,6 +14,7 @@ class TTFReader {
   final ByteData _byteData;
 
   OffsetTable _offsetTable;
+  TrueTypeFont _font;
 
   /// Tables by tags
   final _tableMap = <String, FontTable>{};
@@ -28,13 +29,17 @@ class TTFReader {
 
   /// Reads an OpenType font file and returns [TrueTypeFont] instance
   TrueTypeFont read() {
+    _tableMap.clear();
+
     final entryMap = <String, TableRecordEntry>{};
 
     _offsetTable = OffsetTable.fromByteData(_byteData);
+    _font = TrueTypeFont(_offsetTable, _tableMap);
+
     _readTableRecordEntries(entryMap);
     _readTables(entryMap);
 
-    return TrueTypeFont(_offsetTable, _tableMap);
+    return _font;
   }
 
   int _readTableRecordEntries(Map<String, TableRecordEntry> outputMap) {
@@ -66,8 +71,7 @@ class TTFReader {
       case ttf_utils.kLocaTag:
         return IndexToLocationTable.fromByteData(_byteData, entry, _indexToLocFormat, numGlyphs);
       case ttf_utils.kGlyfTag:
-        final loca = _tableMap[ttf_utils.kLocaTag] as IndexToLocationTable;
-        return GlyphDataTable.fromByteData(_byteData, entry, loca, numGlyphs);
+        return GlyphDataTable.fromByteData(_byteData, entry, _font.loca, numGlyphs);
       case ttf_utils.kGSUBTag:
         return GlyphSubstitutionTable.fromByteData(_byteData, entry);
       case ttf_utils.kOS2Tag:
@@ -81,8 +85,7 @@ class TTFReader {
       case ttf_utils.kHheaTag:
         return HorizontalHeaderTable.fromByteData(_byteData, entry);
       case ttf_utils.kHmtxTag:
-        final hhea = _tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
-        return HorizontalMetricsTable.fromByteData(_byteData, entry, hhea, numGlyphs);
+        return HorizontalMetricsTable.fromByteData(_byteData, entry, _font.hhea, numGlyphs);
       default:
         TTFDebugger.debugUnsupportedTable(entry.tag);
         return null;
