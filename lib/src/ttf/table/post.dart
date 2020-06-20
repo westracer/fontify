@@ -70,9 +70,9 @@ class PostScriptTableHeader {
 }
 
 abstract class PostScriptData {
-  int get size;
-
-  static PostScriptData fromByteData(
+  PostScriptData();
+  
+  factory PostScriptData.fromByteData(
     ByteData byteData,
     int offset,
     PostScriptTableHeader header
@@ -85,6 +85,8 @@ abstract class PostScriptData {
         return null;
     }
   }
+
+  int get size;
 }
 
 class PostScriptVersion20 extends PostScriptData {

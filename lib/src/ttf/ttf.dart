@@ -1,3 +1,6 @@
+import 'package:meta/meta.dart';
+
+import '../utils/exception.dart';
 import '../utils/ttf.dart' as ttf_utils;
 
 import 'table/abstract.dart';
@@ -9,17 +12,23 @@ class TrueTypeFont {
   TrueTypeFont(this.offsetTable, this.tableMap);
 
   // TODO: introduce generic glyph class later
-  factory TrueTypeFont.fromGlyphs(List<SimpleGlyph> glyphList, List<String> glyphNameList) {
-    assert(
-      glyphNameList.length == glyphList.length, 
-      'Lengths of glyph list and glyph name list are different'
-    );
+  factory TrueTypeFont.fromGlyphs({
+    @required List<SimpleGlyph> glyphList, 
+    @required List<String> glyphNameList,
+    @required String fontName,
+    String description,
+    ttf_utils.Revision revision = const ttf_utils.Revision(1, 0),
+  }) {
+    if (glyphNameList.length != glyphList.length) {
+      throw TableDataFormatException('Lengths of glyph list and glyph name list must be same');
+    }
 
     final glyf = GlyphDataTable.fromGlyphs(glyphList);
-    final head = HeaderTable.create(glyf, revision: 1);
+    final head = HeaderTable.create(glyf, revision);
     final hmtx = HorizontalMetricsTable.create(glyf);
     final hhea = HorizontalHeaderTable.create(glyf, hmtx);
     final post = PostScriptTable.create(glyphNameList);
+    final name = NamingTable.create(fontName, description, revision);
 
     // TODO: rest of tables
     return TrueTypeFont(null, {
@@ -28,6 +37,7 @@ class TrueTypeFont {
       ttf_utils.kHmtxTag: hmtx,
       ttf_utils.kHheaTag: hhea,
       ttf_utils.kPostTag: post,
+      ttf_utils.kNameTag: name,
     });
   }
   

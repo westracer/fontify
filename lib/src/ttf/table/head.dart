@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../utils/exception.dart';
 import '../../utils/ttf.dart' as ttf_utils;
 
 import 'abstract.dart';
@@ -68,7 +69,7 @@ class HeaderTable extends FontTable {
       entry,
       data.getUint16(entry.offset),
       data.getUint16(entry.offset + 2),
-      data.getInt32(entry.offset + 4),
+      ttf_utils.Revision.fromInt32(data.getInt32(entry.offset + 4)),
       data.getUint32(entry.offset + 8),
       data.getUint32(entry.offset + 12),
       data.getUint16(entry.offset + 16),
@@ -86,7 +87,11 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 52)
     );
 
-  factory HeaderTable.create(GlyphDataTable glyf, {int revision = 1}) {
+  factory HeaderTable.create(GlyphDataTable glyf, ttf_utils.Revision revision) {
+    if (revision == null || revision.int32value == 0) {
+      throw TableDataFormatException('revision must not be null');
+    }
+
     final now = DateTime.now();
     final glyphList = glyf.glyphList;
 
@@ -97,7 +102,7 @@ class HeaderTable extends FontTable {
     
     return HeaderTable(
       null,
-      revision * 0x10000,
+      revision,
       0,
       0x000B,
       _kUnitsPerEmDefault,
@@ -115,7 +120,7 @@ class HeaderTable extends FontTable {
 
   final int majorVersion;
   final int minorVersion;
-  final int fontRevision;
+  final ttf_utils.Revision fontRevision;
   final int checkSumAdjustment;
   final int magicNumber;
   final int flags;

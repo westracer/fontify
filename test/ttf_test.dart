@@ -58,6 +58,8 @@ void main() {
 
       expect(table.majorVersion, 1);
       expect(table.minorVersion, 0);
+      expect(table.fontRevision.major, 1);
+      expect(table.fontRevision.minor, 0);
       expect(table.checkSumAdjustment, 3043242535);
       expect(table.magicNumber, 1594834165);
       expect(table.flags, 11);
@@ -185,7 +187,7 @@ void main() {
     });
 
     test('Naming table', () {
-      final table = font.tableMap[ttf_utils.kNameTag] as NamingTable;
+      final table = font.tableMap[ttf_utils.kNameTag] as NamingTableFormat0;
       expect(table, isNotNull);
 
       expect(table.header.format, 0);
@@ -306,6 +308,14 @@ void main() {
       expect(coverageTable.coverageFormat, 1);
       expect(coverageTable.glyphCount, 0);
       expect(coverageTable.glyphArray, isEmpty);
+    });
+  });
+
+  group('Utils', () {
+    test('Printable ASCII string', () {
+      const str1 = '[INFO] :谷���新道, ひば���ヶ丘２丁���, ひばりヶ���, 東久留米市 (Higashikurume)';
+      const printableStr1 = 'INFO :, , ,  Higashikurume';
+      expect(str1.getAsciiPrintable(), printableStr1);
     });
   });
 }

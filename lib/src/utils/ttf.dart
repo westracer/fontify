@@ -31,3 +31,24 @@ extension TTFByteDateExt on ByteData {
   int getFWord(int offset) => getInt16(offset);
   int getUFWord(int offset) => getUint16(offset);
 }
+
+extension TTFStringExt on String {
+  String getAsciiPrintable() =>
+    replaceAll(RegExp(r'([^\x00-\x7E]|[\(\[\]\(\)\{\}<>\/%])'), '');
+}
+
+
+class Revision {
+  const Revision(int major, int minor) : 
+    major = major ?? 0, 
+    minor = minor ?? 0;
+
+  factory Revision.fromInt32(int revision) {
+    return Revision((revision >> 16) & 0xFFFF, revision & 0xFFFF);
+  }
+
+  final int major;
+  final int minor;
+
+  int get int32value => major * 0x10000 + minor;
+}
