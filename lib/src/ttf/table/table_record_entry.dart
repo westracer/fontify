@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 
 const kTableRecordEntryLength = 16;
 
@@ -9,7 +9,7 @@ class TableRecordEntry {
 
   factory TableRecordEntry.fromByteData(ByteData data, int entryOffset) =>
     TableRecordEntry(
-      ttf_utils.convertTagToString(Uint8List.view(data.buffer, entryOffset, 4)), 
+      convertTagToString(Uint8List.view(data.buffer, entryOffset, 4)), 
       data.getUint32(entryOffset + 4), 
       data.getUint32(entryOffset + 4 + 4), 
       data.getUint32(entryOffset + 4 + 8)

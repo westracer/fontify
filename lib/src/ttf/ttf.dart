@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../utils/exception.dart';
-import '../utils/ttf.dart' as ttf_utils;
+import '../utils/ttf.dart';
 
 import 'table/abstract.dart';
 import 'table/all.dart';
@@ -17,7 +17,7 @@ class TrueTypeFont {
     @required List<String> glyphNameList,
     @required String fontName,
     String description,
-    ttf_utils.Revision revision = const ttf_utils.Revision(1, 0),
+    Revision revision = const Revision(1, 0),
   }) {
     if (glyphNameList.length != glyphList.length) {
       throw TableDataFormatException('Lengths of glyph list and glyph name list must be same');
@@ -32,27 +32,27 @@ class TrueTypeFont {
 
     // TODO: rest of tables
     return TrueTypeFont(null, {
-      ttf_utils.kGlyfTag: glyf,
-      ttf_utils.kHeadTag: head,
-      ttf_utils.kHmtxTag: hmtx,
-      ttf_utils.kHheaTag: hhea,
-      ttf_utils.kPostTag: post,
-      ttf_utils.kNameTag: name,
+      kGlyfTag: glyf,
+      kHeadTag: head,
+      kHmtxTag: hmtx,
+      kHheaTag: hhea,
+      kPostTag: post,
+      kNameTag: name,
     });
   }
   
   final OffsetTable offsetTable;
   final Map<String, FontTable> tableMap;
 
-  HeaderTable get head => tableMap[ttf_utils.kHeadTag] as HeaderTable;
-  MaximumProfileTable get maxp => tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable;
-  IndexToLocationTable get loca => tableMap[ttf_utils.kLocaTag] as IndexToLocationTable;
-  GlyphDataTable get glyf => tableMap[ttf_utils.kGlyfTag] as GlyphDataTable;
-  GlyphSubstitutionTable get gsub => tableMap[ttf_utils.kGSUBTag] as GlyphSubstitutionTable;
-  OS2Table get os2 => tableMap[ttf_utils.kOS2Tag] as OS2Table;
-  PostScriptTable get post => tableMap[ttf_utils.kPostTag] as PostScriptTable;
-  NamingTable get name => tableMap[ttf_utils.kNameTag] as NamingTable;
-  CharacterToGlyphTable get cmap => tableMap[ttf_utils.kCmapTag] as CharacterToGlyphTable;
-  HorizontalHeaderTable get hhea => tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
-  HorizontalMetricsTable get hmtx => tableMap[ttf_utils.kHmtxTag] as HorizontalMetricsTable;
+  HeaderTable get head => tableMap[kHeadTag] as HeaderTable;
+  MaximumProfileTable get maxp => tableMap[kMaxpTag] as MaximumProfileTable;
+  IndexToLocationTable get loca => tableMap[kLocaTag] as IndexToLocationTable;
+  GlyphDataTable get glyf => tableMap[kGlyfTag] as GlyphDataTable;
+  GlyphSubstitutionTable get gsub => tableMap[kGSUBTag] as GlyphSubstitutionTable;
+  OS2Table get os2 => tableMap[kOS2Tag] as OS2Table;
+  PostScriptTable get post => tableMap[kPostTag] as PostScriptTable;
+  NamingTable get name => tableMap[kNameTag] as NamingTable;
+  CharacterToGlyphTable get cmap => tableMap[kCmapTag] as CharacterToGlyphTable;
+  HorizontalHeaderTable get hhea => tableMap[kHheaTag] as HorizontalHeaderTable;
+  HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
 }

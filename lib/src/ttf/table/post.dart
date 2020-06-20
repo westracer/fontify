@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../utils/pascal_string.dart';
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -81,7 +81,7 @@ abstract class PostScriptData {
       case _kVersion20:
         return PostScriptVersion20.fromByteData(byteData, offset);
       default:
-        TTFDebugger.debugUnsupportedTableVersion(ttf_utils.kPostTag, header.version);
+        TTFDebugger.debugUnsupportedTableVersion(kPostTag, header.version);
         return null;
     }
   }
@@ -194,7 +194,7 @@ class PostScriptTable extends FontTable {
         data = PostScriptVersion20.create(glyphNameList);
         break;
       default:
-        TTFDebugger.debugUnsupportedTableVersion(ttf_utils.kPostTag, version);
+        TTFDebugger.debugUnsupportedTableVersion(kPostTag, version);
         return null;
     }
 

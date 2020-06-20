@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import '../utils/ttf.dart' as ttf_utils;
+import '../utils/ttf.dart';
 
 import 'debugger.dart';
 import 'table/all.dart';
@@ -21,11 +21,11 @@ class TTFReader {
 
   /// Ordered set of table tags to parse first
   final _tagsParseOrder = <String>{
-    ttf_utils.kHeadTag, ttf_utils.kMaxpTag, ttf_utils.kLocaTag, ttf_utils.kHheaTag
+    kHeadTag, kMaxpTag, kLocaTag, kHheaTag
   };
   
-  int get _indexToLocFormat => (_tableMap[ttf_utils.kHeadTag] as HeaderTable).indexToLocFormat;
-  int get numGlyphs => (_tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable).numGlyphs;
+  int get _indexToLocFormat => _font.head.indexToLocFormat;
+  int get numGlyphs => _font.maxp.numGlyphs;
 
   /// Reads an OpenType font file and returns [TrueTypeFont] instance
   TrueTypeFont read() {
@@ -64,27 +64,27 @@ class TTFReader {
   
   FontTable _createTableFromEntry(TableRecordEntry entry) {
     switch (entry.tag) {
-      case ttf_utils.kHeadTag:
+      case kHeadTag:
         return HeaderTable.fromByteData(_byteData, entry);
-      case ttf_utils.kMaxpTag:
+      case kMaxpTag:
         return MaximumProfileTable.fromByteData(_byteData, entry);
-      case ttf_utils.kLocaTag:
+      case kLocaTag:
         return IndexToLocationTable.fromByteData(_byteData, entry, _indexToLocFormat, numGlyphs);
-      case ttf_utils.kGlyfTag:
+      case kGlyfTag:
         return GlyphDataTable.fromByteData(_byteData, entry, _font.loca, numGlyphs);
-      case ttf_utils.kGSUBTag:
+      case kGSUBTag:
         return GlyphSubstitutionTable.fromByteData(_byteData, entry);
-      case ttf_utils.kOS2Tag:
+      case kOS2Tag:
         return OS2Table.fromByteData(_byteData, entry);
-      case ttf_utils.kPostTag:
+      case kPostTag:
         return PostScriptTable.fromByteData(_byteData, entry);
-      case ttf_utils.kNameTag:
+      case kNameTag:
         return NamingTable.fromByteData(_byteData, entry);
-      case ttf_utils.kCmapTag:
+      case kCmapTag:
         return CharacterToGlyphTable.fromByteData(_byteData, entry);
-      case ttf_utils.kHheaTag:
+      case kHheaTag:
         return HorizontalHeaderTable.fromByteData(_byteData, entry);
-      case ttf_utils.kHmtxTag:
+      case kHmtxTag:
         return HorizontalMetricsTable.fromByteData(_byteData, entry, _font.hhea, numGlyphs);
       default:
         TTFDebugger.debugUnsupportedTable(entry.tag);

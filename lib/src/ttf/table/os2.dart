@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -87,7 +87,7 @@ class OS2TableV1 extends OS2Table {
       byteData.getUint32(entry.offset + 46),
       byteData.getUint32(entry.offset + 50),
       byteData.getUint32(entry.offset + 54),
-      ttf_utils.convertTagToString(Uint8List.view(byteData.buffer, entry.offset + 58, 4)),
+      convertTagToString(Uint8List.view(byteData.buffer, entry.offset + 58, 4)),
       byteData.getUint16(entry.offset + 62),
       byteData.getUint16(entry.offset + 64),
       byteData.getUint16(entry.offset + 66),

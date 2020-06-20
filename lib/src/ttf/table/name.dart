@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import '../../common/constant.dart';
 import '../../utils/enum_class.dart';
 import '../../utils/exception.dart';
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -152,7 +152,7 @@ abstract class NamingTable extends FontTable {
       case _kFormat0:
         return NamingTableFormat0.fromByteData(byteData, entry);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(ttf_utils.kNameTag, format);
+        TTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
         return null;
     }
   }
@@ -160,14 +160,14 @@ abstract class NamingTable extends FontTable {
   factory NamingTable.create(
     String fontName,
     String description,
-    ttf_utils.Revision revision, {
+    Revision revision, {
       int format = _kFormat0
   }) {
     switch (format) {
       case _kFormat0:
         return NamingTableFormat0.create(fontName, description, revision);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(ttf_utils.kNameTag, format);
+        TTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
         return null;
     }
   }
@@ -197,7 +197,7 @@ class NamingTableFormat0 extends NamingTable {
     return NamingTableFormat0(entry, header, stringList);
   }
 
-  factory NamingTableFormat0.create(String fontName, String description, ttf_utils.Revision revision) {
+  factory NamingTableFormat0.create(String fontName, String description, Revision revision) {
     if (fontName?.isNotEmpty != true) {
       throw TableDataFormatException('Font name must be not empty');
     }

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -96,7 +96,7 @@ abstract class CmapData {
       case 12:
         return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(ttf_utils.kCmapTag, format);
+        TTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
         return null;
     }
   }

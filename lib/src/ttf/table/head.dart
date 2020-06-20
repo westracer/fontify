@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../utils/exception.dart';
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 
 import 'abstract.dart';
 import 'all.dart';
@@ -69,13 +69,13 @@ class HeaderTable extends FontTable {
       entry,
       data.getUint16(entry.offset),
       data.getUint16(entry.offset + 2),
-      ttf_utils.Revision.fromInt32(data.getInt32(entry.offset + 4)),
+      Revision.fromInt32(data.getInt32(entry.offset + 4)),
       data.getUint32(entry.offset + 8),
       data.getUint32(entry.offset + 12),
       data.getUint16(entry.offset + 16),
       data.getUint16(entry.offset + 18),
-      ttf_utils.getDateTime(data.getInt64(entry.offset + 20)),
-      ttf_utils.getDateTime(data.getInt64(entry.offset + 28)),
+      getDateTime(data.getInt64(entry.offset + 20)),
+      getDateTime(data.getInt64(entry.offset + 28)),
       data.getInt16(entry.offset + 36),
       data.getInt16(entry.offset + 38),
       data.getInt16(entry.offset + 40),
@@ -87,7 +87,7 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 52)
     );
 
-  factory HeaderTable.create(GlyphDataTable glyf, ttf_utils.Revision revision) {
+  factory HeaderTable.create(GlyphDataTable glyf, Revision revision) {
     if (revision == null || revision.int32value == 0) {
       throw TableDataFormatException('revision must not be null');
     }
@@ -120,7 +120,7 @@ class HeaderTable extends FontTable {
 
   final int majorVersion;
   final int minorVersion;
-  final ttf_utils.Revision fontRevision;
+  final Revision fontRevision;
   final int checkSumAdjustment;
   final int magicNumber;
   final int flags;

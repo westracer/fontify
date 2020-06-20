@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart' as ttf_utils;
+import '../../utils/ttf.dart';
 
 const kLangSysRecordSize = 6;
 
@@ -12,7 +12,7 @@ class LanguageSystemRecord {
 
   factory LanguageSystemRecord.fromByteData(ByteData byteData, int offset) {
     return LanguageSystemRecord(
-      ttf_utils.convertTagToString(Uint8List.view(byteData.buffer, offset, 4)),
+      convertTagToString(Uint8List.view(byteData.buffer, offset, 4)),
       byteData.getUint16(offset + 4),
     );
   }

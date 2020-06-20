@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../../utils/ttf.dart' as ttf_utils;
+import '../../../utils/ttf.dart';
 
 const _kOnCurvePointValue = 0x01;
 const _kXshortVectorValue = 0x02;
@@ -25,18 +25,18 @@ class SimpleGlyphFlag {
 
   factory SimpleGlyphFlag.fromByteData(ByteData byteData, int offset) {
     final flag = byteData.getUint8(offset);
-    final repeatFlag = ttf_utils.checkBitMask(flag, _kRepeatFlagValue);
+    final repeatFlag = checkBitMask(flag, _kRepeatFlagValue);
     final repeatTimes = repeatFlag ? byteData.getUint8(offset + 1) : null;
 
     return SimpleGlyphFlag(
-      ttf_utils.checkBitMask(flag, _kOnCurvePointValue),
-      ttf_utils.checkBitMask(flag, _kXshortVectorValue),
-      ttf_utils.checkBitMask(flag, _kYshortVectorValue),
+      checkBitMask(flag, _kOnCurvePointValue),
+      checkBitMask(flag, _kXshortVectorValue),
+      checkBitMask(flag, _kYshortVectorValue),
       repeatTimes,
-      ttf_utils.checkBitMask(flag, _kXisSameValue),
-      ttf_utils.checkBitMask(flag, _kYisSameValue),
-      ttf_utils.checkBitMask(flag, _kOverlapSimpleValue),
-      ttf_utils.checkBitMask(flag, _kReservedValue)
+      checkBitMask(flag, _kXisSameValue),
+      checkBitMask(flag, _kYisSameValue),
+      checkBitMask(flag, _kOverlapSimpleValue),
+      checkBitMask(flag, _kReservedValue)
     );
   }
 

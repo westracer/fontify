@@ -4,7 +4,7 @@ import 'package:fontify/src/ttf/reader.dart';
 import 'package:fontify/src/ttf/table/all.dart';
 import 'package:fontify/src/ttf/table/hhea.dart';
 import 'package:fontify/src/ttf/ttf.dart';
-import 'package:fontify/src/utils/ttf.dart' as ttf_utils;
+import 'package:fontify/src/utils/ttf.dart';
 import 'package:test/test.dart';
 
 const _kTestFontAssetPath = './test_assets/test_font.ttf';
@@ -32,7 +32,7 @@ void main() {
     });
 
     test('Maximum Profile table', () {
-      final table = font.tableMap[ttf_utils.kMaxpTag] as MaximumProfileTable;
+      final table = font.tableMap[kMaxpTag] as MaximumProfileTable;
       expect(table, isNotNull);
 
       expect(table.version, 0x00010000);
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('Header table', () {
-      final table = font.tableMap[ttf_utils.kHeadTag] as HeaderTable;
+      final table = font.tableMap[kHeadTag] as HeaderTable;
       expect(table, isNotNull);
 
       expect(table.majorVersion, 1);
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('Glyph Data table', () {
-      final table = font.tableMap[ttf_utils.kGlyfTag] as GlyphDataTable;
+      final table = font.tableMap[kGlyfTag] as GlyphDataTable;
       expect(table, isNotNull);
       expect(table.glyphList.length, 166);
 
@@ -129,7 +129,7 @@ void main() {
     });
 
     test('OS/2 V1 table', () {
-      final table = font.tableMap[ttf_utils.kOS2Tag] as OS2TableV1;
+      final table = font.tableMap[kOS2Tag] as OS2TableV1;
       expect(table, isNotNull);
 
       expect(table.version, 1);
@@ -167,7 +167,7 @@ void main() {
     });
 
     test('PostScript table', () {
-      final table = font.tableMap[ttf_utils.kPostTag] as PostScriptTable;
+      final table = font.tableMap[kPostTag] as PostScriptTable;
       expect(table, isNotNull);
 
       expect(table.header.version, 2);
@@ -187,7 +187,7 @@ void main() {
     });
 
     test('Naming table', () {
-      final table = font.tableMap[ttf_utils.kNameTag] as NamingTableFormat0;
+      final table = font.tableMap[kNameTag] as NamingTableFormat0;
       expect(table, isNotNull);
 
       expect(table.header.format, 0);
@@ -198,7 +198,7 @@ void main() {
     });
 
     test('Character To Glyph Index Mapping table', () {
-      final table = font.tableMap[ttf_utils.kCmapTag] as CharacterToGlyphTable;
+      final table = font.tableMap[kCmapTag] as CharacterToGlyphTable;
       expect(table, isNotNull);
 
       expect(table.header.version, 0);
@@ -235,7 +235,7 @@ void main() {
     });
 
     test('Horizontal Header table', () {
-      final table = font.tableMap[ttf_utils.kHheaTag] as HorizontalHeaderTable;
+      final table = font.tableMap[kHheaTag] as HorizontalHeaderTable;
       expect(table, isNotNull);
 
       expect(table.majorVersion, 1);
@@ -255,7 +255,7 @@ void main() {
     });
 
     test('Horizontal Metrics table', () {
-      final table = font.tableMap[ttf_utils.kHmtxTag] as HorizontalMetricsTable;
+      final table = font.tableMap[kHmtxTag] as HorizontalMetricsTable;
       expect(table, isNotNull);
 
       expect(table.leftSideBearings, isEmpty);
@@ -264,7 +264,7 @@ void main() {
     });
 
     test('Glyph Substitution table', () {
-      final table = font.tableMap[ttf_utils.kGSUBTag] as GlyphSubstitutionTable;
+      final table = font.tableMap[kGSUBTag] as GlyphSubstitutionTable;
       expect(table, isNotNull);
 
       final scriptTable = table.scriptListTable;
