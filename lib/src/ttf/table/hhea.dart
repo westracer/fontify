@@ -4,6 +4,7 @@ import '../../utils/ttf.dart';
 
 import 'abstract.dart';
 import 'glyf.dart';
+import 'head.dart';
 import 'hmtx.dart';
 import 'table_record_entry.dart';
 
@@ -48,12 +49,16 @@ class HorizontalHeaderTable extends FontTable {
     );
   }
 
-  factory HorizontalHeaderTable.create(GlyphDataTable glyf, HorizontalMetricsTable hmtx) {
+  factory HorizontalHeaderTable.create(
+    GlyphDataTable glyf, 
+    HorizontalMetricsTable hmtx,
+    HeaderTable head
+  ) {
     return HorizontalHeaderTable(
       null,
       1, // major version 1
       0, // minor version 0
-      1000,
+      head.unitsPerEm,
       0,
       0, // 0 line gap
       hmtx.advanceWidthMax,
