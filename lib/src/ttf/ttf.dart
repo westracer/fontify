@@ -15,14 +15,16 @@ class TrueTypeFont {
   // TODO: introduce generic glyph class later
   factory TrueTypeFont.fromGlyphs({
     @required List<SimpleGlyph> glyphList, 
-    @required List<String> glyphNameList,
     @required String fontName,
+    List<String> glyphNameList,
     String description,
     Revision revision = kDefaultFontRevision,
     String achVendID = kDefaultAchVendID,
   }) {
-    if (glyphNameList.length != glyphList.length) {
-      throw TableDataFormatException('Lengths of glyph list and glyph name list must be same');
+    if (glyphNameList != null && glyphNameList.length != glyphList.length) {
+      throw TableDataFormatException(
+        'Lengths of glyph list and glyph name list must be same'
+      );
     }
 
     final glyf = GlyphDataTable.fromGlyphs(glyphList);

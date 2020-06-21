@@ -93,6 +93,7 @@ abstract class PostScriptData {
   }
 
   int get size;
+  Revision get version;
 }
 
 class PostScriptVersion30 extends PostScriptData {
@@ -100,6 +101,9 @@ class PostScriptVersion30 extends PostScriptData {
 
   @override
   int get size => 0;
+
+  @override
+  Revision get version => const Revision.fromInt32(_kVersion30);
 }
 
 class PostScriptVersion20 extends PostScriptData {
@@ -176,6 +180,9 @@ class PostScriptVersion20 extends PostScriptData {
 
     return 2 + numberOfGlyphs * 2 + glyphNamesSize;
   }
+
+  @override
+  Revision get version => const Revision.fromInt32(_kVersion20);
 }
 
 class PostScriptTable extends FontTable {
@@ -198,26 +205,14 @@ class PostScriptTable extends FontTable {
     );
   }
 
-  // TODO: maybe create v3 post?
-  factory PostScriptTable.create(
-    List<String> glyphNameList, {
-    Revision version = const Revision.fromInt32(_kVersion20)
-  }) {
-    final versionIntValue = version.int32value;
-    PostScriptData data;
-
-    switch (versionIntValue) {
-      case _kVersion20:
-        data = PostScriptVersion20.create(glyphNameList);
-        break;
-      default:
-        TTFDebugger.debugUnsupportedTableVersion(kPostTag, versionIntValue);
-        return null;
-    }
+  factory PostScriptTable.create(List<String> glyphNameList) {
+    final data = glyphNameList != null 
+      ? PostScriptVersion20.create(glyphNameList) 
+      : PostScriptVersion30();
 
     return PostScriptTable(
       null, 
-      PostScriptTableHeader.create(version), 
+      PostScriptTableHeader.create(data.version), 
       data
     );
   }
