@@ -10,9 +10,9 @@ import 'package:test/test.dart';
 const _kTestFontAssetPath = './test_assets/test_font.ttf';
 
 void main() {
-  group('Reader', () {
-    TrueTypeFont font;
+  TrueTypeFont font;
 
+  group('Reader', () {
     setUpAll(() {
       font = TTFReader(File(_kTestFontAssetPath)).read();
     });
@@ -308,6 +308,30 @@ void main() {
       expect(coverageTable.coverageFormat, 1);
       expect(coverageTable.glyphCount, 0);
       expect(coverageTable.glyphArray, isEmpty);
+    });
+  });
+
+  
+  group('Creation & Writer', () {
+    TrueTypeFont recreatedFont;
+
+    setUpAll(() {
+      font = TTFReader(File(_kTestFontAssetPath)).read();
+
+      final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
+      
+      recreatedFont = TrueTypeFont.fromGlyphs(
+        glyphList: font.glyf.glyphList,
+        glyphNameList: glyphNameList,
+        fontName: 'TestFont',
+      );
+    });
+
+    test('OS/2 V5', () {
+      final table = recreatedFont.os2;
+
+      expect(table.version, 5);
+      expect(table.xAvgCharWidth, 862);
     });
   });
 
