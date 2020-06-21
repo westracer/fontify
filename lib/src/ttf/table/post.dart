@@ -7,7 +7,9 @@ import '../debugger.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
-const _kVersion20 = 0x2;
+const _kVersion20 = 0x00020000;
+const _kVersion30 = 0x00030000;
+
 const _kHeaderSize = 32;
 
 class PostScriptTableHeader {
@@ -27,7 +29,7 @@ class PostScriptTableHeader {
     ByteData byteData,
     TableRecordEntry entry
   ) {
-    final version = byteData.getFixed(entry.offset);
+    final version = Revision.fromInt32(byteData.getInt32(entry.offset));
 
     return PostScriptTableHeader(
       version,
@@ -42,7 +44,7 @@ class PostScriptTableHeader {
     );
   }
 
-  factory PostScriptTableHeader.create(int version) {
+  factory PostScriptTableHeader.create(Revision version) {
     return PostScriptTableHeader(
       version,
       0,  // italicAngle - upright text
@@ -56,7 +58,7 @@ class PostScriptTableHeader {
     );
   }
 
-  final int version;
+  final Revision version;
   final int italicAngle;
   final int underlinePosition;
   final int underlineThickness;
@@ -77,16 +79,27 @@ abstract class PostScriptData {
     int offset,
     PostScriptTableHeader header
   ) {
-    switch (header.version) {
+    final version = header.version.int32value;
+
+    switch (version) {
       case _kVersion20:
         return PostScriptVersion20.fromByteData(byteData, offset);
+      case _kVersion30:
+        return PostScriptVersion30();
       default:
-        TTFDebugger.debugUnsupportedTableVersion(kPostTag, header.version);
+        TTFDebugger.debugUnsupportedTableVersion(kPostTag, version);
         return null;
     }
   }
 
   int get size;
+}
+
+class PostScriptVersion30 extends PostScriptData {
+  PostScriptVersion30();
+
+  @override
+  int get size => 0;
 }
 
 class PostScriptVersion20 extends PostScriptData {
@@ -186,15 +199,19 @@ class PostScriptTable extends FontTable {
   }
 
   // TODO: maybe create v3 post?
-  factory PostScriptTable.create(List<String> glyphNameList, {int version = _kVersion20}) {
+  factory PostScriptTable.create(
+    List<String> glyphNameList, {
+    Revision version = const Revision.fromInt32(_kVersion20)
+  }) {
+    final versionIntValue = version.int32value;
     PostScriptData data;
 
-    switch (version) {
+    switch (versionIntValue) {
       case _kVersion20:
         data = PostScriptVersion20.create(glyphNameList);
         break;
       default:
-        TTFDebugger.debugUnsupportedTableVersion(kPostTag, version);
+        TTFDebugger.debugUnsupportedTableVersion(kPostTag, versionIntValue);
         return null;
     }
 

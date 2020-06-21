@@ -1,5 +1,9 @@
 import 'dart:typed_data';
 
+import 'package:meta/meta.dart';
+
+import 'misc.dart';
+
 const String kHeadTag = 'head';
 const String kGSUBTag = 'GSUB';
 const String kOS2Tag = 'OS/2';
@@ -38,17 +42,30 @@ extension TTFStringExt on String {
 }
 
 
+@immutable
 class Revision {
   const Revision(int major, int minor) : 
     major = major ?? 0, 
     minor = minor ?? 0;
 
-  factory Revision.fromInt32(int revision) {
-    return Revision((revision >> 16) & 0xFFFF, revision & 0xFFFF);
-  }
+  const Revision.fromInt32(int revision) 
+  : major = (revision >> 16) & 0xFFFF,
+    minor = revision & 0xFFFF;
 
   final int major;
   final int minor;
 
   int get int32value => major * 0x10000 + minor;
+
+  @override
+  int get hashCode => combineHashCode(major.hashCode, minor.hashCode);
+
+  @override
+  bool operator==(Object other) {
+    if (other is Revision) {
+      return major == other.major && minor == other.minor;
+    }
+
+    return false;
+  }
 }

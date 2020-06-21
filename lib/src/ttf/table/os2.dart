@@ -6,25 +6,21 @@ import '../debugger.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
-abstract class OS2Table extends FontTable {
-  OS2Table.fromTableRecordEntry(TableRecordEntry entry) : 
-    super.fromTableRecordEntry(entry);
+const _kVersion0 = 0x0000;
+const _kVersion1 = 0x0001;
+const _kVersion4 = 0x0004;
+const _kVersion5 = 0x0005;
 
-  static OS2Table fromByteData(ByteData byteData, TableRecordEntry entry) {
-    final version = byteData.getUint16(entry.offset);
+/// Byte size for fields added with specific version
+const _kVersionDataSize = {
+  _kVersion0: 78,
+  _kVersion1: 8,
+  _kVersion4: 10,
+  _kVersion5: 4,
+};
 
-    switch (version) {
-      case 1:
-        return OS2TableV1.fromByteData(byteData, entry);
-      default:
-        TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
-        return null;
-    }
-  }
-}
-
-class OS2TableV1 extends OS2Table {
-  OS2TableV1(
+class OS2Table extends FontTable {
+  OS2Table._(
     TableRecordEntry entry,
     this.version,
     this.xAvgCharWidth,
@@ -58,15 +54,29 @@ class OS2TableV1 extends OS2Table {
     this.usWinDescent,
     this.ulCodePageRange1,
     this.ulCodePageRange2,
+    this.sxHeight,
+    this.sCapHeight,
+    this.usDefaultChar,
+    this.usBreakChar,
+    this.usMaxContext,
+    this.usLowerOpticalPointSize,
+    this.usUpperOpticalPointSize,
   ) : super.fromTableRecordEntry(entry);
 
-  factory OS2TableV1.fromByteData(
-    ByteData byteData,
-    TableRecordEntry entry
-  ) {
-    return OS2TableV1(
+  factory OS2Table.fromByteData(ByteData byteData, TableRecordEntry entry) {
+    final version = byteData.getInt16(entry.offset);
+
+    final isV1 = version >= _kVersion1;
+    final isV4 = version >= _kVersion4;
+    final isV5 = version >= _kVersion5;
+
+    if (version > _kVersion5) {
+      TTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
+    }
+
+    return OS2Table._(
       entry,
-      byteData.getInt16(entry.offset),
+      version,
       byteData.getInt16(entry.offset + 2),
       byteData.getUint16(entry.offset + 4),
       byteData.getUint16(entry.offset + 6),
@@ -96,12 +106,24 @@ class OS2TableV1 extends OS2Table {
       byteData.getInt16(entry.offset + 72),
       byteData.getUint16(entry.offset + 74),
       byteData.getUint16(entry.offset + 76),
-      byteData.getUint32(entry.offset + 78),
-      byteData.getUint32(entry.offset + 82),
+
+      !isV1 ? null : byteData.getUint32(entry.offset + 78),
+      !isV1 ? null : byteData.getUint32(entry.offset + 82),
+
+      !isV4 ? null : byteData.getInt16(entry.offset + 86),
+      !isV4 ? null : byteData.getInt16(entry.offset + 88),
+      !isV4 ? null : byteData.getUint16(entry.offset + 90),
+      !isV4 ? null : byteData.getUint16(entry.offset + 92),
+      !isV4 ? null : byteData.getUint16(entry.offset + 94),
+
+      !isV5 ? null : byteData.getUint16(entry.offset + 96),
+      !isV5 ? null : byteData.getUint16(entry.offset + 98),
     );
   }
 
   final int version;
+
+  // Version 0
   final int xAvgCharWidth;
   final int usWeightClass;
   final int usWidthClass;
@@ -131,6 +153,33 @@ class OS2TableV1 extends OS2Table {
   final int sTypoLineGap;
   final int usWinAscent;
   final int usWinDescent;
+
+  // Version 1
   final int ulCodePageRange1;
   final int ulCodePageRange2;
+
+  // Version 4
+  final int sxHeight;
+  final int sCapHeight;
+  final int usDefaultChar;
+  final int usBreakChar;
+  final int usMaxContext;
+
+  // Version 5
+  final int usLowerOpticalPointSize;
+  final int usUpperOpticalPointSize;
+
+  int get size {
+    int size = 0;
+    
+    for (final e in _kVersionDataSize.entries) {
+      if (e.key > version) {
+        break;
+      }
+
+      size += e.value;
+    }
+
+    return size;
+  }
 }

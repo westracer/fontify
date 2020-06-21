@@ -129,7 +129,7 @@ void main() {
     });
 
     test('OS/2 V1 table', () {
-      final table = font.tableMap[kOS2Tag] as OS2TableV1;
+      final table = font.tableMap[kOS2Tag] as OS2Table;
       expect(table, isNotNull);
 
       expect(table.version, 1);
@@ -170,7 +170,7 @@ void main() {
       final table = font.tableMap[kPostTag] as PostScriptTable;
       expect(table, isNotNull);
 
-      expect(table.header.version, 2);
+      expect(table.header.version, const Revision(2, 0));
       expect(table.header.italicAngle, 0);
       expect(table.header.underlinePosition, 10);
       expect(table.header.underlineThickness, 0);
