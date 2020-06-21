@@ -12,5 +12,6 @@ void main(List<String> args) {
     glyphList: font.glyf.glyphList, 
     glyphNameList: glyphNameList,
     fontName: 'TestFont',
+    achVendID: 'TEST',
   );
 }

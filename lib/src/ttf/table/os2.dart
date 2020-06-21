@@ -1,9 +1,14 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../utils/exception.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
+import 'head.dart';
+import 'hhea.dart';
+import 'hmtx.dart';
 import 'table_record_entry.dart';
 
 const _kVersion0 = 0x0000;
@@ -18,6 +23,22 @@ const _kVersionDataSize = {
   _kVersion4: 10,
   _kVersion5: 4,
 };
+
+const _kDefaultSubscriptRelativeXsize = .65;
+const _kDefaultSubscriptRelativeYsize = .7;
+const _kDefaultSubscriptRelativeYoffset = .14;
+const _kDefaultSuperscriptRelativeYoffset = .48;
+const _kDefaultStrikeoutRelativeSize = .1;
+const _kDefaultStrikeoutRelativeOffset = .26;
+
+/// Default values for PANOSE classification:
+///
+/// * Family type: Latin Text
+/// * Serif style: Any
+/// * Font weight: Book
+/// * Proportion: Modern
+/// * Anything else: Any
+const _kDefaultPANOSE = [2, 0, 5, 3, 0, 0, 0, 0, 0, 0];
 
 class OS2Table extends FontTable {
   OS2Table._(
@@ -121,6 +142,83 @@ class OS2Table extends FontTable {
     );
   }
 
+  factory OS2Table.create(
+    HorizontalMetricsTable hmtx, 
+    HeaderTable head,
+    HorizontalHeaderTable hhea, 
+    String achVendID, {
+    int version = _kVersion5,
+  }) {
+    final asciiAchVendID = achVendID?.getAsciiPrintable();
+
+    if (asciiAchVendID?.length != 4) {
+      throw TableDataFormatException('Incorrect achVendID tag format in OS/2 table');
+    }
+
+    final emSize = head.unitsPerEm;
+    final height = hhea.ascender - hhea.descender;
+
+    final isV1 = version >= _kVersion1;
+    final isV4 = version >= _kVersion4;
+    final isV5 = version >= _kVersion5;
+
+    final scriptXsize = (emSize * _kDefaultSubscriptRelativeXsize).round();
+    final scriptYsize = (height * _kDefaultSubscriptRelativeYsize).round();
+    final subscriptYoffset = (height * _kDefaultSubscriptRelativeYoffset).round();
+    final superscriptYoffset = (height * _kDefaultSuperscriptRelativeYoffset).round();
+    final strikeoutSize = (height * _kDefaultStrikeoutRelativeSize).round();
+    final strikeoutOffset = (height * _kDefaultStrikeoutRelativeOffset).round();
+
+    return OS2Table._(
+      null,
+      version,
+      getAverageWidth(hmtx),
+      400,  // Regular weight
+      5,    // Normal width
+      0,    // Installable embedding
+      scriptXsize,
+      scriptYsize,
+      0,    // zero X offset
+      subscriptYoffset,
+      scriptXsize,
+      scriptYsize,
+      0,    // zero X offset
+      superscriptYoffset,
+      strikeoutSize,
+      strikeoutOffset,
+      0,    // No Classification
+      _kDefaultPANOSE,
+      0,
+      0,
+      0,
+      0,
+      asciiAchVendID,
+      0x40 | 0x80, // REGULAR and USE_TYPO_METRICS
+      0,           // TODO: get first char from cmap
+      0,           // TODO: get last char from cmap
+      hhea.ascender,
+      hhea.descender,
+      hhea.lineGap,
+      math.max(head.yMax, hhea.ascender),
+      -math.min(head.yMin, hhea.descender),
+
+      !isV1 ? null : 1,    // Latin 1
+      !isV1 ? null : 0,
+
+      !isV4 ? null : 0,
+      !isV4 ? null : 0,
+      !isV4 ? null : 0,
+      !isV4 ? null : 0x20, // Space break char
+      !isV4 ? null : 0,    // TODO: calculate after GSUB table
+      
+      /// For fonts that were not designed for multiple optical-size variants,
+      /// usLowerOpticalPointSize should be set to 0 (zero),
+      /// and usUpperOpticalPointSize should be set to 0xFFFF.
+      !isV5 ? null : 0,
+      !isV5 ? null : 0xFFFE
+    );
+  }
+
   final int version;
 
   // Version 0
@@ -181,5 +279,14 @@ class OS2Table extends FontTable {
     }
 
     return size;
+  }
+
+  static int getAverageWidth(HorizontalMetricsTable hmtx) {
+    if (hmtx.hMetrics.isEmpty) {
+      return 0;
+    }
+
+    final widthSum = hmtx.hMetrics.fold<int>(0, (p, m) => p + m.advanceWidth);
+    return (widthSum / hmtx.hMetrics.length).round();
   }
 }

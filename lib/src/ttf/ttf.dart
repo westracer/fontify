@@ -3,6 +3,7 @@ import 'package:meta/meta.dart';
 import '../utils/exception.dart';
 import '../utils/ttf.dart';
 
+import 'defaults.dart';
 import 'table/abstract.dart';
 import 'table/all.dart';
 import 'table/glyph/simple.dart';
@@ -17,7 +18,8 @@ class TrueTypeFont {
     @required List<String> glyphNameList,
     @required String fontName,
     String description,
-    Revision revision = const Revision(1, 0),
+    Revision revision = kDefaultFontRevision,
+    String achVendID = kDefaultAchVendID,
   }) {
     if (glyphNameList.length != glyphList.length) {
       throw TableDataFormatException('Lengths of glyph list and glyph name list must be same');
@@ -26,9 +28,11 @@ class TrueTypeFont {
     final glyf = GlyphDataTable.fromGlyphs(glyphList);
     final head = HeaderTable.create(glyf, revision);
     final hmtx = HorizontalMetricsTable.create(glyf);
-    final hhea = HorizontalHeaderTable.create(glyf, hmtx);
+    final hhea = HorizontalHeaderTable.create(glyf, hmtx, head);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
+    // TODO: GSUB, cmap
+    final os2 = OS2Table.create(hmtx, head, hhea, achVendID);
 
     // TODO: rest of tables
     return TrueTypeFont(null, {
@@ -38,6 +42,7 @@ class TrueTypeFont {
       kHheaTag: hhea,
       kPostTag: post,
       kNameTag: name,
+      kOS2Tag:  os2,
     });
   }
   
