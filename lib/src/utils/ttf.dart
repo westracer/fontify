@@ -6,7 +6,7 @@ import 'misc.dart';
 
 const String kHeadTag = 'head';
 const String kGSUBTag = 'GSUB';
-const String kOS2Tag = 'OS/2';
+const String kOS2Tag  = 'OS/2';
 const String kCmapTag = 'cmap';
 const String kGlyfTag = 'glyf';
 const String kHheaTag = 'hhea';

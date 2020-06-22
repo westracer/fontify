@@ -172,7 +172,7 @@ class OS2Table extends FontTable {
     return OS2Table._(
       null,
       version,
-      getAverageWidth(hmtx),
+      _getAverageWidth(hmtx),
       400,  // Regular weight
       5,    // Normal width
       0,    // Installable embedding
@@ -281,7 +281,7 @@ class OS2Table extends FontTable {
     return size;
   }
 
-  static int getAverageWidth(HorizontalMetricsTable hmtx) {
+  static int _getAverageWidth(HorizontalMetricsTable hmtx) {
     if (hmtx.hMetrics.isEmpty) {
       return 0;
     }

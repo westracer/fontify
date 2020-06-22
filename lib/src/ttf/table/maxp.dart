@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import '../debugger.dart';
 
 import 'abstract.dart';
+import 'glyf.dart';
 import 'table_record_entry.dart';
 
 const _kVersion0 = 0x00005000;
@@ -79,6 +80,28 @@ class MaximumProfileTable extends FontTable {
       TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
       return null;
     }
+  }
+
+  factory MaximumProfileTable.create(GlyphDataTable glyf) {
+    return MaximumProfileTable.v1(
+      null,
+      glyf.glyphList.length,
+      glyf.maxPoints,
+      glyf.maxContours,
+      0, // Composite glyphs are not supported
+      0, // Composite glyphs are not supported
+      2, // The twilight zone is used
+      0, // 0 max points for the twilight zone
+      
+      /// Constants taken from FontForge
+      1,
+      1,
+      0,
+      64,
+      glyf.maxSizeOfInstructions,
+      0,
+      0
+    );
   }
 
   // Version 0.5

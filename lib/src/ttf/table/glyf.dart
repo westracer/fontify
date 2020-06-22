@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../debugger.dart';
@@ -47,5 +48,14 @@ class GlyphDataTable extends FontTable {
   final List<SimpleGlyph> glyphList;
 
   // TODO: subtract last glyph's size?
-  int get size => glyphList.fold<int>(0, (p, v) => p + v.size) ;
+  int get size => glyphList.fold<int>(0, (p, v) => p + v.size);
+
+  int get maxPoints =>
+    glyphList.fold<int>(0, (p, g) => math.max(p, g.xCoordinates.length));
+
+  int get maxContours =>
+    glyphList.fold<int>(0, (p, g) => math.max(p, g.header.numberOfContours));
+
+  int get maxSizeOfInstructions =>
+    glyphList.fold<int>(0, (p, g) => math.max(p, g.instructions.length));
 }
