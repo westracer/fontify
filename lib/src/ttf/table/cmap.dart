@@ -39,6 +39,16 @@ const _kDefaultEncodingRecordFormatList = [
   _kFormat4, _kFormat12, _kFormat0, _kFormat4, _kFormat12
 ];
 
+class _Segment {
+  _Segment(this.startCode, this.endCode, this.startGlyphID);
+
+  final int startCode;
+  final int endCode;
+  final int startGlyphID;
+
+  int get idDelta => startGlyphID - startCode;
+}
+
 class EncodingRecord {
   const EncodingRecord(
     this.platformID,
@@ -138,15 +148,14 @@ abstract class CmapData {
     }
   }
   
-  factory CmapData.create(List<int> charCodeList, int format) {
+  factory CmapData.create(List<_Segment> segmentList, int format) {
     switch (format) {
       case _kFormat0:
         return CmapByteEncodingTable.create();
       case _kFormat4:
-        return CmapSegmentMappingToDeltaValuesTable.create(charCodeList);
-      // TODO:
-      // case _kFormat12:
-      //   return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
+        return CmapSegmentMappingToDeltaValuesTable.create(segmentList);
+      case _kFormat12:
+        return CmapSegmentedCoverageTable.create(segmentList);
       default:
         TTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
         return null;
@@ -265,47 +274,12 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
     );
   }
 
-  factory CmapSegmentMappingToDeltaValuesTable.create(List<int> charCodeList) {
-    int startCharCode = -1, prevCharCode = -1, startGlyphId = -1;
-
-    final startCode = <int>[];
-    final endCode = <int>[];
-    final startGlyphIdList = <int>[];
-
-    for (int glyphId = 0; glyphId < charCodeList.length; glyphId++) {
-      final charCode = charCodeList[glyphId];
-
-      if (prevCharCode + 1 != charCode && startCharCode != -1) {
-        // Save a segment, if there's a gap between previous and current codes
-        startCode.add(startCharCode);
-        endCode.add(prevCharCode);
-        startGlyphIdList.add(startGlyphId);
-
-        // Next segment starts with new code
-        startCharCode = charCode;
-        startGlyphId = glyphId;
-      } else if (startCharCode == -1) {
-        // Start a new segment
-        startCharCode = charCode;
-        startGlyphId = glyphId;
-      }
-
-      prevCharCode = charCode;
-    }
-
-    // Closing the last segment
-    if (startCharCode != -1 && prevCharCode != -1) {
-      startCode.add(startCharCode);
-      endCode.add(prevCharCode);
-      startGlyphIdList.add(startGlyphId);
-    }
-
-    final idDelta = <int>[
-      for (int i = 0; i < startCode.length; i++)
-        startGlyphIdList[i] - startCode[i]
-    ];
+  factory CmapSegmentMappingToDeltaValuesTable.create(List<_Segment> segmentList) {
+    final startCode = segmentList.map((e) => e.startCode).toList();
+    final endCode = segmentList.map((e) => e.endCode).toList();
+    final idDelta = segmentList.map((e) => e.idDelta).toList();
     
-    final segCount = startCode.length;
+    final segCount = segmentList.length;
 
     // Ignoring glyphIdArray
     final glyphIdArray = <int>[];
@@ -318,6 +292,9 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
     final searchRange = 2 * math.pow(2, entrySelector).toInt();
     final rangeShift = 2 * segCount - searchRange;
 
+    /// Eight 2-byte variable
+    /// Four 2-byte arrays of [segCount] length
+    /// glyphIdArray is zero length
     final length = 16 + 4 * 2 * segCount;
 
     return CmapSegmentMappingToDeltaValuesTable(
@@ -329,7 +306,7 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
       entrySelector,
       rangeShift,
       endCode,
-      0,  // Reversed
+      0,  // Reserved
       startCode,
       idDelta,
       idRangeOffset,
@@ -357,7 +334,7 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
 class CmapSegmentedCoverageTable extends CmapData {
   CmapSegmentedCoverageTable(
     int format,
-    this.reversed,
+    this.reserved,
     this.length,
     this.language,
     this.numGroups,
@@ -383,14 +360,37 @@ class CmapSegmentedCoverageTable extends CmapData {
     );
   }
 
-  final int reversed;
+  factory CmapSegmentedCoverageTable.create(List<_Segment> segmentList) {
+    final groups = segmentList.map(
+      (e) => SequentialMapGroup(e.startCode, e.endCode, e.startGlyphID)
+    ).toList();
+
+    final numGroups = groups.length;
+    final groupsSize = numGroups * _kSequentialMapGroupSize;
+
+    /// Two 2-byte variables
+    /// Three 4-byte variables
+    /// SequentialMapGroup (12-byte) array of [numGroups] length
+    final length = 16 + groupsSize;
+
+    return CmapSegmentedCoverageTable(
+      _kFormat12,
+      0,
+      length,
+      0, // Roman language
+      numGroups,
+      groups
+    );
+  }
+
+  final int reserved;
   final int length;
   final int language;
   final int numGroups;
   final List<SequentialMapGroup> groups;
 
   @override
-  int get size => 0; // TODO:
+  int get size => length;
 }
 
 class CharacterToGlyphTable extends FontTable {
@@ -415,13 +415,14 @@ class CharacterToGlyphTable extends FontTable {
 
   factory CharacterToGlyphTable.create(int numOfGlyphs) {
     final charCodeList = _generateCharCodes(numOfGlyphs);
+    final segmentList = _generateSegments(charCodeList);
     
     final subtableByFormat = _kDefaultEncodingRecordFormatList
       .toSet()
       .fold<Map<int, CmapData>>(
         {}, 
         (p, format) {
-          p[format] = CmapData.create(charCodeList, format);
+          p[format] = CmapData.create(segmentList, format);
           return p;
         }
       );
@@ -449,4 +450,36 @@ class CharacterToGlyphTable extends FontTable {
   
   static List<int> _generateCharCodes(int numOfGlyphs) =>
     List.generate(numOfGlyphs, (i) => kUnicodePrivateUseAreaStart + i);
+
+  static List<_Segment> _generateSegments(List<int> charCodeList) {
+    int startCharCode = -1, prevCharCode = -1, startGlyphId = -1;
+
+    final segmentList = <_Segment>[];
+
+    for (int glyphId = 0; glyphId < charCodeList.length; glyphId++) {
+      final charCode = charCodeList[glyphId];
+
+      if (prevCharCode + 1 != charCode && startCharCode != -1) {
+        // Save a segment, if there's a gap between previous and current codes
+        segmentList.add(_Segment(startCharCode, prevCharCode, startGlyphId));
+
+        // Next segment starts with new code
+        startCharCode = charCode;
+        startGlyphId = glyphId;
+      } else if (startCharCode == -1) {
+        // Start a new segment
+        startCharCode = charCode;
+        startGlyphId = glyphId;
+      }
+
+      prevCharCode = charCode;
+    }
+
+    // Closing the last segment
+    if (startCharCode != -1 && prevCharCode != -1) {
+      segmentList.add(_Segment(startCharCode, prevCharCode, startGlyphId));
+    }
+
+    return segmentList;
+  } 
 }

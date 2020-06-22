@@ -35,7 +35,7 @@ class TrueTypeFont {
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(glyf);
     final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
-    // TODO: GSUB, cmap format 12
+    // TODO: GSUB
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, achVendID);
 
     // TODO: rest of tables
