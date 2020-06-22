@@ -7,6 +7,7 @@ class IndexToLocationTable extends FontTable {
   IndexToLocationTable(
     TableRecordEntry entry,
     this.glyphOffsets,
+    this._isShort,
   ) : super.fromTableRecordEntry(entry);
 
   factory IndexToLocationTable.fromByteData(
@@ -24,8 +25,21 @@ class IndexToLocationTable extends FontTable {
           : byteData.getUint32(entry.offset + 4 * i)
     ];
 
-    return IndexToLocationTable(entry, offsets);
+    return IndexToLocationTable(entry, offsets, isShort);
+  }
+
+  factory IndexToLocationTable.create(
+    int indexToLocFormat,
+    int numGlyphs
+  ) {
+    final isShort = indexToLocFormat == 0;
+    final List<int> offsets = List.generate(numGlyphs + 1, (index) => null);
+
+    return IndexToLocationTable(null, offsets, isShort);
   }
 
   final List<int> glyphOffsets;
+  final bool _isShort;
+
+  int get size => glyphOffsets.length * (_isShort ? 2 : 4);
 }

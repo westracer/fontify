@@ -19,10 +19,12 @@ class LanguageSystemRecord {
 
   final String langSysTag;
   final int langSysOffset;
+
+  int get size => kLangSysRecordSize;
 }
 
 class LanguageSystemTable {
-  LanguageSystemTable(
+  const LanguageSystemTable(
     this.lookupOrder, 
     this.requiredFeatureIndex, 
     this.featureIndexCount, 
@@ -51,4 +53,6 @@ class LanguageSystemTable {
   final int requiredFeatureIndex;
   final int featureIndexCount;
   final List<int> featureIndices;
+
+  int get size => 6 + 2 * featureIndexCount;
 }

@@ -4,8 +4,16 @@ import '../../utils/ttf.dart';
 
 const kFeatureRecordSize = 6;
 
+const _kDefaultFeatureRecordList = [
+  FeatureRecord('liga', null),
+];
+
+const _kDefaultFeatureTableList = [
+  FeatureTable(0, 1, [0]),
+];
+
 class FeatureRecord {
-  FeatureRecord(
+  const FeatureRecord(
     this.featureTag,
     this.featureOffset
   );
@@ -19,10 +27,12 @@ class FeatureRecord {
 
   final String featureTag;
   final int featureOffset;
+
+  int get size => kFeatureRecordSize;
 }
 
 class FeatureTable {
-  FeatureTable(
+  const FeatureTable(
     this.featureParams,
     this.lookupIndexCount,
     this.lookupListIndices
@@ -51,6 +61,8 @@ class FeatureTable {
   final int featureParams;
   final int lookupIndexCount;
   final List<int> lookupListIndices;
+
+  int get size => 4 + 2 * lookupIndexCount;
 }
 
 class FeatureListTable {
@@ -74,8 +86,23 @@ class FeatureListTable {
     return FeatureListTable(featureCount, featureRecords, featureTables);
   }
 
+  factory FeatureListTable.create() {
+    return FeatureListTable(
+      _kDefaultFeatureRecordList.length,
+      _kDefaultFeatureRecordList,
+      _kDefaultFeatureTableList
+    );
+  }
+
   final int featureCount;
   final List<FeatureRecord> featureRecords;
 
   final List<FeatureTable> featureTables;
+
+  int get size {
+    final recordListSize = featureRecords.fold<int>(0, (p, r) => p + r.size);
+    final tableListSize = featureTables.fold<int>(0, (p, t) => p + t.size);
+
+    return 2 + recordListSize + tableListSize;
+  }
 }

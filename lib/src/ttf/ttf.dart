@@ -29,18 +29,20 @@ class TrueTypeFont {
 
     final glyf = GlyphDataTable.fromGlyphs(glyphList);
     final head = HeaderTable.create(glyf, revision);
+    final loca = IndexToLocationTable.create(head.indexToLocFormat, glyf.glyphList.length);
     final hmtx = HorizontalMetricsTable.create(glyf);
     final hhea = HorizontalHeaderTable.create(glyf, hmtx, head);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(glyf);
     final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
-    // TODO: GSUB
+    final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, achVendID);
+    gsub.size;
 
-    // TODO: rest of tables
     return TrueTypeFont(null, {
       kGlyfTag: glyf,
+      kLocaTag: loca,
       kCmapTag: cmap,
       kMaxpTag: maxp,
       kHeadTag: head,
@@ -48,6 +50,7 @@ class TrueTypeFont {
       kHheaTag: hhea,
       kPostTag: post,
       kNameTag: name,
+      kGSUBTag: gsub,
       kOS2Tag:  os2,
     });
   }

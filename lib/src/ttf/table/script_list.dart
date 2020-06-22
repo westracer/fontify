@@ -5,8 +5,32 @@ import 'language_system.dart';
 
 const kScriptRecordSize = 6;
 
+/// Alphabetically ordered (by tag) list of script records
+const _kDefaultScriptRecordList = [
+  /// Default
+  ScriptRecord('DFLT', null),
+  
+  /// Latin
+  ScriptRecord('latn', null),
+];
+
+const _kDefaultLangSys = LanguageSystemTable(
+  0,
+  0xFFFF, // no required features
+  1,
+  [0]
+);
+
+const _kDefaultScriptTable = ScriptTable(
+  4,
+  0,
+  [],
+  [], 
+  _kDefaultLangSys
+);
+
 class ScriptRecord {
-  ScriptRecord(
+  const ScriptRecord(
     this.scriptTag,
     this.scriptOffset
   );
@@ -20,10 +44,12 @@ class ScriptRecord {
 
   final String scriptTag;
   final int scriptOffset;
+
+  int get size => kScriptRecordSize;
 }
 
 class ScriptTable {
-  ScriptTable(
+  const ScriptTable(
     this.defaultLangSysOffset,
     this.langSysCount,
     this.langSysRecords,
@@ -68,6 +94,13 @@ class ScriptTable {
 
   final List<LanguageSystemTable> langSysTables;
   final LanguageSystemTable defaultLangSys;
+
+  int get size {
+    final recordListSize = langSysRecords.fold<int>(0, (p, r) => p + r.size);
+    final tableListSize = langSysTables.fold<int>(0, (p, t) => p + t.size);
+
+    return 4 + (defaultLangSys?.size ?? 0) + recordListSize + tableListSize;
+  }
 }
 
 class ScriptListTable {
@@ -91,8 +124,25 @@ class ScriptListTable {
     return ScriptListTable(scriptCount, scriptRecords, scriptTables);
   }
 
+  factory ScriptListTable.create() {
+    final scriptCount = _kDefaultScriptRecordList.length;
+
+    return ScriptListTable(
+      scriptCount,
+      _kDefaultScriptRecordList,
+      List.generate(scriptCount, (index) => _kDefaultScriptTable)
+    );
+  }
+
   final int scriptCount;
   final List<ScriptRecord> scriptRecords;
 
   final List<ScriptTable> scriptTables;
+
+  int get size {
+    final recordListSize = scriptRecords.fold<int>(0, (p, r) => p + r.size);
+    final tableListSize = scriptTables.fold<int>(0, (p, t) => p + t.size);
+
+    return 2 + recordListSize + tableListSize;
+  }
 }

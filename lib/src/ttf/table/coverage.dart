@@ -1,9 +1,29 @@
 import 'dart:typed_data';
 
-abstract class CoverageTable {}
+import '../debugger.dart';
+
+const kDefaultCoverageTable = CoverageTableFormat1(1, 0, []);
+
+abstract class CoverageTable {
+  const CoverageTable();
+
+  factory CoverageTable.fromByteData(ByteData byteData, int offset) {
+    final format = byteData.getUint16(offset);
+
+    switch (format) {
+      case 1:
+        return CoverageTableFormat1.fromByteData(byteData, offset);
+      default:
+        TTFDebugger.debugUnsupportedTableFormat('Coverage', format);
+        return null;
+    }
+  }
+
+  int get size;
+}
 
 class CoverageTableFormat1 extends CoverageTable {
-  CoverageTableFormat1(
+  const CoverageTableFormat1(
     this.coverageFormat,
     this.glyphCount,
     this.glyphArray
@@ -30,4 +50,7 @@ class CoverageTableFormat1 extends CoverageTable {
   final int coverageFormat;
   final int glyphCount;
   final List<int> glyphArray;
+
+  @override
+  int get size => 4 + 2 * glyphCount;
 }

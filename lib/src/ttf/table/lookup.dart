@@ -1,15 +1,39 @@
 import 'dart:typed_data';
 
+import '../../utils/ttf.dart';
 import '../debugger.dart';
-
 import 'coverage.dart';
 
 const kLookupListTableSize = 4;
 
-abstract class SubstitutionSubtable {}
+const _kDefaultSubtableList = [
+  LigatureSubstitutionSubtable(1, 6, 0, [], kDefaultCoverageTable)
+];
+
+const _kDefaultLookupTableList = [
+  LookupTable(4, 0, 1, [8], 1, _kDefaultSubtableList)
+];
+
+abstract class SubstitutionSubtable {
+  const SubstitutionSubtable();
+
+  factory SubstitutionSubtable.fromByteData(
+    ByteData byteData, int offset, int lookupType
+  ) {
+    switch (lookupType) {
+      case 4:
+        return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
+      default:
+        TTFDebugger.debugUnsupportedTableFormat('Lookup', lookupType);
+        return null;
+    }
+  }
+
+  int get size;
+}
 
 class LigatureSubstitutionSubtable extends SubstitutionSubtable {
-  LigatureSubstitutionSubtable(
+  const LigatureSubstitutionSubtable(
     this.substFormat,
     this.coverageOffset,
     this.ligatureSetCount,
@@ -28,7 +52,7 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       (i) => byteData.getUint16(offset + 6 + 2 * i)
     );
 
-    final coverageTable = _parseCoverageTable(byteData, offset + coverageOffset);
+    final coverageTable = CoverageTable.fromByteData(byteData, offset + coverageOffset);
     
     return LigatureSubstitutionSubtable(
       byteData.getUint16(offset),
@@ -46,21 +70,12 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
 
   final CoverageTable coverageTable;
 
-  static CoverageTable _parseCoverageTable(ByteData byteData, int offset) {
-    final format = byteData.getUint16(offset);
-
-    switch (format) {
-      case 1:
-        return CoverageTableFormat1.fromByteData(byteData, offset);
-      default:
-        TTFDebugger.debugUnsupportedTableFormat('Coverage', format);
-        return null;
-    }
-  }
+  @override
+  int get size => 6 + 2 * ligatureSetCount + coverageTable.size;
 }
 
 class LookupTable {
-  LookupTable(
+  const LookupTable(
     this.lookupType,
     this.lookupFlag,
     this.subTableCount,
@@ -74,24 +89,30 @@ class LookupTable {
     int offset
   ) {
     final lookupType = byteData.getUint16(offset);
+    final lookupFlag = byteData.getUint16(offset + 2);
     final subTableCount = byteData.getUint16(offset + 4);
     final subtableOffsets = List.generate(
       subTableCount,
       (i) => byteData.getUint16(offset + 6 + 2 * i)
     );
+    final useMarkFilteringSet = checkBitMask(lookupFlag, 0x0010);
     final markFilteringSetOffset = offset + 6 + 2 * subTableCount;
 
     final subtables = List.generate(
       subTableCount,
-      (i) => _parseSubtable(byteData, offset + subtableOffsets[i], lookupType)
+      (i) => SubstitutionSubtable.fromByteData(
+        byteData,
+        offset + subtableOffsets[i],
+        lookupType
+      )
     );
     
     return LookupTable(
       lookupType,
-      byteData.getUint16(offset + 2),
+      lookupFlag,
       subTableCount,
       subtableOffsets,
-      byteData.getUint16(markFilteringSetOffset),
+      useMarkFilteringSet ? byteData.getUint16(markFilteringSetOffset) : null,
       subtables,
     );
   }
@@ -104,14 +125,10 @@ class LookupTable {
 
   final List<SubstitutionSubtable> subtables;
 
-  static SubstitutionSubtable _parseSubtable(ByteData byteData, int offset, int lookupType) {
-    switch (lookupType) {
-      case 4:
-        return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
-      default:
-        TTFDebugger.debugUnsupportedTableFormat('Lookup', lookupType);
-        return null;
-    }
+  int get size {
+    final subtableListSize = subtables.fold<int>(0, (p, t) => p + t.size);
+
+    return 6 + 2 * subTableCount + subtableListSize;
   }
 }
 
@@ -136,8 +153,16 @@ class LookupListTable {
     return LookupListTable(lookupCount, lookups, lookupTables);
   }
 
+  factory LookupListTable.create() => LookupListTable(1, [4], _kDefaultLookupTableList);
+
   final int lookupCount;
   final List<int> lookups;
 
   final List<LookupTable> lookupTables;
+
+  int get size {
+    final lookupListTableSize = lookupTables.fold<int>(0, (p, t) => p + t.size);
+
+    return 2 + 2 * lookupCount + lookupListTableSize;
+  }
 }
