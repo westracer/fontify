@@ -13,9 +13,6 @@ const _kNameRecordSize = 12;
 
 const _kFormat0 = 0x0;
 
-const _kPlatformMacintosh = 1;
-const _kPlatformWindows = 3;
-
 enum _NameID {
   copyright, fontFamily, fontSubfamily, uniqueID, fullFontName,
   version, postScriptName, manufacturer, description, urlVendor,
@@ -37,10 +34,10 @@ const _kNameIDmap = EnumClass<_NameID, int>({
 /// List of name record templates, sorted by platform and encoding ID
 const _kNameRecordTemplateList = [
   /// Macintosh English with Roman encoding
-  NameRecord.template(_kPlatformMacintosh, 0, 0),
+  NameRecord.template(kPlatformMacintosh, 0, 0),
 
   /// Windows English (US) with UTF-16BE encoding
-  NameRecord.template(_kPlatformWindows, 0, 0x0409),
+  NameRecord.template(kPlatformWindows, 0, 0x0409),
 ];
 
 class NameRecord {

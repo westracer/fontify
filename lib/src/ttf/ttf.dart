@@ -34,12 +34,14 @@ class TrueTypeFont {
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(glyf);
-    // TODO: GSUB, cmap
-    final os2  = OS2Table.create(hmtx, head, hhea, achVendID);
+    final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
+    // TODO: GSUB, cmap format 12
+    final os2  = OS2Table.create(hmtx, head, hhea, cmap, achVendID);
 
     // TODO: rest of tables
     return TrueTypeFont(null, {
       kGlyfTag: glyf,
+      kCmapTag: cmap,
       kMaxpTag: maxp,
       kHeadTag: head,
       kHmtxTag: hmtx,

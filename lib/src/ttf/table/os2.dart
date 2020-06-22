@@ -6,6 +6,7 @@ import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
+import 'cmap.dart';
 import 'head.dart';
 import 'hhea.dart';
 import 'hmtx.dart';
@@ -143,9 +144,10 @@ class OS2Table extends FontTable {
   }
 
   factory OS2Table.create(
-    HorizontalMetricsTable hmtx, 
+    HorizontalMetricsTable hmtx,
     HeaderTable head,
-    HorizontalHeaderTable hhea, 
+    HorizontalHeaderTable hhea,
+    CharacterToGlyphTable cmap,
     String achVendID, {
     int version = _kVersion5,
   }) {
@@ -168,6 +170,8 @@ class OS2Table extends FontTable {
     final superscriptYoffset = (height * _kDefaultSuperscriptRelativeYoffset).round();
     final strikeoutSize = (height * _kDefaultStrikeoutRelativeSize).round();
     final strikeoutOffset = (height * _kDefaultStrikeoutRelativeOffset).round();
+
+    final cmapFormat4subtable = cmap.data.whereType<CmapSegmentMappingToDeltaValuesTable>().first;
 
     return OS2Table._(
       null,
@@ -194,8 +198,8 @@ class OS2Table extends FontTable {
       0,
       asciiAchVendID,
       0x40 | 0x80, // REGULAR and USE_TYPO_METRICS
-      0,           // TODO: get first char from cmap
-      0,           // TODO: get last char from cmap
+      cmapFormat4subtable.startCode.first,
+      cmapFormat4subtable.endCode.last,
       hhea.ascender,
       hhea.descender,
       hhea.lineGap,

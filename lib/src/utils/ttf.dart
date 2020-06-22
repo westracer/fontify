@@ -16,6 +16,10 @@ const String kMaxpTag = 'maxp';
 const String kNameTag = 'name';
 const String kPostTag = 'post';
 
+const kPlatformUnicode   = 0;
+const kPlatformMacintosh = 1;
+const kPlatformWindows   = 3;
+
 final _longDateTimeStart = DateTime.parse('1904-01-01T00:00:00.000Z');
 
 String convertTagToString(Uint8List bytes) => 
