@@ -48,6 +48,7 @@ class GlyphDataTable extends FontTable {
   final List<SimpleGlyph> glyphList;
 
   // TODO: subtract last glyph's size?
+  @override
   int get size => glyphList.fold<int>(0, (p, v) => p + v.size);
 
   int get maxPoints =>
@@ -58,4 +59,10 @@ class GlyphDataTable extends FontTable {
 
   int get maxSizeOfInstructions =>
     glyphList.fold<int>(0, (p, g) => math.max(p, g.instructions.length));
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
 }

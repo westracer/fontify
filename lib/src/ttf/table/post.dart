@@ -220,7 +220,14 @@ class PostScriptTable extends FontTable {
   final PostScriptTableHeader header;
   final PostScriptData data;
 
+  @override
   int get size => header.size + data.size;
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
 }
 
 bool _isGlyphNameStandard(int glyphIndex) => 

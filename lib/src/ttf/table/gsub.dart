@@ -115,6 +115,13 @@ class GlyphSubstitutionTable extends FontTable {
   final FeatureListTable featureListTable;
   final LookupListTable lookupListTable;
 
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
+
+  @override
   int get size => 
     header.size 
     + scriptListTable.size 

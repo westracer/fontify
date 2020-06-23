@@ -89,5 +89,12 @@ class HorizontalHeaderTable extends FontTable {
   final int	metricDataFormat;
   final int	numberOfHMetrics;
 
+  @override
   int get size => _kHheaTableSize;
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
 }

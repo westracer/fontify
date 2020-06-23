@@ -9,6 +9,11 @@ import 'table_record_entry.dart';
 const _kVersion0 = 0x00005000;
 const _kVersion1 = 0x00010000;
 
+const _kTableSizeForVersion = {
+  _kVersion0: 6,
+  _kVersion1: 32,
+};
+
 class MaximumProfileTable extends FontTable {
   MaximumProfileTable.v0(
     TableRecordEntry entry,
@@ -122,4 +127,13 @@ class MaximumProfileTable extends FontTable {
   final int maxSizeOfInstructions;
   final int maxComponentElements;
   final int maxComponentDepth;
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encodeToBinary
+    throw UnimplementedError();
+  }
+
+  @override
+  int get size => _kTableSizeForVersion[version];
 }

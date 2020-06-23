@@ -481,5 +481,15 @@ class CharacterToGlyphTable extends FontTable {
     }
 
     return segmentList;
-  } 
+  }
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
+
+  @override
+  // TODO: implement size
+  int get size => throw UnimplementedError(); 
 }

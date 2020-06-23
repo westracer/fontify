@@ -137,5 +137,12 @@ class HeaderTable extends FontTable {
   final int indexToLocFormat;
   final int glyphDataFormat;
 
+  @override
   int get size => _kHeaderTableSize;
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
 }

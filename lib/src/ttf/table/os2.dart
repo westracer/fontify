@@ -271,6 +271,7 @@ class OS2Table extends FontTable {
   final int usLowerOpticalPointSize;
   final int usUpperOpticalPointSize;
 
+  @override
   int get size {
     int size = 0;
     
@@ -292,5 +293,11 @@ class OS2Table extends FontTable {
 
     final widthSum = hmtx.hMetrics.fold<int>(0, (p, m) => p + m.advanceWidth);
     return (widthSum / hmtx.hMetrics.length).round();
+  }
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
   }
 }

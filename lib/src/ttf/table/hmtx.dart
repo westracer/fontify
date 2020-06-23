@@ -72,6 +72,7 @@ class HorizontalMetricsTable extends FontTable {
   final List<int> leftSideBearings;
 
   // TODO: subtract _kLongHorMetricSize?
+  @override
   int get size => hMetrics.length * _kLongHorMetricSize + leftSideBearings.length * 2;  
 
   int get advanceWidthMax => hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
@@ -102,5 +103,11 @@ class HorizontalMetricsTable extends FontTable {
     }
 
     return maxExtent;
+  }
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
   }
 }

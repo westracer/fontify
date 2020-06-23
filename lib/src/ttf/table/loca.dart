@@ -41,5 +41,12 @@ class IndexToLocationTable extends FontTable {
   final List<int> glyphOffsets;
   final bool _isShort;
 
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encode
+    throw UnimplementedError();
+  }
+
+  @override
   int get size => glyphOffsets.length * (_isShort ? 2 : 4);
 }

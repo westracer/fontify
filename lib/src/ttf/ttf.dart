@@ -13,6 +13,7 @@ class TrueTypeFont {
   TrueTypeFont(this.offsetTable, this.tableMap);
 
   // TODO: introduce generic glyph class later
+  // TODO: pass list of char codes
   factory TrueTypeFont.fromGlyphs({
     @required List<SimpleGlyph> glyphList, 
     @required String fontName,
@@ -38,9 +39,8 @@ class TrueTypeFont {
     final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, achVendID);
-    gsub.size;
 
-    return TrueTypeFont(null, {
+    final tables = {
       kGlyfTag: glyf,
       kLocaTag: loca,
       kCmapTag: cmap,
@@ -52,7 +52,11 @@ class TrueTypeFont {
       kNameTag: name,
       kGSUBTag: gsub,
       kOS2Tag:  os2,
-    });
+    };
+
+    final offsetTable = OffsetTable.create(tables.length);
+
+    return TrueTypeFont(offsetTable, tables);
   }
   
   final OffsetTable offsetTable;
