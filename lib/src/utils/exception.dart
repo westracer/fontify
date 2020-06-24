@@ -6,3 +6,14 @@ class TableDataFormatException implements Exception {
   @override
   String toString() => 'Table data format exception: $message';
 }
+
+class ChecksumException implements Exception {
+  ChecksumException(this.entityName);
+  ChecksumException.font() : entityName = 'font';
+  ChecksumException.table(String tableName) : entityName = '$tableName table';
+
+  final String entityName;
+
+  @override
+  String toString() => 'Wrong checksum for $entityName';
+}

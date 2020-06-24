@@ -14,7 +14,7 @@ void main() {
 
   group('Reader', () {
     setUpAll(() {
-      font = TTFReader(File(_kTestFontAssetPath)).read();
+      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
     });
 
     test('Offset table', () {
@@ -316,11 +316,11 @@ void main() {
     TrueTypeFont recreatedFont;
 
     setUpAll(() {
-      font = TTFReader(File(_kTestFontAssetPath)).read();
+      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
 
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
       
-      recreatedFont = TrueTypeFont.fromGlyphs(
+      recreatedFont = TrueTypeFont.createFromGlyphs(
         glyphList: font.glyf.glyphList,
         glyphNameList: glyphNameList,
         fontName: 'TestFont',

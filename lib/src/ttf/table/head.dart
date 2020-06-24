@@ -8,6 +8,8 @@ import 'abstract.dart';
 import 'all.dart';
 import 'table_record_entry.dart';
 
+const kChecksumMagicNumber = 0xB1B0AFBA;
+
 const _kMagicNumber = 0x5F0F3CF5;
 const _kMacStyleRegular = 0;
 const _kIndexToLocFormatShort = 0;

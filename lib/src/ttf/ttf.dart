@@ -1,20 +1,34 @@
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 
+import '../common/codable/binary.dart';
 import '../utils/exception.dart';
 import '../utils/ttf.dart';
 
 import 'defaults.dart';
+import 'reader.dart';
 import 'table/abstract.dart';
 import 'table/all.dart';
 import 'table/glyph/simple.dart';
 import 'table/offset.dart';
 
-class TrueTypeFont {
+/// Ordered list of table tags for encoding
+const _kTableTagsToEncode = {
+  kGSUBTag, kOS2Tag, kCmapTag, kGlyfTag, kHeadTag, kHheaTag, kHmtxTag, kLocaTag, kMaxpTag, kNameTag, kPostTag
+};
+
+class TrueTypeFont implements BinaryCodable {
   TrueTypeFont(this.offsetTable, this.tableMap);
+
+  factory TrueTypeFont.fromByteData(ByteData byteData) {
+    final reader = TTFReader.fromByteData(byteData);
+    return reader.read();
+  }
 
   // TODO: introduce generic glyph class later
   // TODO: pass list of char codes
-  factory TrueTypeFont.fromGlyphs({
+  factory TrueTypeFont.createFromGlyphs({
     @required List<SimpleGlyph> glyphList, 
     @required String fontName,
     List<String> glyphNameList,
@@ -73,4 +87,31 @@ class TrueTypeFont {
   CharacterToGlyphTable get cmap => tableMap[kCmapTag] as CharacterToGlyphTable;
   HorizontalHeaderTable get hhea => tableMap[kHheaTag] as HorizontalHeaderTable;
   HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
+
+  @override
+  ByteData encodeToBinary() {
+    // TODO: implement encodeToBinary
+    int currentEntryOffset = kOffsetTableLength;
+    int currentTableOffset = kOffsetTableLength + entryListSize;
+    
+    final encodedRecordList = <ByteData>[];
+    final encodedTableList = <ByteData>[];
+
+    // TODO: align every table (multiple of four bytes)
+    for (final tag in _kTableTagsToEncode) {
+      final encodedTable = tableMap[tag].encodeToBinary();
+      // final encodedRecord = TableRecordEntry(tag, checkSum, offset, length);
+    }
+
+    final encodedOffsetTable = offsetTable.encodeToBinary();
+
+    throw UnimplementedError();
+  }
+
+  int get entryListSize => kTableRecordEntryLength * tableMap.length;
+
+  int get tableListSize => tableMap.values.fold<int>(0, (p, e) => p + e.size);
+
+  @override
+  int get size => kOffsetTableLength + entryListSize + tableListSize;
 }

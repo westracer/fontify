@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import '../utils/exception.dart';
 import '../utils/ttf.dart';
 
 import 'debugger.dart';
@@ -8,8 +9,10 @@ import 'table/all.dart';
 import 'ttf.dart';
 
 class TTFReader {
-  TTFReader(File file) 
-    : _byteData = ByteData.view(file.readAsBytesSync().buffer);
+  TTFReader.fromFile(File file) 
+    : _byteData = ByteData.sublistView(file.readAsBytesSync());
+
+  TTFReader.fromByteData(this._byteData);
 
   final ByteData _byteData;
 
@@ -28,6 +31,8 @@ class TTFReader {
   int get numGlyphs => _font.maxp.numGlyphs;
 
   /// Reads an OpenType font file and returns [TrueTypeFont] instance
+  /// 
+  /// Throws [ChecksumException] if calculated checksum is different than expected
   TrueTypeFont read() {
     _tableMap.clear();
 
@@ -38,6 +43,8 @@ class TTFReader {
 
     _readTableRecordEntries(entryMap);
     _readTables(entryMap);
+
+    _validateChecksums();
 
     return _font;
   }
@@ -58,7 +65,11 @@ class TTFReader {
 
   void _readTables(Map<String, TableRecordEntry> entryMap) {
     for (final tag in _tagsParseOrder) {
-      _tableMap[tag] = _createTableFromEntry(entryMap[tag]);
+      final table = _createTableFromEntry(entryMap[tag]);
+
+      if (table != null) {
+        _tableMap[tag] = table;
+      }
     }
   }
   
@@ -89,6 +100,33 @@ class TTFReader {
       default:
         TTFDebugger.debugUnsupportedTable(entry.tag);
         return null;
+    }
+  }
+
+  /// Validates tables' and font's checksum
+  ///
+  /// Throws [ChecksumException] if calculated checksum is different than expected
+  void _validateChecksums() {
+    final byteDataCopy = ByteData.sublistView(Uint8List.fromList([..._byteData.buffer.asUint8List().toList()]))
+      ..setUint32(_font.head.entry.offset + 8, 0); // Setting head table's checkSumAdjustment to 0
+
+    for (final table in _font.tableMap.values) {
+      final tableOffset = table.entry.offset;
+      final tableLength = table.entry.length;
+
+      final tableByteData = ByteData.sublistView(byteDataCopy, tableOffset, tableOffset + tableLength);
+      final actualChecksum = calculateTableChecksum(tableByteData);
+      final expectedChecksum = table.entry.checkSum;
+
+      if (actualChecksum != expectedChecksum) {
+        throw ChecksumException.table(table.entry.tag);
+      }
+    }
+
+    final actualFontChecksum = calculateFontChecksum(byteDataCopy);
+
+    if (_font.head.checkSumAdjustment != actualFontChecksum) {
+      throw ChecksumException.font();
     }
   }
 }
