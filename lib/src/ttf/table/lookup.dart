@@ -30,6 +30,8 @@ abstract class SubstitutionSubtable {
   }
 
   int get size;
+
+  int get maxContext;
 }
 
 class LigatureSubstitutionSubtable extends SubstitutionSubtable {
@@ -72,6 +74,12 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
 
   @override
   int get size => 6 + 2 * ligatureSetCount + coverageTable.size;
+
+  /// NOTE: Should be calculated considering 'componentCount' of ligatures.
+  /// 
+  /// Not supported yet - generating 0 ligature sets by default.
+  @override
+  int get maxContext => 0;
 }
 
 class LookupTable {

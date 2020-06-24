@@ -52,7 +52,7 @@ class TrueTypeFont implements BinaryCodable {
     final maxp = MaximumProfileTable.create(glyf);
     final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
-    final os2  = OS2Table.create(hmtx, head, hhea, cmap, achVendID);
+    final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
     final tables = {
       kGlyfTag: glyf,

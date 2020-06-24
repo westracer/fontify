@@ -7,6 +7,7 @@ import '../debugger.dart';
 
 import 'abstract.dart';
 import 'cmap.dart';
+import 'gsub.dart';
 import 'head.dart';
 import 'hhea.dart';
 import 'hmtx.dart';
@@ -148,6 +149,7 @@ class OS2Table extends FontTable {
     HeaderTable head,
     HorizontalHeaderTable hhea,
     CharacterToGlyphTable cmap,
+    GlyphSubstitutionTable gsub,
     String achVendID, {
     int version = _kVersion5,
   }) {
@@ -213,7 +215,7 @@ class OS2Table extends FontTable {
       !isV4 ? null : 0,
       !isV4 ? null : 0,
       !isV4 ? null : 0x20, // Space break char
-      !isV4 ? null : 0,    // TODO: calculate after GSUB table
+      !isV4 ? null : _getMaxContext(gsub),
       
       /// For fonts that were not designed for multiple optical-size variants,
       /// usLowerOpticalPointSize should be set to 0 (zero),
@@ -293,6 +295,23 @@ class OS2Table extends FontTable {
 
     final widthSum = hmtx.hMetrics.fold<int>(0, (p, m) => p + m.advanceWidth);
     return (widthSum / hmtx.hMetrics.length).round();
+  }
+
+  // NOTE: GPOS is also used in calculation, not supported yet
+  static int _getMaxContext(GlyphSubstitutionTable gsub) {
+    if (gsub.lookupListTable.lookupTables.isEmpty) {
+      return 0;
+    }
+    
+    int maxContext = 0;
+
+    for (final lookup in gsub.lookupListTable.lookupTables) {
+      for (final subtable in lookup.subtables) {
+        maxContext = math.max(maxContext, subtable.maxContext);
+      }
+    }
+
+    return maxContext;
   }
 
   @override
