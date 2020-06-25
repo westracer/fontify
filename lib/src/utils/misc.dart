@@ -10,3 +10,9 @@ int combineHashCode(int hashFirst, int hashOther) {
   hash = hash * 31 + hashOther;
   return hash;
 }
+
+extension MockableDateTime on DateTime {
+  static DateTime mockedDate;
+
+  static DateTime now() => mockedDate ?? DateTime.now();
+}

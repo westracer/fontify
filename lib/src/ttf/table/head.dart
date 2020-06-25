@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../utils/exception.dart';
+import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 
 import 'abstract.dart';
@@ -76,8 +77,8 @@ class HeaderTable extends FontTable {
       data.getUint32(entry.offset + 12),
       data.getUint16(entry.offset + 16),
       data.getUint16(entry.offset + 18),
-      getDateTime(data.getInt64(entry.offset + 20)),
-      getDateTime(data.getInt64(entry.offset + 28)),
+      data.getDateTime(entry.offset + 20),
+      data.getDateTime(entry.offset + 28),
       data.getInt16(entry.offset + 36),
       data.getInt16(entry.offset + 38),
       data.getInt16(entry.offset + 40),
@@ -94,7 +95,7 @@ class HeaderTable extends FontTable {
       throw TableDataFormatException('revision must not be null');
     }
 
-    final now = DateTime.now();
+    final now = MockableDateTime.now();
     final glyphList = glyf.glyphList;
 
     final xMin = glyphList.fold<int>(0, (prev, glyph) => math.min(prev, glyph.header.xMin));
@@ -144,7 +145,24 @@ class HeaderTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    byteData
+      ..setUint16(offset, majorVersion)
+      ..setUint16(offset + 2, minorVersion)
+      ..setInt32(offset + 4, fontRevision.int32value)
+      ..setUint32(offset + 8, 3043242535)
+      ..setUint32(offset + 12, magicNumber)
+      ..setUint16(offset + 16, flags)
+      ..setUint16(offset + 18, unitsPerEm)
+      ..setDateTime(offset + 20, created)
+      ..setDateTime(offset + 28, modified)
+      ..setInt16(offset + 36, xMin)
+      ..setInt16(offset + 38, yMin)
+      ..setInt16(offset + 40, xMax)
+      ..setInt16(offset + 42, yMax)
+      ..setUint16(offset + 44, macStyle)
+      ..setUint16(offset + 46, lowestRecPPEM)
+      ..setInt16(offset + 48, fontDirectionHint)
+      ..setInt16(offset + 50, indexToLocFormat)
+      ..setInt16(offset + 52, glyphDataFormat);
   }
 }

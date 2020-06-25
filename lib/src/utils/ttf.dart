@@ -31,12 +31,6 @@ Uint8List convertStringToTag(String string) {
   return Uint8List.fromList(string.codeUnits);
 }
 
-DateTime getDateTime(int seconds) => 
-  _longDateTimeStart.add(Duration(seconds: seconds));
-
-int getLongDateTime(DateTime dateTime) => 
-  dateTime.difference(_longDateTimeStart).inSeconds;
-
 bool checkBitMask(int value, int mask) => 
   (value & mask) == mask;
 
@@ -79,7 +73,7 @@ int calculateFontChecksum(ByteData byteData) {
   return (kChecksumMagicNumber - calculateTableChecksum(byteData)).toUnsigned(32);
 }
 
-int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil();
+int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil() * 4;
 
 extension TTFByteDateExt on ByteData {
   int getFixed(int offset) => getUint16(offset);
@@ -93,6 +87,14 @@ extension TTFByteDateExt on ByteData {
   void setTag(int offset, String tag) {
     int currentOffset = offset;
     convertStringToTag(tag).forEach((b) => setUint8(currentOffset++, b));
+  }
+
+  DateTime getDateTime(int offset) {
+    return _longDateTimeStart.add(Duration(seconds: getInt64(offset)));
+  }
+
+  void setDateTime(int offset, DateTime dateTime) {
+    setInt64(offset, dateTime.difference(_longDateTimeStart).inSeconds);
   }
 }
 
