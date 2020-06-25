@@ -38,7 +38,7 @@ class ScriptRecord implements BinaryCodable {
 
   factory ScriptRecord.fromByteData(ByteData byteData, int offset) {    
     return ScriptRecord(
-      convertTagToString(Uint8List.view(byteData.buffer, offset, 4)),
+      byteData.getTag(offset),
       byteData.getUint16(offset + 4),
     );
   }

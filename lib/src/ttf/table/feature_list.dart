@@ -21,7 +21,7 @@ class FeatureRecord implements BinaryCodable {
 
   factory FeatureRecord.fromByteData(ByteData byteData, int offset) {    
     return FeatureRecord(
-      convertTagToString(Uint8List.view(byteData.buffer, offset, 4)),
+      byteData.getTag(offset),
       byteData.getUint16(offset + 4),
     );
   }

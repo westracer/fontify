@@ -10,7 +10,7 @@ class TableRecordEntry implements BinaryCodable {
 
   factory TableRecordEntry.fromByteData(ByteData data, int entryOffset) =>
     TableRecordEntry(
-      convertTagToString(Uint8List.view(data.buffer, entryOffset, 4)), 
+      data.getTag(entryOffset), 
       data.getUint32(entryOffset + 4), 
       data.getUint32(entryOffset + 4 + 4), 
       data.getUint32(entryOffset + 4 + 8)

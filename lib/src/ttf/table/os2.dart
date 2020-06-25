@@ -120,7 +120,7 @@ class OS2Table extends FontTable {
       byteData.getUint32(entry.offset + 46),
       byteData.getUint32(entry.offset + 50),
       byteData.getUint32(entry.offset + 54),
-      convertTagToString(Uint8List.view(byteData.buffer, entry.offset + 58, 4)),
+      byteData.getTag(entry.offset + 58),
       byteData.getUint16(entry.offset + 62),
       byteData.getUint16(entry.offset + 64),
       byteData.getUint16(entry.offset + 66),
