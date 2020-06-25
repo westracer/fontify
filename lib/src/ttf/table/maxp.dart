@@ -130,8 +130,28 @@ class MaximumProfileTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encodeToBinary
-    throw UnimplementedError();
+    byteData
+      ..setInt32(offset, version)
+      ..setUint16(offset + 4, numGlyphs);
+
+    if (version == _kVersion1) {
+      byteData
+        ..setUint16(entry.offset + 6, maxPoints)
+        ..setUint16(entry.offset + 8, maxContours)
+        ..setUint16(entry.offset + 10, maxCompositePoints)
+        ..setUint16(entry.offset + 12, maxCompositeContours)
+        ..setUint16(entry.offset + 14, maxZones)
+        ..setUint16(entry.offset + 16, maxTwilightPoints)
+        ..setUint16(entry.offset + 18, maxStorage)
+        ..setUint16(entry.offset + 20, maxFunctionDefs)
+        ..setUint16(entry.offset + 22, maxInstructionDefs)
+        ..setUint16(entry.offset + 24, maxStackElements)
+        ..setUint16(entry.offset + 26, maxSizeOfInstructions)
+        ..setUint16(entry.offset + 28, maxComponentElements)
+        ..setUint16(entry.offset + 30, maxComponentDepth);
+    } else {
+      TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
+    }
   }
 
   @override

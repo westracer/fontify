@@ -77,8 +77,16 @@ int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil() * 4;
 
 extension TTFByteDateExt on ByteData {
   int getFixed(int offset) => getUint16(offset);
+
+  void setFixed(int offset, int value) => setUint16(offset, value);
+  
   int getFWord(int offset) => getInt16(offset);
+
+  void setFWord(int offset, int value) => setInt16(offset, value);
+
   int getUFWord(int offset) => getUint16(offset);
+
+  void setUFWord(int offset, int value) => setUint16(offset, value);
 
   String getTag(int offset) {
     return convertTagToString(Uint8List.view(buffer, offset, 4));

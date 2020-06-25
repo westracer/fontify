@@ -94,7 +94,20 @@ class HorizontalHeaderTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    byteData
+      ..setUint16(offset, majorVersion)
+      ..setUint16(offset + 2, minorVersion)
+      ..setFWord(offset + 4, ascender)
+      ..setFWord(offset + 6, descender)
+      ..setFWord(offset + 8, lineGap)
+      ..setUFWord(offset + 10, advanceWidthMax)
+      ..setFWord(offset + 12, minLeftSideBearing)
+      ..setFWord(offset + 14, minRightSideBearing)
+      ..setFWord(offset + 16, xMaxExtent)
+      ..setInt16(offset + 18, caretSlopeRise)
+      ..setInt16(offset + 20, caretSlopeRun)
+      ..setInt16(offset + 22, caretOffset)
+      ..setInt16(offset + 32, metricDataFormat)
+      ..setUint16(offset + 34, numberOfHMetrics);
   }
 }
