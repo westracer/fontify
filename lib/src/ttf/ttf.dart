@@ -15,7 +15,7 @@ import 'table/offset.dart';
 
 /// Ordered list of table tags for encoding
 const _kTableTagsToEncode = {
-  kGSUBTag, kOS2Tag, kCmapTag, kGlyfTag, kHeadTag, kHheaTag, kHmtxTag, kLocaTag, kMaxpTag, kNameTag, kPostTag
+  kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kNameTag, kPostTag, kGSUBTag
 };
 
 class TrueTypeFont implements BinaryCodable {
@@ -89,28 +89,36 @@ class TrueTypeFont implements BinaryCodable {
   HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encodeToBinary
     int currentEntryOffset = kOffsetTableLength;
     int currentTableOffset = kOffsetTableLength + entryListSize;
-    
-    final encodedRecordList = <ByteData>[];
-    final encodedTableList = <ByteData>[];
 
-    // TODO: align every table (multiple of four bytes)
     for (final tag in _kTableTagsToEncode) {
-      final encodedTable = tableMap[tag].encodeToBinary();
-      // final encodedRecord = TableRecordEntry(tag, checkSum, offset, length);
+      try {
+        final table = tableMap[tag]
+          ..encodeToBinary(byteData, currentTableOffset);
+
+        final tableSize = table.size;
+        
+        final encodedTable = ByteData.sublistView(byteData, currentTableOffset, currentTableOffset + tableSize);
+        table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable), currentTableOffset, tableSize);
+
+        table.entry.encodeToBinary(byteData, currentEntryOffset);
+
+        currentEntryOffset += kTableRecordEntryLength;
+        currentTableOffset += getPaddedTableSize(tableSize);
+      } on UnimplementedError {
+        // TODO: remove when done
+      }
     }
 
-    final encodedOffsetTable = offsetTable.encodeToBinary();
-
-    throw UnimplementedError();
+    offsetTable.encodeToBinary(byteData, offset);
   }
 
   int get entryListSize => kTableRecordEntryLength * tableMap.length;
 
-  int get tableListSize => tableMap.values.fold<int>(0, (p, e) => p + e.size);
+  int get tableListSize => tableMap.values.fold<int>(0, (p, t) => p + getPaddedTableSize(t.size));
 
   @override
   int get size => kOffsetTableLength + entryListSize + tableListSize;

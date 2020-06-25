@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
 import 'coverage.dart';
@@ -11,10 +12,10 @@ const _kDefaultSubtableList = [
 ];
 
 const _kDefaultLookupTableList = [
-  LookupTable(4, 0, 1, [8], 1, _kDefaultSubtableList)
+  LookupTable(4, 0, 1, [8], null, _kDefaultSubtableList)
 ];
 
-abstract class SubstitutionSubtable {
+abstract class SubstitutionSubtable implements BinaryCodable {
   const SubstitutionSubtable();
 
   factory SubstitutionSubtable.fromByteData(
@@ -28,8 +29,6 @@ abstract class SubstitutionSubtable {
         return null;
     }
   }
-
-  int get size;
 
   int get maxContext;
 }
@@ -80,9 +79,25 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
   /// Not supported yet - generating 0 ligature sets by default.
   @override
   int get maxContext => 0;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    final coverageOffset = 6 + 2 * ligatureSetCount;
+
+    byteData
+      ..setUint16(offset, substFormat)
+      ..setUint16(offset + 2, coverageOffset)
+      ..setUint16(offset + 4, ligatureSetCount);
+
+    for (int i = 0; i < ligatureSetCount; i++) {
+      byteData.setInt16(offset + 6 + 2 * i, ligatureSetOffsets[i]);
+    }
+
+    coverageTable.encodeToBinary(byteData, offset + coverageOffset);
+  }
 }
 
-class LookupTable {
+class LookupTable implements BinaryCodable {
   const LookupTable(
     this.lookupType,
     this.lookupFlag,
@@ -103,7 +118,7 @@ class LookupTable {
       subTableCount,
       (i) => byteData.getUint16(offset + 6 + 2 * i)
     );
-    final useMarkFilteringSet = checkBitMask(lookupFlag, 0x0010);
+    final useMarkFilteringSet = _useMarkFilteringSet(lookupFlag);
     final markFilteringSetOffset = offset + 6 + 2 * subTableCount;
 
     final subtables = List.generate(
@@ -133,14 +148,45 @@ class LookupTable {
 
   final List<SubstitutionSubtable> subtables;
 
+  static bool _useMarkFilteringSet(int lookupFlag) =>
+    checkBitMask(lookupFlag, 0x0010);
+
+  @override
   int get size {
     final subtableListSize = subtables.fold<int>(0, (p, t) => p + t.size);
 
     return 6 + 2 * subTableCount + subtableListSize;
   }
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setUint16(offset, lookupType)
+      ..setUint16(offset + 2, lookupFlag)
+      ..setUint16(offset + 4, subTableCount);
+
+    int currentRelativeOffset = 6 + 2 * subTableCount;
+    final subtableOffsetList = <int>[];
+
+    for (final subtable in subtables) {
+      subtable.encodeToBinary(byteData, offset + currentRelativeOffset);
+      subtableOffsetList.add(currentRelativeOffset);
+      currentRelativeOffset += subtable.size;
+    }
+
+    for (int i = 0; i < subTableCount; i++) {
+      byteData.setInt16(offset + 6 + 2 * i, subtableOffsetList[i]);
+    }
+
+    final useMarkFilteringSet = _useMarkFilteringSet(lookupFlag);
+
+    if (useMarkFilteringSet) {
+      byteData.setUint16(offset + 6 + 2 * subTableCount, markFilteringSet);
+    }
+  }
 }
 
-class LookupListTable {
+class LookupListTable implements BinaryCodable {
   LookupListTable(
     this.lookupCount,
     this.lookups,
@@ -168,9 +214,25 @@ class LookupListTable {
 
   final List<LookupTable> lookupTables;
 
+  @override
   int get size {
     final lookupListTableSize = lookupTables.fold<int>(0, (p, t) => p + t.size);
 
     return 2 + 2 * lookupCount + lookupListTableSize;
+  }
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData.setUint16(offset, lookupCount);
+
+    int tableRelativeOffset = 2 + 2 * lookupCount;
+
+    for (int i = 0; i < lookupCount; i++) {
+      final subtable = lookupTables[i]
+        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+
+      byteData.setUint16(offset + 2 + 2 * i, tableRelativeOffset);
+      tableRelativeOffset += subtable.size;
+    }
   }
 }

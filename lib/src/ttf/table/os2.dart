@@ -315,7 +315,7 @@ class OS2Table extends FontTable {
   }
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }

@@ -224,7 +224,7 @@ class PostScriptTable extends FontTable {
   int get size => header.size + data.size;
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }

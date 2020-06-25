@@ -129,7 +129,7 @@ class MaximumProfileTable extends FontTable {
   final int maxComponentDepth;
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encodeToBinary
     throw UnimplementedError();
   }

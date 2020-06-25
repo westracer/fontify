@@ -9,5 +9,5 @@ abstract class FontTable implements BinaryCodable {
 
   final int offset;
   final int length;
-  final TableRecordEntry entry;
+  TableRecordEntry entry;
 }

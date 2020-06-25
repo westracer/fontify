@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
 import 'abstract.dart';
@@ -8,7 +9,7 @@ import 'lookup.dart';
 import 'script_list.dart';
 import 'table_record_entry.dart';
 
-class GlyphSubstitutionTableHeader {
+class GlyphSubstitutionTableHeader implements BinaryCodable {
   GlyphSubstitutionTableHeader(
     this.majorVersion,
     this.minorVersion,
@@ -55,14 +56,29 @@ class GlyphSubstitutionTableHeader {
 
   final int majorVersion;
   final int minorVersion;
-  final int scriptListOffset;
-  final int featureListOffset;
-  final int lookupListOffset;
-  final int featureVariationsOffset;
+  int scriptListOffset;
+  int featureListOffset;
+  int lookupListOffset;
+  int featureVariationsOffset;
 
   bool get isV10 => majorVersion == 1 && minorVersion == 0;
   
+  @override
   int get size => isV10 ? 10 : 12;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setUint16(offset, majorVersion)
+      ..setUint16(offset + 2, minorVersion)
+      ..setUint16(offset + 4, scriptListOffset)
+      ..setUint16(offset + 6, featureListOffset)
+      ..setUint16(offset + 8, lookupListOffset);
+
+    if (!isV10) {
+      byteData.getUint32(offset + 10);
+    }
+  }
 }
 
 class GlyphSubstitutionTable extends FontTable {
@@ -116,9 +132,22 @@ class GlyphSubstitutionTable extends FontTable {
   final LookupListTable lookupListTable;
 
   @override
-  ByteData encodeToBinary() {
-    // TODO: implement encode
-    throw UnimplementedError();
+  void encodeToBinary(ByteData byteData, int offset) {
+    int relativeOffset = header.size;
+
+    scriptListTable.encodeToBinary(byteData, offset + relativeOffset);
+    header.scriptListOffset = relativeOffset;
+    relativeOffset += scriptListTable.size;
+
+    featureListTable.encodeToBinary(byteData, offset + relativeOffset);
+    header.featureListOffset = relativeOffset;
+    relativeOffset += featureListTable.size;
+
+    lookupListTable.encodeToBinary(byteData, offset + relativeOffset);
+    header.lookupListOffset = relativeOffset;
+    relativeOffset += lookupListTable.size;
+
+    header.encodeToBinary(byteData, offset);
   }
 
   @override

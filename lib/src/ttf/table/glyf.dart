@@ -61,7 +61,7 @@ class GlyphDataTable extends FontTable {
     glyphList.fold<int>(0, (p, g) => math.max(p, g.instructions.length));
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }

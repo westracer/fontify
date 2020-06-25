@@ -26,6 +26,11 @@ final _longDateTimeStart = DateTime.parse('1904-01-01T00:00:00.000Z');
 String convertTagToString(Uint8List bytes) => 
   String.fromCharCodes(bytes);
 
+Uint8List convertStringToTag(String string) {
+  assert(string.length == 4, "Tag's length must be equal 4");
+  return Uint8List.fromList(string.codeUnits);
+}
+
 DateTime getDateTime(int seconds) => 
   _longDateTimeStart.add(Duration(seconds: seconds));
 
@@ -74,10 +79,21 @@ int calculateFontChecksum(ByteData byteData) {
   return (kChecksumMagicNumber - calculateTableChecksum(byteData)).toUnsigned(32);
 }
 
+int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil();
+
 extension TTFByteDateExt on ByteData {
   int getFixed(int offset) => getUint16(offset);
   int getFWord(int offset) => getInt16(offset);
   int getUFWord(int offset) => getUint16(offset);
+
+  String getTag(int offset) {
+    return convertTagToString(Uint8List.view(buffer, offset, 4));
+  }
+  
+  void setTag(int offset, String tag) {
+    int currentOffset = offset;
+    convertStringToTag(tag).forEach((b) => setUint8(currentOffset++, b));
+  }
 }
 
 extension TTFStringExt on String {

@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../debugger.dart';
 
 const kDefaultCoverageTable = CoverageTableFormat1(1, 0, []);
 
-abstract class CoverageTable {
+abstract class CoverageTable implements BinaryCodable {
   const CoverageTable();
 
   factory CoverageTable.fromByteData(ByteData byteData, int offset) {
@@ -18,8 +19,6 @@ abstract class CoverageTable {
         return null;
     }
   }
-
-  int get size;
 }
 
 class CoverageTableFormat1 extends CoverageTable {
@@ -53,4 +52,15 @@ class CoverageTableFormat1 extends CoverageTable {
 
   @override
   int get size => 4 + 2 * glyphCount;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setUint16(offset, coverageFormat)
+      ..setUint16(offset + 2, glyphCount);
+
+    for (int i = 0; i < glyphCount; i++) {
+      byteData.setInt16(offset + 4 + 2 * i, glyphArray[i]);
+    }
+  }
 }

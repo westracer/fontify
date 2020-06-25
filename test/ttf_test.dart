@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fontify/src/ttf/reader.dart';
 import 'package:fontify/src/ttf/table/all.dart';
@@ -313,10 +315,12 @@ void main() {
 
   
   group('Creation & Writer', () {
+    ByteData originalByteData, recreatedByteData;
     TrueTypeFont recreatedFont;
 
     setUpAll(() {
-      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
+      originalByteData = ByteData.sublistView(File(_kTestFontAssetPath).readAsBytesSync());
+      font = TTFReader.fromByteData(originalByteData).read();
 
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
       
@@ -325,6 +329,17 @@ void main() {
         glyphNameList: glyphNameList,
         fontName: 'TestFont',
       );
+
+      recreatedByteData = ByteData(recreatedFont.size);
+      recreatedFont.encodeToBinary(recreatedByteData, 0);
+    });
+
+    test('GSUB table', () {
+      const expected = 'AAEAAAAKADAAPgACREZMVAAObGF0bgAaAAQAAAAA//8AAQAAAAQAAAAA//8AAQAAAAFsaWdhAAgAAAABAAAAAQAEAAQAAAABAAgAAQAGAAAAAQAA';
+      final actual = base64Encode(recreatedByteData.buffer.asUint8List(recreatedFont.gsub.entry.offset, recreatedFont.gsub.entry.length));
+
+      expect(actual, expected);
+      expect(recreatedFont.gsub.entry.checkSum, 546121080);
     });
 
     test('OS/2 V5', () {

@@ -1,12 +1,13 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import 'language_system.dart';
 
 const kScriptRecordSize = 6;
 
 /// Alphabetically ordered (by tag) list of script records
-const _kDefaultScriptRecordList = [
+final _defaultScriptRecordList = [
   /// Default
   ScriptRecord('DFLT', null),
   
@@ -29,8 +30,8 @@ const _kDefaultScriptTable = ScriptTable(
   _kDefaultLangSys
 );
 
-class ScriptRecord {
-  const ScriptRecord(
+class ScriptRecord implements BinaryCodable {
+  ScriptRecord(
     this.scriptTag,
     this.scriptOffset
   );
@@ -43,12 +44,20 @@ class ScriptRecord {
   }
 
   final String scriptTag;
-  final int scriptOffset;
+  int scriptOffset;
 
+  @override
   int get size => kScriptRecordSize;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setTag(offset, scriptTag)
+      ..setUint16(offset + 4, scriptOffset);
+  }
 }
 
-class ScriptTable {
+class ScriptTable implements BinaryCodable {
   const ScriptTable(
     this.defaultLangSysOffset,
     this.langSysCount,
@@ -95,15 +104,41 @@ class ScriptTable {
   final List<LanguageSystemTable> langSysTables;
   final LanguageSystemTable defaultLangSys;
 
+  @override
   int get size {
     final recordListSize = langSysRecords.fold<int>(0, (p, r) => p + r.size);
     final tableListSize = langSysTables.fold<int>(0, (p, t) => p + t.size);
 
     return 4 + (defaultLangSys?.size ?? 0) + recordListSize + tableListSize;
   }
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData.setUint16(offset + 2, langSysCount);
+
+    int recordOffset = offset + 4;
+    int tableRelativeOffset = 4 + kLangSysRecordSize * langSysRecords.length;
+
+    for (int i = 0; i < langSysRecords.length; i++) {
+      final record = langSysRecords[i]
+        ..langSysOffset = tableRelativeOffset
+        ..encodeToBinary(byteData, recordOffset);
+
+      final table = langSysTables[i]
+        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+
+      recordOffset += record.size;
+      tableRelativeOffset += table.size;
+    }
+
+    final defaultRelativeLangSysOffset = tableRelativeOffset;
+    byteData.setUint16(offset, defaultRelativeLangSysOffset);
+
+    defaultLangSys.encodeToBinary(byteData, offset + defaultRelativeLangSysOffset);
+  }
 }
 
-class ScriptListTable {
+class ScriptListTable implements BinaryCodable {
   ScriptListTable(
     this.scriptCount,
     this.scriptRecords,
@@ -125,11 +160,11 @@ class ScriptListTable {
   }
 
   factory ScriptListTable.create() {
-    final scriptCount = _kDefaultScriptRecordList.length;
+    final scriptCount = _defaultScriptRecordList.length;
 
     return ScriptListTable(
       scriptCount,
-      _kDefaultScriptRecordList,
+      _defaultScriptRecordList,
       List.generate(scriptCount, (index) => _kDefaultScriptTable)
     );
   }
@@ -139,10 +174,31 @@ class ScriptListTable {
 
   final List<ScriptTable> scriptTables;
 
+  @override
   int get size {
     final recordListSize = scriptRecords.fold<int>(0, (p, r) => p + r.size);
     final tableListSize = scriptTables.fold<int>(0, (p, t) => p + t.size);
 
     return 2 + recordListSize + tableListSize;
+  }
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData.setUint16(offset, scriptCount);
+
+    int recordOffset = offset + 2;
+    int tableRelativeOffset = 2 + kScriptRecordSize * scriptCount;
+
+    for (int i = 0; i < scriptCount; i++) {
+      final record = scriptRecords[i]
+        ..scriptOffset = tableRelativeOffset
+        ..encodeToBinary(byteData, recordOffset);
+
+      final table = scriptTables[i]
+        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+
+      recordOffset += record.size;
+      tableRelativeOffset += table.size;
+    }
   }
 }

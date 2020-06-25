@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 
 const kLangSysRecordSize = 6;
 
-class LanguageSystemRecord {
+class LanguageSystemRecord implements BinaryCodable {
   LanguageSystemRecord(
     this.langSysTag,
     this.langSysOffset
@@ -12,18 +13,26 @@ class LanguageSystemRecord {
 
   factory LanguageSystemRecord.fromByteData(ByteData byteData, int offset) {
     return LanguageSystemRecord(
-      convertTagToString(Uint8List.view(byteData.buffer, offset, 4)),
+      byteData.getTag(offset),
       byteData.getUint16(offset + 4),
     );
   }
 
   final String langSysTag;
-  final int langSysOffset;
+  int langSysOffset;
 
+  @override
   int get size => kLangSysRecordSize;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setTag(offset, langSysTag)
+      ..setUint16(offset + 4, langSysOffset);
+  }
 }
 
-class LanguageSystemTable {
+class LanguageSystemTable implements BinaryCodable {
   const LanguageSystemTable(
     this.lookupOrder, 
     this.requiredFeatureIndex, 
@@ -54,5 +63,18 @@ class LanguageSystemTable {
   final int featureIndexCount;
   final List<int> featureIndices;
 
+  @override
   int get size => 6 + 2 * featureIndexCount;
+
+  @override
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setUint16(offset, lookupOrder)
+      ..setUint16(offset + 2, requiredFeatureIndex)
+      ..setUint16(offset + 4, featureIndexCount);
+
+    for (int i = 0; i < featureIndexCount; i++) {
+      byteData.setInt16(offset + 6 + 2 * i, featureIndices[i]);
+    }
+  }
 }

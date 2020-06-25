@@ -246,7 +246,7 @@ class NamingTableFormat0 extends NamingTable {
     header.size + header.nameRecordList.fold<int>(0, (p, r) => p + r.length);
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }

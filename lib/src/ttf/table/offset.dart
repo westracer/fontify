@@ -60,12 +60,12 @@ class OffsetTable extends FontTable {
   int get size => kOffsetTableLength;
 
   @override
-  ByteData encodeToBinary() {
-    return ByteData(size)
-      ..setUint32(0, sfntVersion)
-      ..setUint16(4, numTables)
-      ..setUint16(6, searchRange)
-      ..setUint16(8, entrySelector)
-      ..setUint16(10, rangeShift);
+  void encodeToBinary(ByteData byteData, int offset) {
+    byteData
+      ..setUint32(offset, sfntVersion)
+      ..setUint16(offset + 4, numTables)
+      ..setUint16(offset + 6, searchRange)
+      ..setUint16(offset + 8, entrySelector)
+      ..setUint16(offset + 10, rangeShift);
   }
 }

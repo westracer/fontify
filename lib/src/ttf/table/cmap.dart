@@ -484,12 +484,11 @@ class CharacterToGlyphTable extends FontTable {
   }
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }
 
   @override
-  // TODO: implement size
-  int get size => throw UnimplementedError(); 
+  int get size => header.size + data.fold<int>(0, (p, d) => p + d.size); 
 }

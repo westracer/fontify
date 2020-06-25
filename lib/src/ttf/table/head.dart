@@ -105,7 +105,7 @@ class HeaderTable extends FontTable {
     return HeaderTable(
       null,
       revision,
-      0,
+      0, // Setting checkSum to zero first, calculating it at last for the entire font
       0x000B,
       _kUnitsPerEmDefault,
       now,
@@ -143,7 +143,7 @@ class HeaderTable extends FontTable {
   int get size => _kHeaderTableSize;
 
   @override
-  ByteData encodeToBinary() {
+  void encodeToBinary(ByteData byteData, int offset) {
     // TODO: implement encode
     throw UnimplementedError();
   }
