@@ -317,7 +317,7 @@ void main() {
     TrueTypeFont recreatedFont;
 
     setUpAll(() {
-      MockableDateTime.mockedDate = DateTime(2020, 2, 2, 2, 2);
+      MockableDateTime.mockedDate = DateTime.utc(2020, 2, 2, 2, 2);
       originalByteData = ByteData.sublistView(File(_kTestFontAssetPath).readAsBytesSync());
       font = TTFReader.fromByteData(originalByteData).read();
 
@@ -338,11 +338,11 @@ void main() {
     });
 
     test('Header table', () {
-      const expected = 'AAEAAAABAAC1ZDInXw889QALBAQAAAAA2lt7qAAAAADaW3uo//X/ZwZkA1UAAAAIAAIAAAAA';
+      const expected = 'AAEAAAABAAC1ZDInXw889QALBAQAAAAA2lveGAAAAADaW94Y//X/ZwZkA1UAAAAIAAIAAAAA';
       final actual = base64Encode(recreatedByteData.buffer.asUint8List(recreatedFont.head.entry.offset, recreatedFont.head.entry.length));
 
       expect(actual, expected);
-      expect(recreatedFont.head.entry.checkSum, 3482545460);
+      expect(recreatedFont.head.entry.checkSum, 3482595860);
     });
 
     test('Glyph Substitution table', () {
