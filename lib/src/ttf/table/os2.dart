@@ -315,8 +315,69 @@ class OS2Table extends FontTable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encode
-    throw UnimplementedError();
+  void encodeToBinary(ByteData byteData) {
+    final isV1 = version >= _kVersion1;
+    final isV4 = version >= _kVersion4;
+    final isV5 = version >= _kVersion5;
+
+    if (version > _kVersion5) {
+      TTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
+    }
+
+    byteData
+      ..setInt16(0, version)
+      ..setInt16(2, xAvgCharWidth)
+      ..setUint16(4, usWeightClass)
+      ..setUint16(6, usWidthClass)
+      ..setUint16(8, fsType)
+      ..setInt16(10, ySubscriptXSize)
+      ..setInt16(12, ySubscriptYSize)
+      ..setInt16(14, ySubscriptXOffset)
+      ..setInt16(16, ySubscriptYOffset)
+      ..setInt16(18, ySuperscriptXSize)
+      ..setInt16(20, ySuperscriptYSize)
+      ..setInt16(22, ySuperscriptXOffset)
+      ..setInt16(24, ySuperscriptYOffset)
+      ..setInt16(26, yStrikeoutSize)
+      ..setInt16(28, yStrikeoutPosition)
+      ..setInt16(30, sFamilyClass)
+      ..setUint32(42, ulUnicodeRange1)
+      ..setUint32(46, ulUnicodeRange2)
+      ..setUint32(50, ulUnicodeRange3)
+      ..setUint32(54, ulUnicodeRange4)
+      ..setTag(58, achVendID)
+      ..setUint16(62, fsSelection)
+      ..setUint16(64, usFirstCharIndex)
+      ..setUint16(66, usLastCharIndex)
+      ..setInt16(68, sTypoAscender)
+      ..setInt16(70, sTypoDescender)
+      ..setInt16(72, sTypoLineGap)
+      ..setUint16(74, usWinAscent)
+      ..setUint16(76, usWinDescent);
+
+    for (int i = 0; i < panose.length; i++) {
+      byteData.setUint8(32 + i, panose[i]);
+    }
+
+    if (isV1) {
+      byteData
+        ..setUint32(78, ulCodePageRange1)
+        ..setUint32(82, ulCodePageRange2);
+    }
+
+    if (isV4) {
+      byteData
+        ..setInt16(86, sxHeight)
+        ..setInt16(88, sCapHeight)
+        ..setUint16(90, usDefaultChar)
+        ..setUint16(92, usBreakChar)
+        ..setUint16(94, usMaxContext);
+    }
+
+    if (isV5) {
+      byteData
+        ..setUint16(96, usLowerOpticalPointSize)
+        ..setUint16(98, usUpperOpticalPointSize);
+    }
   }
 }

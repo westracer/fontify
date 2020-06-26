@@ -1,22 +1,22 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../debugger.dart';
-import 'abstract.dart';
 
 const kOffsetTableLength = 12;
 
 const _kOffsetTableNonOTTOversion = 0x00010000;
 const _kOffsetTableOTTOversion    = 0x4F54544F;
 
-class OffsetTable extends FontTable {
+class OffsetTable implements BinaryCodable {
   OffsetTable(
     this.sfntVersion, 
     this.numTables, 
     this.searchRange, 
     this.entrySelector, 
     this.rangeShift
-  ) : super(0, kOffsetTableLength);
+  );
 
   factory OffsetTable.fromByteData(ByteData data) {
     final version = data.getUint32(0);
@@ -60,12 +60,12 @@ class OffsetTable extends FontTable {
   int get size => kOffsetTableLength;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint32(offset, sfntVersion)
-      ..setUint16(offset + 4, numTables)
-      ..setUint16(offset + 6, searchRange)
-      ..setUint16(offset + 8, entrySelector)
-      ..setUint16(offset + 10, rangeShift);
+      ..setUint32(0, sfntVersion)
+      ..setUint16(4, numTables)
+      ..setUint16(6, searchRange)
+      ..setUint16(8, entrySelector)
+      ..setUint16(10, rangeShift);
   }
 }

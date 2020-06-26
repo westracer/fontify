@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/misc.dart';
+import '../../utils/ttf.dart';
 
 import 'abstract.dart';
 import 'glyf.dart';
@@ -11,7 +13,7 @@ import 'table_record_entry.dart';
 
 const _kLongHorMetricSize = 4;
 
-class LongHorMetric {
+class LongHorMetric implements BinaryCodable {
   LongHorMetric(this.advanceWidth, this.lsb);
 
   factory LongHorMetric.fromByteData(ByteData byteData, int offset) {
@@ -30,7 +32,15 @@ class LongHorMetric {
 
   int getRsb(int xMax, int xMin) => advanceWidth - (lsb + xMax - xMin);
 
+  @override
   int get size => _kLongHorMetricSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, advanceWidth)
+      ..setInt16(2, lsb);
+  }
 }
 
 class HorizontalMetricsTable extends FontTable {
@@ -106,8 +116,17 @@ class HorizontalMetricsTable extends FontTable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encode
-    throw UnimplementedError();
+  void encodeToBinary(ByteData byteData) {
+    int offset = 0;
+
+    for (final hMetric in hMetrics) {
+      hMetric.encodeToBinary(byteData.sublistView(offset, hMetric.size));
+      offset += hMetric.size;
+    }
+
+    for (final lsb in leftSideBearings) {
+      byteData.setUint16(offset, lsb);
+      offset += 2;
+    }
   }
 }

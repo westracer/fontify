@@ -11,7 +11,7 @@ abstract class BinaryEncodable {
   int get size;
 
   /// Encodes the object to binary data
-  void encodeToBinary(ByteData byteData, int offset);
+  void encodeToBinary(ByteData byteData);
 }
 
 /// A class that supports both encoding and decoding to/from binary representation

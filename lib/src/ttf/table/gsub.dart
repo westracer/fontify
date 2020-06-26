@@ -67,16 +67,16 @@ class GlyphSubstitutionTableHeader implements BinaryCodable {
   int get size => isV10 ? 10 : 12;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, majorVersion)
-      ..setUint16(offset + 2, minorVersion)
-      ..setUint16(offset + 4, scriptListOffset)
-      ..setUint16(offset + 6, featureListOffset)
-      ..setUint16(offset + 8, lookupListOffset);
+      ..setUint16(0, majorVersion)
+      ..setUint16(2, minorVersion)
+      ..setUint16(4, scriptListOffset)
+      ..setUint16(6, featureListOffset)
+      ..setUint16(8, lookupListOffset);
 
     if (!isV10) {
-      byteData.getUint32(offset + 10);
+      byteData.getUint32(10);
     }
   }
 }
@@ -132,22 +132,22 @@ class GlyphSubstitutionTable extends FontTable {
   final LookupListTable lookupListTable;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     int relativeOffset = header.size;
 
-    scriptListTable.encodeToBinary(byteData, offset + relativeOffset);
+    scriptListTable.encodeToBinary(byteData.sublistView(relativeOffset, scriptListTable.size));
     header.scriptListOffset = relativeOffset;
     relativeOffset += scriptListTable.size;
 
-    featureListTable.encodeToBinary(byteData, offset + relativeOffset);
+    featureListTable.encodeToBinary(byteData.sublistView(relativeOffset, featureListTable.size));
     header.featureListOffset = relativeOffset;
     relativeOffset += featureListTable.size;
 
-    lookupListTable.encodeToBinary(byteData, offset + relativeOffset);
+    lookupListTable.encodeToBinary(byteData.sublistView(relativeOffset, lookupListTable.size));
     header.lookupListOffset = relativeOffset;
     relativeOffset += lookupListTable.size;
 
-    header.encodeToBinary(byteData, offset);
+    header.encodeToBinary(byteData.sublistView(0, header.size));
   }
 
   @override

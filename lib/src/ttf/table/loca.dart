@@ -42,7 +42,7 @@ class IndexToLocationTable extends FontTable {
   final bool _isShort;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     // TODO: implement encode
     throw UnimplementedError();
   }

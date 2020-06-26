@@ -81,19 +81,19 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
   int get maxContext => 0;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     final coverageOffset = 6 + 2 * ligatureSetCount;
 
     byteData
-      ..setUint16(offset, substFormat)
-      ..setUint16(offset + 2, coverageOffset)
-      ..setUint16(offset + 4, ligatureSetCount);
+      ..setUint16(0, substFormat)
+      ..setUint16(2, coverageOffset)
+      ..setUint16(4, ligatureSetCount);
 
     for (int i = 0; i < ligatureSetCount; i++) {
-      byteData.setInt16(offset + 6 + 2 * i, ligatureSetOffsets[i]);
+      byteData.setInt16(6 + 2 * i, ligatureSetOffsets[i]);
     }
 
-    coverageTable.encodeToBinary(byteData, offset + coverageOffset);
+    coverageTable.encodeToBinary(byteData.sublistView(coverageOffset, coverageTable.size));
   }
 }
 
@@ -159,29 +159,29 @@ class LookupTable implements BinaryCodable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, lookupType)
-      ..setUint16(offset + 2, lookupFlag)
-      ..setUint16(offset + 4, subTableCount);
+      ..setUint16(0, lookupType)
+      ..setUint16(2, lookupFlag)
+      ..setUint16(4, subTableCount);
 
     int currentRelativeOffset = 6 + 2 * subTableCount;
     final subtableOffsetList = <int>[];
 
     for (final subtable in subtables) {
-      subtable.encodeToBinary(byteData, offset + currentRelativeOffset);
+      subtable.encodeToBinary(byteData.sublistView(currentRelativeOffset, subtable.size));
       subtableOffsetList.add(currentRelativeOffset);
       currentRelativeOffset += subtable.size;
     }
 
     for (int i = 0; i < subTableCount; i++) {
-      byteData.setInt16(offset + 6 + 2 * i, subtableOffsetList[i]);
+      byteData.setInt16(6 + 2 * i, subtableOffsetList[i]);
     }
 
     final useMarkFilteringSet = _useMarkFilteringSet(lookupFlag);
 
     if (useMarkFilteringSet) {
-      byteData.setUint16(offset + 6 + 2 * subTableCount, markFilteringSet);
+      byteData.setUint16(6 + 2 * subTableCount, markFilteringSet);
     }
   }
 }
@@ -222,16 +222,16 @@ class LookupListTable implements BinaryCodable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    byteData.setUint16(offset, lookupCount);
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint16(0, lookupCount);
 
     int tableRelativeOffset = 2 + 2 * lookupCount;
 
     for (int i = 0; i < lookupCount; i++) {
-      final subtable = lookupTables[i]
-        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+      final subtable = lookupTables[i];
+      subtable.encodeToBinary(byteData.sublistView(tableRelativeOffset, subtable.size));
 
-      byteData.setUint16(offset + 2 + 2 * i, tableRelativeOffset);
+      byteData.setUint16(2 + 2 * i, tableRelativeOffset);
       tableRelativeOffset += subtable.size;
     }
   }

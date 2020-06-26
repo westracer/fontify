@@ -93,21 +93,21 @@ class HorizontalHeaderTable extends FontTable {
   int get size => _kHheaTableSize;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, majorVersion)
-      ..setUint16(offset + 2, minorVersion)
-      ..setFWord(offset + 4, ascender)
-      ..setFWord(offset + 6, descender)
-      ..setFWord(offset + 8, lineGap)
-      ..setUFWord(offset + 10, advanceWidthMax)
-      ..setFWord(offset + 12, minLeftSideBearing)
-      ..setFWord(offset + 14, minRightSideBearing)
-      ..setFWord(offset + 16, xMaxExtent)
-      ..setInt16(offset + 18, caretSlopeRise)
-      ..setInt16(offset + 20, caretSlopeRun)
-      ..setInt16(offset + 22, caretOffset)
-      ..setInt16(offset + 32, metricDataFormat)
-      ..setUint16(offset + 34, numberOfHMetrics);
+      ..setUint16(0, majorVersion)
+      ..setUint16(2, minorVersion)
+      ..setFWord(4, ascender)
+      ..setFWord(6, descender)
+      ..setFWord(8, lineGap)
+      ..setUFWord(10, advanceWidthMax)
+      ..setFWord(12, minLeftSideBearing)
+      ..setFWord(14, minRightSideBearing)
+      ..setFWord(16, xMaxExtent)
+      ..setInt16(18, caretSlopeRise)
+      ..setInt16(20, caretSlopeRun)
+      ..setInt16(22, caretOffset)
+      ..setInt16(32, metricDataFormat)
+      ..setUint16(34, numberOfHMetrics);
   }
 }

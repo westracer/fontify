@@ -144,25 +144,25 @@ class HeaderTable extends FontTable {
   int get size => _kHeaderTableSize;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, majorVersion)
-      ..setUint16(offset + 2, minorVersion)
-      ..setInt32(offset + 4, fontRevision.int32value)
-      ..setUint32(offset + 8, 3043242535)
-      ..setUint32(offset + 12, magicNumber)
-      ..setUint16(offset + 16, flags)
-      ..setUint16(offset + 18, unitsPerEm)
-      ..setDateTime(offset + 20, created)
-      ..setDateTime(offset + 28, modified)
-      ..setInt16(offset + 36, xMin)
-      ..setInt16(offset + 38, yMin)
-      ..setInt16(offset + 40, xMax)
-      ..setInt16(offset + 42, yMax)
-      ..setUint16(offset + 44, macStyle)
-      ..setUint16(offset + 46, lowestRecPPEM)
-      ..setInt16(offset + 48, fontDirectionHint)
-      ..setInt16(offset + 50, indexToLocFormat)
-      ..setInt16(offset + 52, glyphDataFormat);
+      ..setUint16(0, majorVersion)
+      ..setUint16(2, minorVersion)
+      ..setInt32(4, fontRevision.int32value)
+      ..setUint32(8, 3043242535)
+      ..setUint32(12, magicNumber)
+      ..setUint16(16, flags)
+      ..setUint16(18, unitsPerEm)
+      ..setDateTime(20, created)
+      ..setDateTime(28, modified)
+      ..setInt16(36, xMin)
+      ..setInt16(38, yMin)
+      ..setInt16(40, xMax)
+      ..setInt16(42, yMax)
+      ..setUint16(44, macStyle)
+      ..setUint16(46, lowestRecPPEM)
+      ..setInt16(48, fontDirectionHint)
+      ..setInt16(50, indexToLocFormat)
+      ..setInt16(52, glyphDataFormat);
   }
 }

@@ -25,10 +25,10 @@ class LanguageSystemRecord implements BinaryCodable {
   int get size => kLangSysRecordSize;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setTag(offset, langSysTag)
-      ..setUint16(offset + 4, langSysOffset);
+      ..setTag(0, langSysTag)
+      ..setUint16(4, langSysOffset);
   }
 }
 
@@ -67,14 +67,14 @@ class LanguageSystemTable implements BinaryCodable {
   int get size => 6 + 2 * featureIndexCount;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, lookupOrder)
-      ..setUint16(offset + 2, requiredFeatureIndex)
-      ..setUint16(offset + 4, featureIndexCount);
+      ..setUint16(0, lookupOrder)
+      ..setUint16(2, requiredFeatureIndex)
+      ..setUint16(4, featureIndexCount);
 
     for (int i = 0; i < featureIndexCount; i++) {
-      byteData.setInt16(offset + 6 + 2 * i, featureIndices[i]);
+      byteData.setInt16(6 + 2 * i, featureIndices[i]);
     }
   }
 }

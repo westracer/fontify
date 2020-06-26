@@ -54,13 +54,13 @@ class CoverageTableFormat1 extends CoverageTable {
   int get size => 4 + 2 * glyphCount;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, coverageFormat)
-      ..setUint16(offset + 2, glyphCount);
+      ..setUint16(0, coverageFormat)
+      ..setUint16(2, glyphCount);
 
     for (int i = 0; i < glyphCount; i++) {
-      byteData.setInt16(offset + 4 + 2 * i, glyphArray[i]);
+      byteData.setInt16(4 + 2 * i, glyphArray[i]);
     }
   }
 }

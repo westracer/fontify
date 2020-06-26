@@ -25,11 +25,11 @@ class TableRecordEntry implements BinaryCodable {
   int get size => kTableRecordEntryLength;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setTag(offset, tag)
-      ..setUint32(offset + 4, this.offset)
-      ..setUint32(offset + 8, checkSum)
-      ..setUint32(offset + 12, length);
+      ..setTag(0, tag)
+      ..setUint32(4, offset)
+      ..setUint32(8, checkSum)
+      ..setUint32(12, length);
   }
 }

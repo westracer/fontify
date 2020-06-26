@@ -33,10 +33,10 @@ class FeatureRecord implements BinaryCodable {
   int get size => kFeatureRecordSize;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setTag(offset, featureTag)
-      ..setUint16(offset + 4, featureOffset);
+      ..setTag(0, featureTag)
+      ..setUint16(4, featureOffset);
   }
 }
 
@@ -75,13 +75,13 @@ class FeatureTable implements BinaryCodable {
   int get size => 4 + 2 * lookupIndexCount;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setUint16(offset, featureParams)
-      ..setUint16(offset + 2, lookupIndexCount);
+      ..setUint16(0, featureParams)
+      ..setUint16(2, lookupIndexCount);
 
     for (int i = 0; i < lookupIndexCount; i++) {
-      byteData.setInt16(offset + 4 + 2 * i, lookupListIndices[i]);
+      byteData.setInt16(4 + 2 * i, lookupListIndices[i]);
     }
   }
 }
@@ -131,19 +131,20 @@ class FeatureListTable implements BinaryCodable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    byteData.setUint16(offset, featureCount);
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint16(0, featureCount);
 
-    int recordOffset = offset + 2;
+    int recordOffset = 2;
     int tableRelativeOffset = 2 + kFeatureRecordSize * featureCount;
 
     for (int i = 0; i < featureCount; i++) {
       final record = featureRecords[i]
         ..featureOffset = tableRelativeOffset
-        ..encodeToBinary(byteData, recordOffset);
+        ..encodeToBinary(byteData.sublistView(recordOffset, kFeatureRecordSize));
 
-      final table = featureTables[i]
-        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+      final table = featureTables[i];
+      final tableSize = table.size;
+      table.encodeToBinary(byteData.sublistView(tableRelativeOffset, tableSize));
 
       recordOffset += record.size;
       tableRelativeOffset += table.size;

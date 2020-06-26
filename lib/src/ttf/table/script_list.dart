@@ -50,10 +50,10 @@ class ScriptRecord implements BinaryCodable {
   int get size => kScriptRecordSize;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     byteData
-      ..setTag(offset, scriptTag)
-      ..setUint16(offset + 4, scriptOffset);
+      ..setTag(0, scriptTag)
+      ..setUint16(4, scriptOffset);
   }
 }
 
@@ -113,28 +113,28 @@ class ScriptTable implements BinaryCodable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    byteData.setUint16(offset + 2, langSysCount);
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint16(2, langSysCount);
 
-    int recordOffset = offset + 4;
+    int recordOffset = 4;
     int tableRelativeOffset = 4 + kLangSysRecordSize * langSysRecords.length;
 
     for (int i = 0; i < langSysRecords.length; i++) {
       final record = langSysRecords[i]
         ..langSysOffset = tableRelativeOffset
-        ..encodeToBinary(byteData, recordOffset);
+        ..encodeToBinary(byteData.sublistView(recordOffset, kLangSysRecordSize));
 
-      final table = langSysTables[i]
-        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+      final table = langSysTables[i];
+      table.encodeToBinary(byteData.sublistView(tableRelativeOffset, table.size));
 
       recordOffset += record.size;
       tableRelativeOffset += table.size;
     }
 
     final defaultRelativeLangSysOffset = tableRelativeOffset;
-    byteData.setUint16(offset, defaultRelativeLangSysOffset);
+    byteData.setUint16(0, defaultRelativeLangSysOffset);
 
-    defaultLangSys.encodeToBinary(byteData, offset + defaultRelativeLangSysOffset);
+    defaultLangSys.encodeToBinary(byteData.sublistView(defaultRelativeLangSysOffset, defaultLangSys.size));
   }
 }
 
@@ -183,19 +183,19 @@ class ScriptListTable implements BinaryCodable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    byteData.setUint16(offset, scriptCount);
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint16(0, scriptCount);
 
-    int recordOffset = offset + 2;
+    int recordOffset = 2;
     int tableRelativeOffset = 2 + kScriptRecordSize * scriptCount;
 
     for (int i = 0; i < scriptCount; i++) {
       final record = scriptRecords[i]
         ..scriptOffset = tableRelativeOffset
-        ..encodeToBinary(byteData, recordOffset);
+        ..encodeToBinary(byteData.sublistView(recordOffset, kScriptRecordSize));
 
-      final table = scriptTables[i]
-        ..encodeToBinary(byteData, offset + tableRelativeOffset);
+      final table = scriptTables[i];
+      table.encodeToBinary(byteData.sublistView(tableRelativeOffset, table.size));
 
       recordOffset += record.size;
       tableRelativeOffset += table.size;

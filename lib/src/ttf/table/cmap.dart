@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
@@ -17,7 +18,7 @@ const _kSequentialMapGroupSize = 12;
 const _kByteEncodingTableSize = 256 + 6;
 
 /// Ordered list of encoding record templates, sorted by platform and encoding ID
-const _kDefaultEncodingRecordList = [
+List<EncodingRecord> _getDefaultEncodingRecordList() => [
   /// Unicode (2.0 or later semantics BMP only), format 4
   EncodingRecord.create(kPlatformUnicode, 3),
   
@@ -49,14 +50,14 @@ class _Segment {
   int get idDelta => startGlyphID - startCode;
 }
 
-class EncodingRecord {
-  const EncodingRecord(
+class EncodingRecord implements BinaryCodable {
+  EncodingRecord(
     this.platformID,
     this.encodingID,
     this.offset
   );
 
-  const EncodingRecord.create(
+  EncodingRecord.create(
     this.platformID,
     this.encodingID,
   ) : offset = null;
@@ -71,12 +72,21 @@ class EncodingRecord {
 
   final int platformID;
   final int encodingID;
-  final int offset;
+  int offset;
 
+  @override
   int get size => _kEncodingRecordSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, platformID)
+      ..setUint16(2, encodingID)
+      ..setUint32(4, offset);
+  }
 }
 
-class SequentialMapGroup {
+class SequentialMapGroup implements BinaryCodable {
   SequentialMapGroup(
     this.startCharCode,
     this.endCharCode,
@@ -95,10 +105,19 @@ class SequentialMapGroup {
   final int endCharCode;
   final int startGlyphID;
 
+  @override
   int get size => _kSequentialMapGroupSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint32(0, startCharCode)
+      ..setUint32(4, endCharCode)
+      ..setUint32(8, startGlyphID);
+  }
 }
 
-class CharacterToGlyphTableHeader {
+class CharacterToGlyphTableHeader implements BinaryCodable {
   CharacterToGlyphTableHeader(
     this.version,
     this.numTables,
@@ -126,10 +145,23 @@ class CharacterToGlyphTableHeader {
   final int numTables;
   final List<EncodingRecord> encodingRecords;
 
+  @override
   int get size => 4 + _kEncodingRecordSize * encodingRecords.length;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, version)
+      ..setUint16(2, numTables);
+
+    for (var i = 0; i < encodingRecords.length; i++) {
+      final r = encodingRecords[i];
+      r.encodeToBinary(byteData.sublistView(4 + _kEncodingRecordSize * i, r.size));
+    }
+  }
 }
 
-abstract class CmapData {
+abstract class CmapData implements BinaryCodable {
   CmapData(this.format);
 
   factory CmapData.fromByteData(ByteData byteData, int offset) {
@@ -163,8 +195,6 @@ abstract class CmapData {
   }
 
   final int format;
-
-  int get size;
 }
 
 class CmapByteEncodingTable extends CmapData {
@@ -189,7 +219,7 @@ class CmapByteEncodingTable extends CmapData {
       _kFormat0,
       _kByteEncodingTableSize,
       0,
-      List.generate(256, (_) => 0) // Not using standard mac glyphs
+      List.filled(256, 0) // Not using standard mac glyphs
     );
   }
 
@@ -199,6 +229,18 @@ class CmapByteEncodingTable extends CmapData {
 
   @override
   int get size => _kByteEncodingTableSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, format)
+      ..setUint16(2, length)
+      ..setUint16(4, language);
+
+    for (int i = 0; i < glyphIdArray.length; i++) {
+      byteData.setUint8(6 + i, glyphIdArray[i]);
+    }
+  }
 }
 
 class CmapSegmentMappingToDeltaValuesTable extends CmapData {
@@ -329,6 +371,48 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
 
   @override
   int get size => length;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, format)
+      ..setUint16(2, length)
+      ..setUint16(4, language)
+      ..setUint16(6, segCount * 2)
+      ..setUint16(8, searchRange)
+      ..setUint16(10, entrySelector)
+      ..setUint16(12, rangeShift);
+
+    int offset = 14;
+
+    for (final code in endCode) {
+      byteData.setUint16(offset, code);
+      offset += 2;
+    }
+
+    byteData.setUint16(offset, reservedPad);
+    offset += 2;
+
+    for (final code in startCode) {
+      byteData.setUint16(offset, code);
+      offset += 2;
+    }
+
+    for (final delta in idDelta) {
+      byteData.setUint16(offset, delta);
+      offset += 2;
+    }
+
+    for (final rangeOffset in idRangeOffset) {
+      byteData.setUint16(offset, rangeOffset);
+      offset += 2;
+    }
+
+    for (final glyphId in glyphIdArray) {
+      byteData.setUint16(offset, glyphId);
+      offset += 2;
+    }
+  }
 }
 
 class CmapSegmentedCoverageTable extends CmapData {
@@ -391,6 +475,23 @@ class CmapSegmentedCoverageTable extends CmapData {
 
   @override
   int get size => length;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, format)
+      ..setUint16(2, reserved)
+      ..setUint32(4, length)
+      ..setUint32(8, language)
+      ..setUint32(12, numGroups);
+
+    int offset = 16;
+
+    for (final group in groups) {
+      group.encodeToBinary(byteData.sublistView(offset, group.size));
+      offset += group.size;
+    }
+  }
 }
 
 class CharacterToGlyphTable extends FontTable {
@@ -435,7 +536,7 @@ class CharacterToGlyphTable extends FontTable {
     final header = CharacterToGlyphTableHeader(
       0,
       subtables.length,
-      _kDefaultEncodingRecordList
+      _getDefaultEncodingRecordList()
     );
 
     return CharacterToGlyphTable(
@@ -484,9 +585,17 @@ class CharacterToGlyphTable extends FontTable {
   }
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
-    // TODO: implement encode
-    throw UnimplementedError();
+  void encodeToBinary(ByteData byteData) {
+    int subtableIndex = 0;
+    int offset = header.size;
+
+    for (final subtable in data) {
+      subtable.encodeToBinary(byteData.sublistView(offset, subtable.size));
+      header.encodingRecords[subtableIndex++].offset = offset;
+      offset += subtable.size;
+    }
+
+    header.encodeToBinary(byteData.sublistView(0, header.size));
   }
 
   @override

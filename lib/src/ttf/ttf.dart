@@ -89,22 +89,22 @@ class TrueTypeFont implements BinaryCodable {
   HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
 
   @override
-  void encodeToBinary(ByteData byteData, int offset) {
+  void encodeToBinary(ByteData byteData) {
     // TODO: implement encodeToBinary
     int currentEntryOffset = kOffsetTableLength;
     int currentTableOffset = kOffsetTableLength + entryListSize;
 
     for (final tag in _kTableTagsToEncode) {
       try {
-        final table = tableMap[tag]
-          ..encodeToBinary(byteData, currentTableOffset);
-
+        final table = tableMap[tag];
         final tableSize = table.size;
+
+        table.encodeToBinary(byteData.sublistView(currentTableOffset, tableSize));
         
         final encodedTable = ByteData.sublistView(byteData, currentTableOffset, currentTableOffset + tableSize);
         table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable), currentTableOffset, tableSize);
 
-        table.entry.encodeToBinary(byteData, currentEntryOffset);
+        table.entry.encodeToBinary(byteData.sublistView(currentEntryOffset, kTableRecordEntryLength));
 
         currentEntryOffset += kTableRecordEntryLength;
         currentTableOffset += getPaddedTableSize(tableSize);
@@ -113,7 +113,7 @@ class TrueTypeFont implements BinaryCodable {
       }
     }
 
-    offsetTable.encodeToBinary(byteData, offset);
+    offsetTable.encodeToBinary(byteData.sublistView(0, kOffsetTableLength));
   }
 
   int get entryListSize => kTableRecordEntryLength * tableMap.length;

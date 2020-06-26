@@ -104,6 +104,10 @@ extension TTFByteDateExt on ByteData {
   void setDateTime(int offset, DateTime dateTime) {
     setInt64(offset, dateTime.difference(_longDateTimeStart).inSeconds);
   }
+
+  ByteData sublistView(int offset, int length) {
+    return ByteData.sublistView(this, offset, offset + length);
+  }
 }
 
 extension TTFStringExt on String {

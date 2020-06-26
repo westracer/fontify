@@ -23,9 +23,6 @@ void main() {
     test('Offset table', () {
       final table = font.offsetTable;
 
-      expect(table.offset, 0);
-      expect(table.length, 12);
-
       expect(table.entrySelector, 3);
       expect(table.numTables, 11);
       expect(table.rangeShift, 48);
@@ -333,7 +330,7 @@ void main() {
       );
 
       recreatedByteData = ByteData(recreatedFont.size);
-      recreatedFont.encodeToBinary(recreatedByteData, 0);
+      recreatedFont.encodeToBinary(recreatedByteData);
     });
 
     tearDownAll(() {
