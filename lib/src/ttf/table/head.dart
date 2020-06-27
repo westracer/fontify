@@ -16,7 +16,7 @@ const _kMacStyleRegular = 0;
 const _kIndexToLocFormatShort = 0;
 const _kIndexToLocFormatLong = 1;
 
-const _kUnitsPerEmDefault = 1028;
+const _kUnitsPerEmDefault = 1024; // A power of two is recommended
 const _kLowestRecPPEMdefault = 8;
 
 const _kHeaderTableSize = 54;

@@ -5,6 +5,7 @@ import '../../common/constant.dart';
 import '../../utils/enum_class.dart';
 import '../../utils/exception.dart';
 import '../../utils/ttf.dart';
+import '../../utils/ucs2.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -38,11 +39,29 @@ const _kNameRecordTemplateList = [
   NameRecord.template(kPlatformMacintosh, 0, 0),
 
   /// Windows English (US) with UTF-16BE encoding
-  NameRecord.template(kPlatformWindows, 0, 0x0409),
+  NameRecord.template(kPlatformWindows, 1, 0x0409),
 ];
 
+List<int> Function(String) _getEncoder(NameRecord record) {
+  switch (record.platformID) {
+    case kPlatformWindows:
+      return toUCS2byteList;
+    default:
+      return (string) => string.codeUnits;
+  }
+}
+
+String Function(List<int>) _getDecoder(NameRecord record) {
+  switch (record.platformID) {
+    case kPlatformWindows:
+      return fromUCS2byteList;
+    default:
+      return (charCodes) => String.fromCharCodes(charCodes);
+  }
+}
+
 class NameRecord implements BinaryCodable {
-  const NameRecord(
+  NameRecord(
     this.platformID,
     this.encodingID,
     this.languageID,
@@ -221,7 +240,7 @@ class NamingTableFormat0 extends NamingTable {
 
     final stringList = [
       for (final record in header.nameRecordList)
-        String.fromCharCodes(
+        _getDecoder(record)(
           List.generate(
             record.length, 
             (i) => byteData.getUint8(storageAreaOffset + record.offset + i)
@@ -263,14 +282,17 @@ class NamingTableFormat0 extends NamingTable {
 
     for (final recordTemplate in _kNameRecordTemplateList) {
       for (final entry in stringForNameMap.entries) {
+        final encoder = _getEncoder(recordTemplate);
+        final units = encoder(entry.value);
+
         final record = recordTemplate.copyWith(
           nameID: _kNameIDmap.getValueForKey(entry.key),
-          length: entry.value.length,
+          length: units.length,
           offset: stringOffset,
         );
 
         recordList.add(record);
-        stringOffset += entry.value.length;
+        stringOffset += units.length;
       }
     }
     
@@ -297,8 +319,10 @@ class NamingTableFormat0 extends NamingTable {
       final string = stringList[i];
 
       int charOffset = storageAreaOffset + record.offset;
+      final encoder = _getEncoder(record);
+      final units = encoder(string);
 
-      for (final charCode in string.codeUnits) {
+      for (final charCode in units) {
         byteData.setUint8(charOffset++, charCode);
       }
     }

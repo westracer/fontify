@@ -26,7 +26,7 @@ List<EncodingRecord> _getDefaultEncodingRecordList() => [
   EncodingRecord.create(kPlatformUnicode, 4),
   
   /// Macintosh, format 0
-  EncodingRecord.create(kPlatformUnicode, 0),
+  EncodingRecord.create(kPlatformMacintosh, 0),
 
   /// Windows (Unicode BMP-only UCS-2), format 4
   EncodingRecord.create(kPlatformWindows, 1),
