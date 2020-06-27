@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../../common/codable/binary.dart';
 import '../../../utils/ttf.dart';
 
 const _kOnCurvePointValue = 0x01;
@@ -11,7 +12,7 @@ const _kYisSameValue = 0x20;
 const _kOverlapSimpleValue = 0x40;
 const _kReservedValue = 0x80;
 
-class SimpleGlyphFlag {
+class SimpleGlyphFlag implements BinaryCodable {
   SimpleGlyphFlag(
     this.onCurvePoint,
     this.xShortVector,
@@ -48,7 +49,41 @@ class SimpleGlyphFlag {
   final bool yIsSameOrPositive;
   final bool overlapSimple;
   final bool reserved;
-  
-  int get size => 1 + (repeat != null ? 1 : 0);
+
+  Map<int, bool> get _flagsWithMasks => {
+    _kOnCurvePointValue: onCurvePoint,
+    _kXshortVectorValue: xShortVector,
+    _kYshortVectorValue: yShortVector,
+    _kXisSameValue: xIsSameOrPositive,
+    _kYisSameValue: yIsSameOrPositive,
+    _kOverlapSimpleValue: overlapSimple,
+    _kReservedValue: reserved,
+    _kRepeatFlagValue: isRepeating,
+  };
+
+  bool get isRepeating => repeat != null;
+
   int get repeatTimes => repeat ?? 0;
+
+  int get intValue {
+    int value = 0;
+
+    _flagsWithMasks.forEach((mask, flagIsSet) {
+      value |= flagIsSet ? mask : 0;
+    });
+
+    return value;
+  }
+  
+  @override
+  int get size => 1 + (isRepeating ? 1 : 0);
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint8(0, intValue);
+
+    if (isRepeating) {
+      byteData.setUint8(1, repeatTimes);
+    }
+  }
 }

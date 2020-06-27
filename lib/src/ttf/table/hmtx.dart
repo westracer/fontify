@@ -81,7 +81,6 @@ class HorizontalMetricsTable extends FontTable {
   final List<LongHorMetric> hMetrics;
   final List<int> leftSideBearings;
 
-  // TODO: subtract _kLongHorMetricSize?
   @override
   int get size => hMetrics.length * _kLongHorMetricSize + leftSideBearings.length * 2;  
 

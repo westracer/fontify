@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
+import '../../utils/ttf.dart';
 import 'abstract.dart';
+import 'glyf.dart';
 import 'table_record_entry.dart';
 
 class IndexToLocationTable extends FontTable {
@@ -30,10 +32,19 @@ class IndexToLocationTable extends FontTable {
 
   factory IndexToLocationTable.create(
     int indexToLocFormat,
-    int numGlyphs
+    GlyphDataTable glyf
   ) {
     final isShort = indexToLocFormat == 0;
-    final List<int> offsets = List.generate(numGlyphs + 1, (index) => null);
+    final offsets = <int>[];
+
+    int offset = 0;
+
+    for (final glyph in glyf.glyphList) {
+      offsets.add(offset);
+      offset += getPaddedTableSize(glyph.size);
+    }
+
+    offsets.add(offset);
 
     return IndexToLocationTable(null, offsets, isShort);
   }
@@ -43,8 +54,15 @@ class IndexToLocationTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    for (int i = 0; i < glyphOffsets.length; i++) {
+      final offset = _isShort ? glyphOffsets[i] ~/ 2 : glyphOffsets[i];
+
+      if (_isShort) {
+        byteData.setUint16(2 * i, offset);
+      } else {
+        byteData.setUint32(4 * i, offset);
+      }
+    }
   }
 
   @override

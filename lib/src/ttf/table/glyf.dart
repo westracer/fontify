@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../utils/ttf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -33,7 +34,7 @@ class GlyphDataTable extends FontTable {
       if (header.isComposite) {
         TTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
       } else {
-        final glyph = isEmpty ? SimpleGlyph.empty(header) : SimpleGlyph.fromByteData(byteData, header);
+        final glyph = isEmpty ? SimpleGlyph.empty() : SimpleGlyph.fromByteData(byteData, header, headerOffset);
         glyphList.add(glyph);
       }
     }
@@ -47,9 +48,8 @@ class GlyphDataTable extends FontTable {
 
   final List<SimpleGlyph> glyphList;
 
-  // TODO: subtract last glyph's size?
   @override
-  int get size => glyphList.fold<int>(0, (p, v) => p + v.size);
+  int get size => glyphList.fold<int>(0, (p, v) => p + getPaddedTableSize(v.size));
 
   int get maxPoints =>
     glyphList.fold<int>(0, (p, g) => math.max(p, g.xCoordinates.length));
@@ -62,7 +62,11 @@ class GlyphDataTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    int offset = 0;
+
+    for (final glyph in glyphList) {
+      glyph.encodeToBinary(byteData.sublistView(offset, glyph.size));
+      offset += getPaddedTableSize(glyph.size);
+    }
   }
 }

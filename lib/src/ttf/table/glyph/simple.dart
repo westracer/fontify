@@ -1,24 +1,26 @@
 import 'dart:typed_data';
 
+import '../../../common/codable/binary.dart';
+import '../../../utils/ttf.dart';
 import 'flag.dart';
 import 'header.dart';
 
-class SimpleGlyph {
+class SimpleGlyph implements BinaryCodable {
   SimpleGlyph(
     this.header,
     this.endPtsOfContours,
     this.instructions,
     this.flags,
     this.xCoordinates,
-    this.yCoordinates
+    this.yCoordinates,
   );
 
-  factory SimpleGlyph.empty([GlyphHeader header]) {
-    return SimpleGlyph(header, [], [], [], [], []);
+  factory SimpleGlyph.empty() {
+    return SimpleGlyph(GlyphHeader(0, 0, 0, 0, 0), [], [], [], [], []);
   }
 
-  factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header) {
-    int offset = header.offset + header.size;
+  factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header, int glyphOffset) {
+    int offset = glyphOffset + header.size;
 
     final endPtsOfContours = [
       for (int i = 0; i < header.numberOfContours; i++)
@@ -35,7 +37,7 @@ class SimpleGlyph {
     ];
     offset += instructionLength;
 
-    final numberOfPoints = endPtsOfContours.isNotEmpty ? endPtsOfContours.last + 1 : 0;
+    final numberOfPoints = _getNumberOfPoints(endPtsOfContours);
     final flags = <SimpleGlyphFlag>[];
 
     for (int i = 0; i < numberOfPoints; i++) {
@@ -86,22 +88,13 @@ class SimpleGlyph {
       }
     }
     
-    int x = 0, y = 0;
-    for (int i = 0; i < numberOfPoints; i++) {
-      x += xCoordinates[i];
-      xCoordinates[i] = x;
-
-      y += yCoordinates[i];
-      yCoordinates[i] = y;
-    }
-    
     return SimpleGlyph(
       header,
       endPtsOfContours,
       instructions,
       flags,
-      xCoordinates,
-      yCoordinates
+      _relToAbsCoordinates(xCoordinates),
+      _relToAbsCoordinates(yCoordinates),
     );
   }
 
@@ -151,5 +144,101 @@ class SimpleGlyph {
     return endPointsSize + instructionsSize + _flagsSize + _coordinatesSize;
   }
 
+  @override
   int get size => header.size + _descriptionSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    header.encodeToBinary(byteData);
+    int offset = header.size;
+
+    for (int i = 0; i < header.numberOfContours; i++) {
+      byteData.setUint16(offset + i * 2, endPtsOfContours[i]);
+    }
+    offset += header.numberOfContours * 2;
+
+    byteData.setUint16(offset, instructions.length);
+    offset += 2;
+
+    for (int i = 0; i < instructions.length; i++) {
+      byteData.setUint8(offset + i, instructions[i]);
+    }
+    offset += instructions.length;
+
+    final numberOfPoints = _getNumberOfPoints(endPtsOfContours);
+
+    for (int i = 0; i < numberOfPoints; i++) {
+      final flag = flags[i];
+      flag.encodeToBinary(byteData.sublistView(offset, flag.size));
+
+      offset += flag.size;
+      i += flag.repeatTimes;
+    }
+
+    final xRelCoordinates = _absToRelCoordinates(xCoordinates);
+    final yRelCoordinates = _absToRelCoordinates(yCoordinates);
+    
+    for (int i = 0; i < numberOfPoints; i++) {
+      final short = flags[i].xShortVector;
+      final same = flags[i].xIsSameOrPositive;
+      
+      if (short) {
+        byteData.setUint8(offset++, xRelCoordinates[i].abs());
+      } else {
+        if (!same) {
+          byteData.setInt16(offset, xRelCoordinates[i]);
+          offset += 2;
+        }
+      }
+    }
+    
+    for (int i = 0; i < numberOfPoints; i++) {
+      final short = flags[i].yShortVector;
+      final same = flags[i].yIsSameOrPositive;
+      
+      if (short) {
+        byteData.setUint8(offset++, yRelCoordinates[i].abs());
+      } else {
+        if (!same) {
+          byteData.setInt16(offset, yRelCoordinates[i]);
+          offset += 2;
+        }
+      }
+    }
+  }
+
+  static List<int> _relToAbsCoordinates(List<int> relCoordinates) {
+    if (relCoordinates.isEmpty) {
+      return [];
+    }
+
+    final absCoordinates = List.filled(relCoordinates.length, 0);
+    int currentValue = 0;
+
+    for (int i = 0; i < relCoordinates.length; i++) {
+      currentValue += relCoordinates[i];
+      absCoordinates[i] = currentValue;
+    }
+
+    return absCoordinates;
+  }
+
+  static List<int> _absToRelCoordinates(List<int> absCoordinates) {
+    if (absCoordinates.isEmpty) {
+      return [];
+    }
+
+    final relCoordinates = List.filled(absCoordinates.length, 0);
+    int prevValue = 0;
+
+    for (int i = 0; i < absCoordinates.length; i++) {
+      relCoordinates[i] = absCoordinates[i] - prevValue;
+      prevValue = absCoordinates[i];
+    }
+
+    return relCoordinates;
+  }
+
+  static int _getNumberOfPoints(List<int> endPtsOfContours) => 
+    endPtsOfContours.isNotEmpty ? endPtsOfContours.last + 1 : 0;
 }

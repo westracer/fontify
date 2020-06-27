@@ -1,10 +1,11 @@
 import 'dart:typed_data';
 
+import '../../../common/codable/binary.dart';
+
 const _kGlyphHeaderSize = 10;
 
-class GlyphHeader {
+class GlyphHeader implements BinaryCodable {
   GlyphHeader(
-    this.offset,
     this.numberOfContours, 
     this.xMin, 
     this.yMin, 
@@ -14,7 +15,6 @@ class GlyphHeader {
 
   factory GlyphHeader.fromByteData(ByteData byteData, int offset) {
     return GlyphHeader(
-      offset,
       byteData.getInt16(offset),
       byteData.getInt16(offset + 2),
       byteData.getInt16(offset + 4),
@@ -22,8 +22,6 @@ class GlyphHeader {
       byteData.getInt16(offset + 8),
     );
   }
-
-  final int offset;
 
   final int numberOfContours;
   final int xMin;
@@ -33,5 +31,16 @@ class GlyphHeader {
 
   bool get isComposite => numberOfContours.isNegative;
 
+  @override
   int get size => _kGlyphHeaderSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setInt16(0, numberOfContours)
+      ..setInt16(2, xMin)
+      ..setInt16(4, yMin)
+      ..setInt16(6, xMax)
+      ..setInt16(8, yMax);
+  }
 }
