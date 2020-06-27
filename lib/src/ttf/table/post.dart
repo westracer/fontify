@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../utils/pascal_string.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
@@ -12,7 +13,7 @@ const _kVersion30 = 0x00030000;
 
 const _kHeaderSize = 32;
 
-class PostScriptTableHeader {
+class PostScriptTableHeader implements BinaryCodable {
   PostScriptTableHeader(
     this.version,
     this.italicAngle,
@@ -68,10 +69,25 @@ class PostScriptTableHeader {
   final int minMemType1;
   final int maxMemType1;
 
+  @override
   int get size => _kHeaderSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setInt32(0, version.int32value)
+      ..setFixed(4, italicAngle)
+      ..setFWord(8, underlinePosition)
+      ..setFWord(10, underlineThickness)
+      ..setUint32(12, isFixedPitch)
+      ..setUint32(16, minMemType42)
+      ..setUint32(20, maxMemType42)
+      ..setUint32(24, minMemType1)
+      ..setUint32(28, maxMemType1);
+  }
 }
 
-abstract class PostScriptData {
+abstract class PostScriptData implements BinaryCodable {
   PostScriptData();
   
   factory PostScriptData.fromByteData(
@@ -92,7 +108,6 @@ abstract class PostScriptData {
     }
   }
 
-  int get size;
   Revision get version;
 }
 
@@ -104,6 +119,9 @@ class PostScriptVersion30 extends PostScriptData {
 
   @override
   Revision get version => const Revision.fromInt32(_kVersion30);
+
+  @override
+  void encodeToBinary(_) {}
 }
 
 class PostScriptVersion20 extends PostScriptData {
@@ -173,7 +191,7 @@ class PostScriptVersion20 extends PostScriptData {
   int get size {
     final glyphNamesSizeList = List.generate(
       numberOfGlyphs, 
-      (i) => _isGlyphNameStandard(glyphNameIndex[i]) ? 0 : glyphNames[i].length
+      (i) => _isGlyphNameStandard(glyphNameIndex[i]) ? 0 : glyphNames[i].size
     );
 
     final glyphNamesSize = glyphNamesSizeList.fold<int>(0, (p, v) => p + v);
@@ -183,6 +201,30 @@ class PostScriptVersion20 extends PostScriptData {
 
   @override
   Revision get version => const Revision.fromInt32(_kVersion20);
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint16(0, numberOfGlyphs);
+    
+    int offset = 2;
+
+    for (final glyphIndex in glyphNameIndex) {
+      byteData.setUint16(offset, glyphIndex);
+      offset += 2;
+    }
+
+    for (int i = 0; i < numberOfGlyphs; i++) {
+      final glyphIndex = glyphNameIndex[i];
+      final glyphName = glyphNames[i];
+
+      if (_isGlyphNameStandard(glyphIndex)) {
+        continue;
+      }
+
+      glyphName.encodeToBinary(byteData.sublistView(offset, glyphName.size));
+      offset += glyphName.size;
+    }
+  }
 }
 
 class PostScriptTable extends FontTable {
@@ -225,8 +267,8 @@ class PostScriptTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    header.encodeToBinary(byteData);
+    data.encodeToBinary(byteData.sublistView(header.size, data.size));
   }
 }
 

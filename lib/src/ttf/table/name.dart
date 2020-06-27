@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/codable/binary.dart';
 import '../../common/constant.dart';
 import '../../utils/enum_class.dart';
 import '../../utils/exception.dart';
@@ -40,7 +41,7 @@ const _kNameRecordTemplateList = [
   NameRecord.template(kPlatformWindows, 0, 0x0409),
 ];
 
-class NameRecord {
+class NameRecord implements BinaryCodable {
   const NameRecord(
     this.platformID,
     this.encodingID,
@@ -98,10 +99,22 @@ class NameRecord {
     );
   }
 
+  @override
   int get size => _kNameRecordSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, platformID)
+      ..setUint16(2, encodingID)
+      ..setUint16(4, languageID)
+      ..setUint16(6, nameID)
+      ..setUint16(8, length)
+      ..setUint16(10, offset);
+  }
 }
 
-class NamingTableFormat0Header {
+class NamingTableFormat0Header implements BinaryCodable {
   NamingTableFormat0Header(
     this.format,
     this.count,
@@ -130,12 +143,37 @@ class NamingTableFormat0Header {
     return NamingTableFormat0Header(format, count, stringOffset, nameRecord);
   }
 
+  factory NamingTableFormat0Header.create(List<NameRecord> nameRecordList) {
+    return NamingTableFormat0Header(
+      _kFormat0,
+      nameRecordList.length,
+      6 + nameRecordList.length * _kNameRecordSize,
+      nameRecordList
+    );
+  }
+
   final int format;
   final int count;
   final int stringOffset;
   final List<NameRecord> nameRecordList;
 
+  @override
   int get size => 6 + nameRecordList.length * _kNameRecordSize;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData
+      ..setUint16(0, format)
+      ..setUint16(2, count)
+      ..setUint16(4, stringOffset);
+
+    int recordOffset = 6;
+
+    for (final record in nameRecordList) {
+      record.encodeToBinary(byteData.sublistView(recordOffset, record.size));
+      recordOffset += record.size;
+    }
+  }
 }
 
 abstract class NamingTable extends FontTable {
@@ -219,21 +257,24 @@ class NamingTableFormat0 extends NamingTable {
         ...stringForNameMap.values
     ];
 
-    final recordList = [
-      for (final record in _kNameRecordTemplateList)
-        for (final entry in stringForNameMap.entries)
-          record.copyWith(
-            nameID: _kNameIDmap.getValueForKey(entry.key),
-            length: entry.value.length,
-          )
-    ];
+    final recordList = <NameRecord>[];
+
+    int stringOffset = 0;
+
+    for (final recordTemplate in _kNameRecordTemplateList) {
+      for (final entry in stringForNameMap.entries) {
+        final record = recordTemplate.copyWith(
+          nameID: _kNameIDmap.getValueForKey(entry.key),
+          length: entry.value.length,
+          offset: stringOffset,
+        );
+
+        recordList.add(record);
+        stringOffset += entry.value.length;
+      }
+    }
     
-    final header = NamingTableFormat0Header(
-      0,
-      recordList.length,
-      null,
-      recordList
-    );
+    final header = NamingTableFormat0Header.create(recordList);
 
     return NamingTableFormat0(null, header, stringList);
   }
@@ -247,7 +288,19 @@ class NamingTableFormat0 extends NamingTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encode
-    throw UnimplementedError();
+    header.encodeToBinary(byteData.sublistView(0, header.size));
+
+    final storageAreaOffset = header.size;
+
+    for (int i = 0; i < header.nameRecordList.length; i++) {
+      final record = header.nameRecordList[i];
+      final string = stringList[i];
+
+      int charOffset = storageAreaOffset + record.offset;
+
+      for (final charCode in string.codeUnits) {
+        byteData.setUint8(charOffset++, charCode);
+      }
+    }
   }
 }

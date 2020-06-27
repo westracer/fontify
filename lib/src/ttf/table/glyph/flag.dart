@@ -50,7 +50,7 @@ class SimpleGlyphFlag implements BinaryCodable {
   final bool overlapSimple;
   final bool reserved;
 
-  Map<int, bool> get _flagsWithMasks => {
+  Map<int, bool> get _valueForMaskMap => {
     _kOnCurvePointValue: onCurvePoint,
     _kXshortVectorValue: xShortVector,
     _kYshortVectorValue: yShortVector,
@@ -68,7 +68,7 @@ class SimpleGlyphFlag implements BinaryCodable {
   int get intValue {
     int value = 0;
 
-    _flagsWithMasks.forEach((mask, flagIsSet) {
+    _valueForMaskMap.forEach((mask, flagIsSet) {
       value |= flagIsSet ? mask : 0;
     });
 

@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
-class PascalString {
+import '../common/codable/binary.dart';
+
+class PascalString implements BinaryCodable {
   PascalString(this.string, this.length);
 
   factory PascalString.fromByteData(ByteData byteData, int offset) {
@@ -15,8 +17,20 @@ class PascalString {
   final String string;
   final int length;
 
+  @override
   int get size => length + 1;
 
   @override
   String toString() => string;
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    byteData.setUint8(length, 0);
+
+    int offset = 1;
+
+    for (final charCode in string.codeUnits) {
+      byteData.setUint8(offset++, charCode);
+    }
+  }
 }
