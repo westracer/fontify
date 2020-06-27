@@ -25,7 +25,7 @@ class PascalString implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    byteData.setUint8(length, 0);
+    byteData.setUint8(0, length);
 
     int offset = 1;
 

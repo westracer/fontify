@@ -90,30 +90,29 @@ class TrueTypeFont implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
     int currentEntryOffset = kOffsetTableLength;
     int currentTableOffset = kOffsetTableLength + entryListSize;
 
     for (final tag in _kTableTagsToEncode) {
-      try {
-        final table = tableMap[tag];
-        final tableSize = table.size;
+      final table = tableMap[tag];
+      final tableSize = table.size;
 
-        table.encodeToBinary(byteData.sublistView(currentTableOffset, tableSize));
-        
-        final encodedTable = ByteData.sublistView(byteData, currentTableOffset, currentTableOffset + tableSize);
-        table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable), currentTableOffset, tableSize);
+      table.encodeToBinary(byteData.sublistView(currentTableOffset, tableSize));
+      
+      final encodedTable = ByteData.sublistView(byteData, currentTableOffset, currentTableOffset + tableSize);
+      table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable), currentTableOffset, tableSize);
 
-        table.entry.encodeToBinary(byteData.sublistView(currentEntryOffset, kTableRecordEntryLength));
+      table.entry.encodeToBinary(byteData.sublistView(currentEntryOffset, kTableRecordEntryLength));
 
-        currentEntryOffset += kTableRecordEntryLength;
-        currentTableOffset += getPaddedTableSize(tableSize);
-      } on UnimplementedError {
-        // TODO: remove when done
-      }
+      currentEntryOffset += kTableRecordEntryLength;
+      currentTableOffset += getPaddedTableSize(tableSize);
     }
 
     offsetTable.encodeToBinary(byteData.sublistView(0, kOffsetTableLength));
+
+    // Setting checksum for whole font in the head table
+    final fontChecksum = calculateFontChecksum(byteData);
+    byteData.setUint32(head.entry.offset + 8, fontChecksum);
   }
 
   int get entryListSize => kTableRecordEntryLength * tableMap.length;

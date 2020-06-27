@@ -149,7 +149,7 @@ class HeaderTable extends FontTable {
       ..setUint16(0, majorVersion)
       ..setUint16(2, minorVersion)
       ..setInt32(4, fontRevision.int32value)
-      ..setUint32(8, 3043242535)
+      ..setUint32(8, checkSumAdjustment)
       ..setUint32(12, magicNumber)
       ..setUint16(16, flags)
       ..setUint16(18, unitsPerEm)

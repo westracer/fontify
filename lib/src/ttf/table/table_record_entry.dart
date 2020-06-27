@@ -6,19 +6,24 @@ import '../../utils/ttf.dart';
 const kTableRecordEntryLength = 16;
 
 class TableRecordEntry implements BinaryCodable {
-  TableRecordEntry(this.tag, this.checkSum, this.offset, this.length);
+  TableRecordEntry(
+    this.tag,
+    this.checkSum,
+    this.offset,
+    this.length
+  );
 
   factory TableRecordEntry.fromByteData(ByteData data, int entryOffset) =>
     TableRecordEntry(
       data.getTag(entryOffset), 
       data.getUint32(entryOffset + 4), 
-      data.getUint32(entryOffset + 4 + 4), 
-      data.getUint32(entryOffset + 4 + 8)
+      data.getUint32(entryOffset + 8), 
+      data.getUint32(entryOffset + 12)
     );
 
   final String tag;
-  final int offset;
   final int checkSum;
+  final int offset;
   final int length;
 
   @override
@@ -28,8 +33,8 @@ class TableRecordEntry implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData
       ..setTag(0, tag)
-      ..setUint32(4, offset)
-      ..setUint32(8, checkSum)
+      ..setUint32(4, checkSum)
+      ..setUint32(8, offset)
       ..setUint32(12, length);
   }
 }
