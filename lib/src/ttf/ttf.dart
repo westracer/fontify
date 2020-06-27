@@ -13,7 +13,7 @@ import 'table/all.dart';
 import 'table/glyph/simple.dart';
 import 'table/offset.dart';
 
-/// Ordered list of table tags for encoding
+/// Ordered list of table tags for encoding (Optimized Table Ordering)
 const _kTableTagsToEncode = {
   kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kNameTag, kPostTag, kGSUBTag
 };
@@ -90,22 +90,30 @@ class TrueTypeFont implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int currentEntryOffset = kOffsetTableLength;
     int currentTableOffset = kOffsetTableLength + entryListSize;
+
+    final entryList = <TableRecordEntry>[];
 
     for (final tag in _kTableTagsToEncode) {
       final table = tableMap[tag];
       final tableSize = table.size;
 
       table.encodeToBinary(byteData.sublistView(currentTableOffset, tableSize));
-      
       final encodedTable = ByteData.sublistView(byteData, currentTableOffset, currentTableOffset + tableSize);
+
       table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable), currentTableOffset, tableSize);
+      entryList.add(table.entry);
 
-      table.entry.encodeToBinary(byteData.sublistView(currentEntryOffset, kTableRecordEntryLength));
-
-      currentEntryOffset += kTableRecordEntryLength;
       currentTableOffset += getPaddedTableSize(tableSize);
+    }
+
+    // The directory entry tags must be in ascending order
+    entryList.sort((e1, e2) => e1.tag.compareTo(e2.tag));
+
+    for (int i = 0; i < entryList.length; i++) {
+      final entryOffset = kOffsetTableLength + i * kTableRecordEntryLength;
+      final entryByteData = byteData.sublistView(entryOffset, kTableRecordEntryLength);
+      entryList[i].encodeToBinary(entryByteData);
     }
 
     offsetTable.encodeToBinary(byteData.sublistView(0, kOffsetTableLength));
