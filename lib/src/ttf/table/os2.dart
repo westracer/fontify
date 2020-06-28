@@ -293,8 +293,10 @@ class OS2Table extends FontTable {
       return 0;
     }
 
-    final widthSum = hmtx.hMetrics.fold<int>(0, (p, m) => p + m.advanceWidth);
-    return (widthSum / hmtx.hMetrics.length).round();
+    final nonEmptyWidths = hmtx.hMetrics.where((m) => m.advanceWidth > 0);
+
+    final widthSum = nonEmptyWidths.fold<int>(0, (p, m) => p + m.advanceWidth);
+    return (widthSum / nonEmptyWidths.length).round();
   }
 
   // NOTE: GPOS is also used in calculation, not supported yet

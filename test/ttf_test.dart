@@ -338,7 +338,7 @@ void main() {
     });
 
     test('Header table', () {
-      const expected = 'AAEAAAABAAAeSfJ/Xw889QALBAAAAAAA2lveGAAAAADaW94Y//X/ZwZkA1UAAAAIAAIAAAAA';
+      const expected = 'AAEAAAABAAAeSfJ1Xw889QALBAAAAAAA2lveGAAAAADaW94Y//X/ZwZkA1UAAAAIAAIAAAAA';
       final actual = base64Encode(recreatedByteData.buffer.asUint8List(recreatedFont.head.entry.offset, recreatedFont.head.entry.length));
 
       expect(actual, expected);
@@ -357,7 +357,7 @@ void main() {
       final table = recreatedFont.os2;
 
       expect(table.version, 5);
-      expect(table.xAvgCharWidth, 847);
+      expect(table.xAvgCharWidth, 852);
     });
   });
 
