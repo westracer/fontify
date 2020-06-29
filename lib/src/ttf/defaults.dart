@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../utils/misc.dart';
 import '../utils/ttf.dart';
 import 'table/glyph/simple.dart';
 
@@ -7,7 +8,12 @@ const kDefaultAchVendID = '    ';
 const kDefaultUnitsPerEm = 1024; // A power of two is recommended
 const kDefaultFontRevision = Revision(1, 0);
 
-const kDefaultGlyphIndex = [
+const kDefaultGlyphCharCode = <int>[
+  // .notdef doesn't have charcode
+  kUnicodeSpaceCharCode
+];
+
+const kDefaultGlyphIndex = <int>[
   0, // .notdef
   3, // space
 ];

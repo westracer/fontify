@@ -5,7 +5,7 @@ import '../../common/codable/binary.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
-
+import '../defaults.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
@@ -515,15 +515,20 @@ class CharacterToGlyphTable extends FontTable {
   }
 
   factory CharacterToGlyphTable.create(int numOfGlyphs) {
-    final charCodeList = [kUnicodeSpaceCharCode, ..._generateCharCodes(numOfGlyphs)];
+    final charCodeList = [...kDefaultGlyphCharCode, ..._generateCharCodes(numOfGlyphs)];
+
     final segmentList = _generateSegments(charCodeList);
+    final segmentListFormat4 = [
+      ...segmentList,
+      _Segment(0xFFFF, 0xFFFF, 1) // Format 4 table must end with 0xFFFF char code
+    ];
     
     final subtableByFormat = _kDefaultEncodingRecordFormatList
       .toSet()
       .fold<Map<int, CmapData>>(
         {}, 
         (p, format) {
-          p[format] = CmapData.create(segmentList, format);
+          p[format] = CmapData.create(format == _kFormat4 ? segmentListFormat4 : segmentList, format);
           return p;
         }
       );
@@ -551,7 +556,7 @@ class CharacterToGlyphTable extends FontTable {
   
   static List<int> _generateCharCodes(int numOfGlyphs) =>
     List.generate(
-      numOfGlyphs - 1, // Glyph 0 is the .notdef
+      numOfGlyphs,
       (i) => kUnicodePrivateUseAreaStart + i
     );
 
