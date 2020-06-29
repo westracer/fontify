@@ -215,7 +215,7 @@ class OS2Table extends FontTable {
       math.max(head.yMax, hhea.ascender),
       -math.min(head.yMin, hhea.descender),
 
-      !isV1 ? null : 1,    // Latin 1
+      !isV1 ? null : 0, // The code page is not functional
       !isV1 ? null : 0,
 
       !isV4 ? null : 0,

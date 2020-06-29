@@ -42,9 +42,9 @@ class GlyphDataTable extends FontTable {
     return GlyphDataTable(entry, glyphList);
   }
 
-  factory GlyphDataTable.fromGlyphs(List<SimpleGlyph> glyphList, int unitsPerEm) {
+  factory GlyphDataTable.fromGlyphs(List<SimpleGlyph> glyphList, int ascender) {
     final fullGlyphList = [
-      ...generateDefaultGlyphList(unitsPerEm),
+      ...generateDefaultGlyphList(ascender),
       ...glyphList
     ];
 

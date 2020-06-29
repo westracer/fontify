@@ -33,7 +33,6 @@ class TrueTypeFont implements BinaryCodable {
     @required String fontName,
     List<String> glyphNameList,
     String description,
-    int unitsPerEm,
     Revision revision,
     String achVendID,
   }) {
@@ -43,15 +42,17 @@ class TrueTypeFont implements BinaryCodable {
       );
     }
 
-    unitsPerEm ??= kDefaultUnitsPerEm;
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
 
-    final glyf = GlyphDataTable.fromGlyphs(glyphList, unitsPerEm);
+    final unitsPerEm = kDefaultUnitsPerEm;
+    final ascender = kDefaultUnitsPerEm - kDefaultBaselineExtension;
+
+    final glyf = GlyphDataTable.fromGlyphs(glyphList, ascender);
     final head = HeaderTable.create(glyf, revision);
     final loca = IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyf, unitsPerEm);
-    final hhea = HorizontalHeaderTable.create(glyf, hmtx, head);
+    final hhea = HorizontalHeaderTable.create(glyf, hmtx, ascender);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(glyf);

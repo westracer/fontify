@@ -6,6 +6,7 @@ import 'table/glyph/simple.dart';
 
 const kDefaultAchVendID = '    ';
 const kDefaultUnitsPerEm = 1024; // A power of two is recommended
+const kDefaultBaselineExtension = 150;
 const kDefaultFontRevision = Revision(1, 0);
 
 const kDefaultGlyphCharCode = <int>[
@@ -19,26 +20,26 @@ const kDefaultGlyphIndex = <int>[
 ];
 
 /// Generates list of default glyphs (.notdef 'rectangle' and empty space)
-List<SimpleGlyph> generateDefaultGlyphList(int unitsPerEm) => [
-  _generateNotdefGlyph(unitsPerEm),
+List<SimpleGlyph> generateDefaultGlyphList(int ascender) => [
+  _generateNotdefGlyph(ascender),
   SimpleGlyph.empty(),
 ];
 
-SimpleGlyph _generateNotdefGlyph(int unitsPerEm) {
+SimpleGlyph _generateNotdefGlyph(int ascender) {
   const kRelativeWidth = .7;
   const kRelativeThickness = .1;
 
-  final xOuterOffset = (kRelativeWidth * unitsPerEm / 2).round();
+  final xOuterOffset = (kRelativeWidth * ascender / 2).round();
   final thickness = (kRelativeThickness * xOuterOffset).round();
   
   final outerRect = math.Rectangle.fromPoints(
     const math.Point(0, 0),
-    math.Point(xOuterOffset, unitsPerEm)
+    math.Point(xOuterOffset, ascender)
   );
   
   final innerRect = math.Rectangle.fromPoints(
     math.Point(thickness, thickness),
-    math.Point(xOuterOffset - thickness, unitsPerEm - thickness)
+    math.Point(xOuterOffset - thickness, ascender - thickness)
   );
 
   final points = [
