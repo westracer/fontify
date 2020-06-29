@@ -338,11 +338,11 @@ void main() {
     });
 
     test('Header table', () {
-      const expected = 'AAEAAAABAAAeSfJ1Xw889QALBAAAAAAA2lveGAAAAADaW94Y//X/ZwZkA1UAAAAIAAIAAAAA';
+      const expected = 'AAEAAAABAADXpqNjXw889QALBAAAAAAA2lveGAAAAADaW94Y//X/ZwZkBAAAAAAIAAIAAAAA';
       final actual = base64Encode(recreatedByteData.buffer.asUint8List(recreatedFont.head.entry.offset, recreatedFont.head.entry.length));
 
       expect(actual, expected);
-      expect(recreatedFont.head.entry.checkSum, 439353321);
+      expect(recreatedFont.head.entry.checkSum, 439353492);
     });
 
     test('Glyph Substitution table', () {
@@ -357,7 +357,7 @@ void main() {
       final table = recreatedFont.os2;
 
       expect(table.version, 5);
-      expect(table.xAvgCharWidth, 852);
+      expect(table.xAvgCharWidth, 851);
     });
   });
 

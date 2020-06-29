@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import '../../utils/ttf.dart';
 import '../debugger.dart';
-
+import '../defaults.dart';
 import 'abstract.dart';
 import 'glyph/header.dart';
 import 'glyph/simple.dart';
@@ -42,8 +42,13 @@ class GlyphDataTable extends FontTable {
     return GlyphDataTable(entry, glyphList);
   }
 
-  factory GlyphDataTable.fromGlyphs(List<SimpleGlyph> glyphList) {
-    return GlyphDataTable(null, glyphList);
+  factory GlyphDataTable.fromGlyphs(List<SimpleGlyph> glyphList, int unitsPerEm) {
+    final fullGlyphList = [
+      ...generateDefaultGlyphList(unitsPerEm),
+      ...glyphList
+    ];
+
+    return GlyphDataTable(null, fullGlyphList);
   }
 
   final List<SimpleGlyph> glyphList;
@@ -65,6 +70,10 @@ class GlyphDataTable extends FontTable {
     int offset = 0;
 
     for (final glyph in glyphList) {
+      if (glyph.isEmpty) {
+        continue;
+      }
+
       glyph.encodeToBinary(byteData.sublistView(offset, glyph.size));
       offset += getPaddedTableSize(glyph.size);
     }

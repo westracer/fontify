@@ -33,8 +33,9 @@ class TrueTypeFont implements BinaryCodable {
     @required String fontName,
     List<String> glyphNameList,
     String description,
-    Revision revision = kDefaultFontRevision,
-    String achVendID = kDefaultAchVendID,
+    int unitsPerEm,
+    Revision revision,
+    String achVendID,
   }) {
     if (glyphNameList != null && glyphNameList.length != glyphList.length) {
       throw TableDataFormatException(
@@ -42,15 +43,19 @@ class TrueTypeFont implements BinaryCodable {
       );
     }
 
-    final glyf = GlyphDataTable.fromGlyphs(glyphList);
+    unitsPerEm ??= kDefaultUnitsPerEm;
+    revision ??= kDefaultFontRevision;
+    achVendID ??= kDefaultAchVendID;
+
+    final glyf = GlyphDataTable.fromGlyphs(glyphList, unitsPerEm);
     final head = HeaderTable.create(glyf, revision);
     final loca = IndexToLocationTable.create(head.indexToLocFormat, glyf);
-    final hmtx = HorizontalMetricsTable.create(glyf);
+    final hmtx = HorizontalMetricsTable.create(glyf, unitsPerEm);
     final hhea = HorizontalHeaderTable.create(glyf, hmtx, head);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(glyf);
-    final cmap = CharacterToGlyphTable.create(glyf.glyphList.length);
+    final cmap = CharacterToGlyphTable.create(glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 

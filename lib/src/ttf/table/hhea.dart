@@ -56,11 +56,11 @@ class HorizontalHeaderTable extends FontTable {
   ) {
     return HorizontalHeaderTable(
       null,
-      1, // major version 1
-      0, // minor version 0
+      1,    // major version 1
+      0,    // minor version 0
       head.unitsPerEm,
-      0,
-      0, // 0 line gap
+      -150, // descender must be negative
+      0,    // 0 line gap
       hmtx.advanceWidthMax,
       hmtx.minLeftSideBearing,
       hmtx.getMinRightSideBearing(glyf),

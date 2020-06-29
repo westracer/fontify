@@ -515,7 +515,7 @@ class CharacterToGlyphTable extends FontTable {
   }
 
   factory CharacterToGlyphTable.create(int numOfGlyphs) {
-    final charCodeList = _generateCharCodes(numOfGlyphs);
+    final charCodeList = [kUnicodeSpaceCharCode, ..._generateCharCodes(numOfGlyphs)];
     final segmentList = _generateSegments(charCodeList);
     
     final subtableByFormat = _kDefaultEncodingRecordFormatList
@@ -550,19 +550,32 @@ class CharacterToGlyphTable extends FontTable {
   final List<CmapData> data;
   
   static List<int> _generateCharCodes(int numOfGlyphs) =>
-    List.generate(numOfGlyphs, (i) => kUnicodePrivateUseAreaStart + i);
+    List.generate(
+      numOfGlyphs - 1, // Glyph 0 is the .notdef
+      (i) => kUnicodePrivateUseAreaStart + i
+    );
 
   static List<_Segment> _generateSegments(List<int> charCodeList) {
     int startCharCode = -1, prevCharCode = -1, startGlyphId = -1;
 
     final segmentList = <_Segment>[];
 
+    void saveSegment() {
+      segmentList.add(
+        _Segment(
+          startCharCode,
+          prevCharCode,
+          startGlyphId + 1 // +1 because of .notdef
+        )
+      );
+    }
+
     for (int glyphId = 0; glyphId < charCodeList.length; glyphId++) {
       final charCode = charCodeList[glyphId];
 
       if (prevCharCode + 1 != charCode && startCharCode != -1) {
         // Save a segment, if there's a gap between previous and current codes
-        segmentList.add(_Segment(startCharCode, prevCharCode, startGlyphId));
+        saveSegment();
 
         // Next segment starts with new code
         startCharCode = charCode;
@@ -578,7 +591,7 @@ class CharacterToGlyphTable extends FontTable {
 
     // Closing the last segment
     if (startCharCode != -1 && prevCharCode != -1) {
-      segmentList.add(_Segment(startCharCode, prevCharCode, startGlyphId));
+      saveSegment();
     }
 
     return segmentList;

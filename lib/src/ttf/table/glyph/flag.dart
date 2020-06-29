@@ -24,11 +24,7 @@ class SimpleGlyphFlag implements BinaryCodable {
     this.reserved
   );
 
-  factory SimpleGlyphFlag.fromByteData(ByteData byteData, int offset) {
-    final flag = byteData.getUint8(offset);
-    final repeatFlag = checkBitMask(flag, _kRepeatFlagValue);
-    final repeatTimes = repeatFlag ? byteData.getUint8(offset + 1) : null;
-
+  factory SimpleGlyphFlag.fromIntValue(int flag, [int repeatTimes]) {
     return SimpleGlyphFlag(
       checkBitMask(flag, _kOnCurvePointValue),
       checkBitMask(flag, _kXshortVectorValue),
@@ -38,6 +34,30 @@ class SimpleGlyphFlag implements BinaryCodable {
       checkBitMask(flag, _kYisSameValue),
       checkBitMask(flag, _kOverlapSimpleValue),
       checkBitMask(flag, _kReservedValue)
+    );
+  }
+
+  factory SimpleGlyphFlag.fromByteData(ByteData byteData, int offset) {
+    final flag = byteData.getUint8(offset);
+    final repeatFlag = checkBitMask(flag, _kRepeatFlagValue);
+    final repeatTimes = repeatFlag ? byteData.getUint8(offset + 1) : null;
+
+    return SimpleGlyphFlag.fromIntValue(flag, repeatTimes);
+  }
+
+  factory SimpleGlyphFlag.createForPoint(int x, int y, bool isOnCurve) {
+    final xIsShort = isShortInteger(x);
+    final yIsShort = isShortInteger(y);
+
+    return SimpleGlyphFlag(
+      isOnCurve,
+      xIsShort,
+      yIsShort,
+      null,
+      xIsShort && !x.isNegative,  // 1 if short and positive, 0 otherwise
+      yIsShort && !y.isNegative,  // 1 if short and positive, 0 otherwise
+      false,
+      false
     );
   }
 

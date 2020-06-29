@@ -5,6 +5,7 @@ import '../../utils/exception.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 
+import '../defaults.dart';
 import 'abstract.dart';
 import 'all.dart';
 import 'table_record_entry.dart';
@@ -16,7 +17,6 @@ const _kMacStyleRegular = 0;
 const _kIndexToLocFormatShort = 0;
 const _kIndexToLocFormatLong = 1;
 
-const _kUnitsPerEmDefault = 1024; // A power of two is recommended
 const _kLowestRecPPEMdefault = 8;
 
 const _kHeaderTableSize = 54;
@@ -108,7 +108,7 @@ class HeaderTable extends FontTable {
       revision,
       0, // Setting checkSum to zero first, calculating it at last for the entire font
       0x000B,
-      _kUnitsPerEmDefault,
+      kDefaultUnitsPerEm,
       now,
       now,
       xMin,

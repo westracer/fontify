@@ -23,7 +23,11 @@ class LongHorMetric implements BinaryCodable {
     );
   }
 
-  factory LongHorMetric.createForGlyph(SimpleGlyph glyph) {
+  factory LongHorMetric.createForGlyph(SimpleGlyph glyph, int unitsPerEm) {
+    if (glyph.isEmpty) {
+      return LongHorMetric(unitsPerEm, 0);
+    }
+
     return LongHorMetric(glyph.header.xMax - glyph.header.xMin, 0);
   }
   
@@ -69,10 +73,10 @@ class HorizontalMetricsTable extends FontTable {
     return HorizontalMetricsTable(entry, hMetrics, leftSideBearings);
   }
 
-  factory HorizontalMetricsTable.create(GlyphDataTable glyf) {
+  factory HorizontalMetricsTable.create(GlyphDataTable glyf, int unitsPerEm) {
     final hMetrics = List.generate(
       glyf.glyphList.length,
-      (i) => LongHorMetric.createForGlyph(glyf.glyphList[i])
+      (i) => LongHorMetric.createForGlyph(glyf.glyphList[i], unitsPerEm)
     );
 
     return HorizontalMetricsTable(null, hMetrics, []);
@@ -86,10 +90,10 @@ class HorizontalMetricsTable extends FontTable {
 
   int get advanceWidthMax => hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
 
-  int get minLeftSideBearing => hMetrics.fold<int>(kInt64Max, (p, v) => math.min(p, v.lsb));
+  int get minLeftSideBearing => hMetrics.fold<int>(kInt32Max, (p, v) => math.min(p, v.lsb));
 
   int getMinRightSideBearing(GlyphDataTable glyf) {
-    int minRsb = kInt64Max;
+    int minRsb = kInt32Max;
 
     for (int i = 0; i < glyf.glyphList.length; i++) {
       final g = glyf.glyphList[i];
@@ -102,7 +106,7 @@ class HorizontalMetricsTable extends FontTable {
   }
 
   int getMaxExtent(GlyphDataTable glyf) {
-    int maxExtent = kInt64Min;
+    int maxExtent = kInt32Min;
 
     for (int i = 0; i < glyf.glyphList.length; i++) {
       final g = glyf.glyphList[i];

@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../../common/codable/binary.dart';
+import '../../../utils/misc.dart';
 import '../../../utils/ttf.dart';
 import 'flag.dart';
 import 'header.dart';
@@ -93,8 +95,37 @@ class SimpleGlyph implements BinaryCodable {
       endPtsOfContours,
       instructions,
       flags,
-      _relToAbsCoordinates(xCoordinates),
-      _relToAbsCoordinates(yCoordinates),
+      relToAbsCoordinates(xCoordinates),
+      relToAbsCoordinates(yCoordinates),
+    );
+  }
+
+  factory SimpleGlyph.fromPoints(List<int> endPtsOfContours, List<math.Point<int>> pointList) {
+    final absXcoordinates = pointList.map((p) => p.x).toList();
+    final absYcoordinates = pointList.map((p) => p.y).toList();
+
+    final relXcoordinates = absToRelCoordinates(absXcoordinates);
+    final relYcoordinates = absToRelCoordinates(absYcoordinates);
+
+    final xMin = absXcoordinates.fold<int>(kInt32Max, math.min);
+    final yMin = absYcoordinates.fold<int>(kInt32Max, math.min);
+    final xMax = absXcoordinates.fold<int>(kInt32Min, math.max);
+    final yMax = absYcoordinates.fold<int>(kInt32Min, math.max);
+
+    final flags = [
+      for (int i = 0; i < pointList.length; i++)
+        SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], true) // TODO: pass isOnCurve
+    ];
+
+    // TODO: compact flags: repeat & not short same flag
+
+    return SimpleGlyph(
+      GlyphHeader(endPtsOfContours.length, xMin, yMin, xMax, yMax),
+      endPtsOfContours,
+      [],
+      flags,
+      absXcoordinates,
+      absYcoordinates
     );
   }
 
@@ -102,8 +133,14 @@ class SimpleGlyph implements BinaryCodable {
   final List<int> endPtsOfContours;
   final List<int> instructions;
   final List<SimpleGlyphFlag> flags;
+
+  /// Absolute X coordinates
   final List<int> xCoordinates;
+
+  /// Absolute Y coordinates
   final List<int> yCoordinates;
+
+  bool get isEmpty => header.numberOfContours == 0;
 
   int get _coordinatesSize {
     int coordinatesSize = 0;
@@ -145,7 +182,7 @@ class SimpleGlyph implements BinaryCodable {
   }
 
   @override
-  int get size => header.size + _descriptionSize;
+  int get size => isEmpty ? 0 : header.size + _descriptionSize;
 
   @override
   void encodeToBinary(ByteData byteData) {
@@ -175,8 +212,8 @@ class SimpleGlyph implements BinaryCodable {
       i += flag.repeatTimes;
     }
 
-    final xRelCoordinates = _absToRelCoordinates(xCoordinates);
-    final yRelCoordinates = _absToRelCoordinates(yCoordinates);
+    final xRelCoordinates = absToRelCoordinates(xCoordinates);
+    final yRelCoordinates = absToRelCoordinates(yCoordinates);
     
     for (int i = 0; i < numberOfPoints; i++) {
       final short = flags[i].xShortVector;
@@ -205,38 +242,6 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
-  }
-
-  static List<int> _relToAbsCoordinates(List<int> relCoordinates) {
-    if (relCoordinates.isEmpty) {
-      return [];
-    }
-
-    final absCoordinates = List.filled(relCoordinates.length, 0);
-    int currentValue = 0;
-
-    for (int i = 0; i < relCoordinates.length; i++) {
-      currentValue += relCoordinates[i];
-      absCoordinates[i] = currentValue;
-    }
-
-    return absCoordinates;
-  }
-
-  static List<int> _absToRelCoordinates(List<int> absCoordinates) {
-    if (absCoordinates.isEmpty) {
-      return [];
-    }
-
-    final relCoordinates = List.filled(absCoordinates.length, 0);
-    int prevValue = 0;
-
-    for (int i = 0; i < absCoordinates.length; i++) {
-      relCoordinates[i] = absCoordinates[i] - prevValue;
-      prevValue = absCoordinates[i];
-    }
-
-    return relCoordinates;
   }
 
   static int _getNumberOfPoints(List<int> endPtsOfContours) => 

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../utils/exception.dart';
+import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
 
@@ -214,7 +215,7 @@ class OS2Table extends FontTable {
       !isV4 ? null : 0,
       !isV4 ? null : 0,
       !isV4 ? null : 0,
-      !isV4 ? null : 0x20, // Space break char
+      !isV4 ? null : kUnicodeSpaceCharCode,
       !isV4 ? null : _getMaxContext(gsub),
       
       /// For fonts that were not designed for multiple optical-size variants,

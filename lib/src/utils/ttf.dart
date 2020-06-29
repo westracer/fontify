@@ -75,6 +75,43 @@ int calculateFontChecksum(ByteData byteData) {
 
 int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil() * 4;
 
+/// Tells if integer is 1 byte long
+bool isShortInteger(int number) => number.bitLength < 9;
+
+/// Converts relative coordinates to absolute ones
+List<int> relToAbsCoordinates(List<int> relCoordinates) {
+  if (relCoordinates.isEmpty) {
+    return [];
+  }
+
+  final absCoordinates = List.filled(relCoordinates.length, 0);
+  int currentValue = 0;
+
+  for (int i = 0; i < relCoordinates.length; i++) {
+    currentValue += relCoordinates[i];
+    absCoordinates[i] = currentValue;
+  }
+
+  return absCoordinates;
+}
+
+/// Converts absolute coordinates to relative ones
+List<int> absToRelCoordinates(List<int> absCoordinates) {
+  if (absCoordinates.isEmpty) {
+    return [];
+  }
+
+  final relCoordinates = List.filled(absCoordinates.length, 0);
+  int prevValue = 0;
+
+  for (int i = 0; i < absCoordinates.length; i++) {
+    relCoordinates[i] = absCoordinates[i] - prevValue;
+    prevValue = absCoordinates[i];
+  }
+
+  return relCoordinates;
+}
+
 extension TTFByteDateExt on ByteData {
   int getFixed(int offset) => getUint16(offset);
 

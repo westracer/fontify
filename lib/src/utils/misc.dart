@@ -1,5 +1,7 @@
-const int kInt64Max = 0x7FFFFFFFFFFFFFFF;
-const int kInt64Min = 0x8000000000000000;
+const int kInt32Max = 2147483647;
+const int kInt32Min = -2147483648;
+
+const int kUnicodeSpaceCharCode = 0x20;
 
 const int kUnicodePrivateUseAreaStart = 0xE000;
 const int kUnicodePrivateUseAreaEnd   = 0xF8FF;

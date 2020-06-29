@@ -4,7 +4,7 @@ import '../../common/codable/binary.dart';
 import '../../utils/pascal_string.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
-
+import '../defaults.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
@@ -144,20 +144,18 @@ class PostScriptVersion20 extends PostScriptData {
     );
     offset += numberOfGlyphs * 2;
 
-    final glyphNames = List.generate(
-      numberOfGlyphs,
-      (i) {
-        final glyphIndex = glyphNameIndex[i];
+    final glyphNames = <PascalString>[];
 
-        if (_isGlyphNameStandard(glyphIndex)) {
-          return PascalString.fromString(_kMacStandardGlyphNames[glyphIndex]);
-        }
-
-        final string = PascalString.fromByteData(byteData, offset);
-        offset += string.size;
-        return string;
+    for (final glyphIndex in glyphNameIndex) {
+      if (_isGlyphNameStandard(glyphIndex)) {
+        continue;
       }
-    );
+
+      final string = PascalString.fromByteData(byteData, offset);
+      offset += string.size;
+      
+      glyphNames.add(string);
+    }
 
     return PostScriptVersion20(
       numberOfGlyphs,
@@ -167,12 +165,13 @@ class PostScriptVersion20 extends PostScriptData {
   }
 
   factory PostScriptVersion20.create(List<String> glyphNameList) {
-    final numberOfGlyphs = glyphNameList.length;
+    final glyphNameIndex = [
+      ...kDefaultGlyphIndex,
+      for (int i = 0; i < glyphNameList.length; i++)
+        _kMacStandardGlyphNames.length + i,
+    ];
 
-    final glyphNameIndex = List.generate(
-      numberOfGlyphs, 
-      (i) => _kMacStandardGlyphNames.length + i
-    );
+    final numberOfGlyphs = glyphNameIndex.length;
 
     final glyphNames = glyphNameList.map((s) => PascalString.fromString(s)).toList();
 
@@ -189,12 +188,15 @@ class PostScriptVersion20 extends PostScriptData {
 
   @override
   int get size {
-    final glyphNamesSizeList = List.generate(
-      numberOfGlyphs, 
-      (i) => _isGlyphNameStandard(glyphNameIndex[i]) ? 0 : glyphNames[i].size
-    );
+    int glyphNamesSize = 0, currentNameIndex = 0;
 
-    final glyphNamesSize = glyphNamesSizeList.fold<int>(0, (p, v) => p + v);
+    for (int i = 0; i < numberOfGlyphs; i++) {
+      if (_isGlyphNameStandard(glyphNameIndex[i])) {
+        continue;
+      }
+      
+      glyphNamesSize += glyphNames[currentNameIndex++].size;
+    }
 
     return 2 + numberOfGlyphs * 2 + glyphNamesSize;
   }
@@ -213,14 +215,16 @@ class PostScriptVersion20 extends PostScriptData {
       offset += 2;
     }
 
+    int currentNameIndex = 0;
+
     for (int i = 0; i < numberOfGlyphs; i++) {
       final glyphIndex = glyphNameIndex[i];
-      final glyphName = glyphNames[i];
 
       if (_isGlyphNameStandard(glyphIndex)) {
         continue;
       }
 
+      final glyphName = glyphNames[currentNameIndex++];
       glyphName.encodeToBinary(byteData.sublistView(offset, glyphName.size));
       offset += glyphName.size;
     }
