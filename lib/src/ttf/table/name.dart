@@ -16,8 +16,35 @@ const _kNameRecordSize = 12;
 const _kFormat0 = 0x0;
 
 enum _NameID {
-  copyright, fontFamily, fontSubfamily, uniqueID, fullFontName,
-  version, postScriptName, manufacturer, description, urlVendor,
+  /// 0:  Copyright notice.
+  copyright,
+
+  /// 1:  Font Family name.
+  fontFamily,
+
+  /// 2:  Font Subfamily name.
+  fontSubfamily,
+
+  /// 3:  Unique font identifier
+  uniqueID,
+
+  /// 4:  Full font name
+  fullFontName,
+
+  /// 5:  Version string.
+  version,
+
+  /// 6:  PostScript name.
+  postScriptName,
+
+  /// 8:  Manufacturer Name.
+  manufacturer,
+
+  /// 10: Description
+  description,
+
+  /// 11: URL of font vendor
+  urlVendor,
 }
 
 const _kNameIDmap = EnumClass<_NameID, int>({
@@ -42,6 +69,9 @@ const _kNameRecordTemplateList = [
   NameRecord.template(kPlatformWindows, 1, 0x0409),
 ];
 
+/// Returns an encoding function for given platform and encoding IDs
+/// 
+/// NOTE: There are more cases than this, but it will do for now.
 List<int> Function(String) _getEncoder(NameRecord record) {
   switch (record.platformID) {
     case kPlatformWindows:
@@ -51,6 +81,9 @@ List<int> Function(String) _getEncoder(NameRecord record) {
   }
 }
 
+/// Returns a decoding function for given platform and encoding IDs
+/// 
+/// NOTE: There are more cases than this, but it will do for now.
 String Function(List<int>) _getDecoder(NameRecord record) {
   switch (record.platformID) {
     case kPlatformWindows:
@@ -258,6 +291,7 @@ class NamingTableFormat0 extends NamingTable {
 
     final now = DateTime.now();
 
+    /// Values for name ids in sorted order
     final stringForNameMap = {
       _NameID.copyright: '$kVendorName © ${now.year}',
       _NameID.fontFamily: fontName,
@@ -265,8 +299,8 @@ class NamingTableFormat0 extends NamingTable {
       _NameID.uniqueID: fontName,
       _NameID.fullFontName: fontName,
       _NameID.version: 'Version ${revision.major}.${revision.minor}',
-      _NameID.manufacturer: kVendorName,
       _NameID.postScriptName: fontName.getAsciiPrintable(),
+      _NameID.manufacturer: kVendorName,
       _NameID.description: description ?? 'Generated using $kVendorName',
       _NameID.urlVendor: kVendorUrl,
     };
