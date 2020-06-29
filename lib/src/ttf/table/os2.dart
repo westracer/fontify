@@ -195,10 +195,16 @@ class OS2Table extends FontTable {
       strikeoutOffset,
       0,    // No Classification
       _kDefaultPANOSE,
+
+      /// NOTE: Only 2 unicode ranges are used now. 
+      /// 
+      /// Should be made calculated, in case of using other ranges.
+
+      1,                      // Bit 1: Basic Latin. Includes space
+      (1 << 28) | (1 << 25),  // Bits 57 & 60: Non-Plane 0 and Private Use Area
       0,
       0,
-      0,
-      0,
+
       asciiAchVendID,
       0x40 | 0x80, // REGULAR and USE_TYPO_METRICS
       cmapFormat4subtable.startCode.first,
