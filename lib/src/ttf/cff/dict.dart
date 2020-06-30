@@ -11,7 +11,7 @@ class CFFDictEntry extends BinaryCodable {
 
   factory CFFDictEntry.fromByteData(ByteData byteData, int startOffset) {
     final operandList = <CFFOperand>[];
-    int operatorValue;
+    final operatorValue = <int>[];
 
     int offset = startOffset;
 
@@ -20,11 +20,11 @@ class CFFDictEntry extends BinaryCodable {
 
       if (b0 < 28) {
         /// Reading an operator (b0 is not in operand range)
-        operatorValue = b0;
+        operatorValue.add(b0);
 
         if (b0 == _kOperatorEscapeByte) {
           /// An operator is 2-byte long
-          operatorValue = (b0 << 8) | byteData.getUint8(offset++);
+          operatorValue.add(byteData.getUint8(offset++));
         }
 
         return CFFDictEntry(operandList, operatorValue);
@@ -34,14 +34,14 @@ class CFFDictEntry extends BinaryCodable {
         offset += operand.size - 1;
       }
     }
-    
+
     throw TableDataFormatException('No operator for CFF dict entry');
   }
 
-  final int operatorValue;
+  final List<int> operatorValue;
   final List<CFFOperand> operandList;
 
-  int get _operatorSize => operatorValue.bitLength == 16 ? 2 : 1;
+  int get _operatorSize => operatorValue.length;
 
   @override
   void encodeToBinary(ByteData byteData) {
