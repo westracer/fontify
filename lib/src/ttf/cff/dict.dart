@@ -3,15 +3,15 @@ import 'dart:typed_data';
 import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
 import 'operand.dart';
+import 'operator.dart';
 
 const _kOperatorEscapeByte = 0x0C;
 
 class CFFDictEntry extends BinaryCodable {
-  CFFDictEntry(this.operandList, this.operatorValue);
+  CFFDictEntry(this.operandList, this.operator);
 
   factory CFFDictEntry.fromByteData(ByteData byteData, int startOffset) {
     final operandList = <CFFOperand>[];
-    final operatorValue = <int>[];
 
     int offset = startOffset;
 
@@ -20,14 +20,14 @@ class CFFDictEntry extends BinaryCodable {
 
       if (b0 < 28) {
         /// Reading an operator (b0 is not in operand range)
-        operatorValue.add(b0);
+        final operatorValue = <int>[b0];
 
         if (b0 == _kOperatorEscapeByte) {
           /// An operator is 2-byte long
           operatorValue.add(byteData.getUint8(offset++));
         }
 
-        return CFFDictEntry(operandList, operatorValue);
+        return CFFDictEntry(operandList, CFFOperator(operatorValue));
       } else {
         final operand = CFFOperand.fromByteData(byteData, offset, b0);
         operandList.add(operand);
@@ -38,10 +38,8 @@ class CFFDictEntry extends BinaryCodable {
     throw TableDataFormatException('No operator for CFF dict entry');
   }
 
-  final List<int> operatorValue;
+  final CFFOperator operator;
   final List<CFFOperand> operandList;
-
-  int get _operatorSize => operatorValue.length;
 
   @override
   void encodeToBinary(ByteData byteData) {
@@ -49,7 +47,7 @@ class CFFDictEntry extends BinaryCodable {
   }
 
   @override
-  int get size => _operatorSize + operandList.fold<int>(0, (p, e) => p + e.size);
+  int get size => operator.size + operandList.fold<int>(0, (p, e) => p + e.size);
 }
 
 class CFFDict extends BinaryCodable {

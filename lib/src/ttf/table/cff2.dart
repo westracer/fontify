@@ -38,7 +38,6 @@ class CFF2TableHeader implements BinaryCodable {
   }
 
   @override
-  // TODO: implement size
   int get size => _kHeaderSize;
 }
 
