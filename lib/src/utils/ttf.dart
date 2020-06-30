@@ -16,6 +16,7 @@ const String kLocaTag = 'loca';
 const String kMaxpTag = 'maxp';
 const String kNameTag = 'name';
 const String kPostTag = 'post';
+const String kCFF2Tag = 'CFF2';
 
 const kPlatformUnicode   = 0;
 const kPlatformMacintosh = 1;

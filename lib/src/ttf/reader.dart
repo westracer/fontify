@@ -65,11 +65,19 @@ class TTFReader {
 
   void _readTables(Map<String, TableRecordEntry> entryMap) {
     for (final tag in _tagsParseOrder) {
+      final entry = entryMap[tag];
+
+      if (entry == null) {
+        continue;
+      }
+
       final table = _createTableFromEntry(entryMap[tag]);
 
-      if (table != null) {
-        _tableMap[tag] = table;
+      if (table == null) {
+        continue;
       }
+
+      _tableMap[tag] = table;
     }
   }
   
@@ -97,6 +105,8 @@ class TTFReader {
         return HorizontalHeaderTable.fromByteData(_byteData, entry);
       case kHmtxTag:
         return HorizontalMetricsTable.fromByteData(_byteData, entry, _font.hhea, numGlyphs);
+      case kCFF2Tag:
+        return CFF2Table.fromByteData(_byteData, entry);
       default:
         TTFDebugger.debugUnsupportedTable(entry.tag);
         return null;

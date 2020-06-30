@@ -1,4 +1,5 @@
 export 'abstract.dart';
+export 'cff2.dart';
 export 'cmap.dart';
 export 'coverage.dart';
 export 'feature_list.dart';
