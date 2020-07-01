@@ -143,8 +143,8 @@ extension TTFByteDateExt on ByteData {
     setInt64(offset, dateTime.difference(_longDateTimeStart).inSeconds);
   }
 
-  ByteData sublistView(int offset, int length) {
-    return ByteData.sublistView(this, offset, offset + length);
+  ByteData sublistView(int offset, [int length]) {
+    return ByteData.sublistView(this, offset, length == null ? null : offset + length);
   }
 }
 

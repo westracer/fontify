@@ -4,6 +4,9 @@ import 'dart:typed_data';
 import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../cff/dict.dart';
+import '../cff/index.dart';
+import '../cff/operator.dart';
+import '../cff/variations.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
@@ -51,8 +54,25 @@ class CFF2Table extends FontTable {
     ByteData byteData,
     TableRecordEntry entry,
   ) {
-    final header = CFF2TableHeader.fromByteData(byteData.sublistView(entry.offset, _kHeaderSize));
-    final topDict = CFFDict.fromByteData(byteData.sublistView(entry.offset + _kHeaderSize, header.topDictLength));
+    int offset = entry.offset;
+
+    final header = CFF2TableHeader.fromByteData(byteData.sublistView(offset, _kHeaderSize));
+    offset += _kHeaderSize;
+
+    final topDict = CFFDict.fromByteData(byteData.sublistView(offset, header.topDictLength));
+    offset += header.topDictLength;
+
+    final globalSubrIndex = CFFIndex.fromByteData(byteData.sublistView(offset));
+    offset += globalSubrIndex.size;
+
+    final vstoreEntry = topDict.entryList.firstWhere((e) => e.operator == vstoreOperator, orElse: () => null);
+    VariationStoreData vstore;
+
+    if (vstoreEntry != null) {
+      final vstoreOffset = vstoreEntry.operandList.first.value as int;
+      final vstoreByteData = byteData.sublistView(entry.offset + vstoreOffset);
+      vstore = VariationStoreData.fromByteData(vstoreByteData);
+    }
 
     return CFF2Table(entry, header);
   }
