@@ -66,12 +66,12 @@ class CFF2Table extends FontTable {
     fixedOffset += globalSubrIndex.size;
 
     /// CharStrings INDEX
-    final charStringsEntry = topDict.getEntryForOperator(charStrings);
-    final charStringsOffset = charStringsEntry.operandList.first.value as int;
-    final charStringsByteData = byteData.sublistView(entry.offset + charStringsOffset);
-    final charStringsIndex = CFFIndex.fromByteData(charStringsByteData);
+    final charStringsIndexEntry = topDict.getEntryForOperator(charStrings);
+    final charStringsIndexOffset = charStringsIndexEntry.operandList.first.value as int;
+    final charStringsIndexByteData = byteData.sublistView(entry.offset + charStringsIndexOffset);
+    final charStringsIndex = CFFIndex.fromByteData(charStringsIndexByteData);
 
-    // TODO: charStrings decode
+    // TODO: charStrings interpretation
 
     /// VariationStore
     final vstoreEntry = topDict.getEntryForOperator(vstore);
@@ -93,34 +93,35 @@ class CFF2Table extends FontTable {
     final fontIndex = CFFIndex.fromByteData(fontIndexByteData);
 
     /// List of Font DICT	
-    final fontDictList = <CFFDict>[];
-
-    for (int i = 0; i < fontIndex.count; i++) {
-      final relativeOffset = fontIndex.offsetList[i] - 1;  // -1 because first offset value is always 1
-      final dictLength = fontIndex.offsetList[i + 1] - fontIndex.offsetList[i];
-
-      final fontDictByteData = fontIndexByteData.sublistView(
-        fontIndex.size + relativeOffset,
-        dictLength
-      );
-
-      final dict = CFFDict.fromByteData(fontDictByteData);
-      fontDictList.add(dict);
-    }
+    final fontDictList = _readIndexWithData(fontIndexByteData, (bd) => CFFDict.fromByteData(bd));
 
     /// Private DICT list
     final privateDictList = <CFFDict>[];
 
+    /// Local subroutines for each Private DICT
+    final localSubrs = <List<List<int>>>[];
+
     for (int i = 0; i < fontIndex.count; i++) {
-      final op = fontDictList[i].getEntryForOperator(private);
-      final offset = entry.offset + (op.operandList.last.value as int);
-      final length = op.operandList.first.value as int;
-      final dictByteData = byteData.sublistView(offset, length);
+      final privateEntry = fontDictList[i].getEntryForOperator(private);
+      final dictOffset = entry.offset + (privateEntry.operandList.last.value as int);
+      final dictLength = privateEntry.operandList.first.value as int;
+      final dictByteData = byteData.sublistView(dictOffset, dictLength);
 
       final dict = CFFDict.fromByteData(dictByteData);
       privateDictList.add(dict);
 
-      // TODO: local subr INDEXes
+      final localSubrEntry = dict.getEntryForOperator(subrs);
+      
+      /// Offset from the start of the Private DICT
+      final localSubrOffset = localSubrEntry.operandList.first.value as int;
+
+      final localSubrByteData = byteData.sublistView(dictOffset + localSubrOffset);
+      final localSubrsData = _readIndexWithData(
+        localSubrByteData,
+        (bd) => bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes).toList()
+      );
+
+      localSubrs.add(localSubrsData);
     }
 
     return CFF2Table(entry, header);
@@ -138,4 +139,25 @@ class CFF2Table extends FontTable {
 
   @override
   int get size => throw UnimplementedError();
+}
+
+List<T> _readIndexWithData<T>(ByteData byteData, T Function(ByteData) decoder) {
+  final index = CFFIndex.fromByteData(byteData);
+  final indexSize = index.size;
+
+  final dataList = <T>[];
+
+  for (int i = 0; i < index.count; i++) {
+    final relativeOffset = index.offsetList[i] - 1; // -1 because first offset value is always 1
+    final elementLength = index.offsetList[i + 1] - index.offsetList[i];
+
+    final fontDictByteData = byteData.sublistView(
+      indexSize + relativeOffset,
+      elementLength
+    );
+
+    dataList.add(decoder(fontDictByteData));
+  }
+
+  return dataList;
 }
