@@ -5,19 +5,44 @@ import '../../utils/exception.dart';
 // Top DICT operators
 
 /// 1/unitsPerEm 0 0 1/unitsPerEm 0 0. Omitted if unitsPerEm is 1000.
-final CFFOperator fontMatrixOperator = CFFOperator(const [12, 7]);
+final CFFOperator fontMatrix = CFFOperator(const [12, 7]);
 
 /// CharStrings INDEX offset.
-final CFFOperator charStringsOperator = CFFOperator(const [17]);
+final CFFOperator charStrings = CFFOperator(const [17]);
 
 /// Font DICT (FD) INDEX offset.
-final CFFOperator fdArrayOperator = CFFOperator(const [12, 36]);
+final CFFOperator fdArray = CFFOperator(const [12, 36]);
 
 /// FDSelect structure offset. OOmitted if just one Font DICT.
-final CFFOperator fdSelectOperator = CFFOperator(const [12, 37]);
+final CFFOperator fdSelect = CFFOperator(const [12, 37]);
 
 /// VariationStore structure offset. Omitted if there is no varation data.
-final CFFOperator vstoreOperator = CFFOperator(const [24]);
+final CFFOperator vstore = CFFOperator(const [24]);
+
+// Font DICT operators
+
+/// Private DICT size and offset
+final CFFOperator private = CFFOperator(const [18]);
+
+final CFFOperator blueValues = CFFOperator(const [6]);
+final CFFOperator otherBlues = CFFOperator(const [7]);
+final CFFOperator familyBlues = CFFOperator(const [8]);
+final CFFOperator familyOtherBlues = CFFOperator(const [9]);
+final CFFOperator stdHW = CFFOperator(const [10]);
+final CFFOperator stdVW = CFFOperator(const [11]);
+final CFFOperator escape = CFFOperator(const [12]);
+final CFFOperator subrs = CFFOperator(const [19]);
+final CFFOperator vsindex = CFFOperator(const [22]);
+final CFFOperator blend = CFFOperator(const [23]);
+final CFFOperator bcd = CFFOperator(const [30]);
+
+final CFFOperator blueScale = CFFOperator(const [12, 9]);
+final CFFOperator blueShift = CFFOperator(const [12, 10]);
+final CFFOperator blueFuzz = CFFOperator(const [12, 11]);
+final CFFOperator stemSnapH = CFFOperator(const [12, 12]);
+final CFFOperator stemSnapV = CFFOperator(const [12, 13]);
+final CFFOperator languageGroup = CFFOperator(const [12, 17]);
+final CFFOperator expansionFactor = CFFOperator(const [12, 18]);
 
 @immutable
 class CFFOperator {

@@ -83,8 +83,8 @@ class CFFOperand extends BinaryCodable {
     } else if (b0 == 29) {
       return CFFOperand(decodeFiveByte(), 5);
     } else if (b0 == 30) {
-      final currentOffset = offset;
-      return CFFOperand(decodeRealNumber(), currentOffset - offset);
+      final startNumberOffset = offset;
+      return CFFOperand(decodeRealNumber(), offset - startNumberOffset);
     } else if (b0 >= 32 && b0 <= 246) {
       return CFFOperand(decodeOneByte(), 1);
     } else if (b0 >= 247 && b0 <= 250) {

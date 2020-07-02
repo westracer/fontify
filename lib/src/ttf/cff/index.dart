@@ -4,9 +4,9 @@ import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
 
 class CFFIndex extends BinaryCodable {
-  CFFIndex(this.count, this.offSize, this.offsetList, this.byteList);
+  CFFIndex(this.count, this.offSize, this.offsetList);
 
-  CFFIndex.empty() : count = 0, offSize = null, byteList = [], offsetList = [];
+  CFFIndex.empty() : count = 0, offSize = null, offsetList = [];
 
   factory CFFIndex.fromByteData(ByteData byteData) {
     int offset = 0;
@@ -37,18 +37,12 @@ class CFFIndex extends BinaryCodable {
       offsetList.add(value);
     }
 
-    final byteList = <int>[
-      for (var i = 0; i < offsetList.last; i++)
-        byteData.getUint8(offset++)
-    ];
-
-    return CFFIndex(count, offSize, offsetList, byteList);
+    return CFFIndex(count, offSize, offsetList);
   }
 
   final int count;
   final int offSize;
   final List<int> offsetList;
-  final List<int> byteList;
 
   bool get isEmpty => count == 0;
 
@@ -67,6 +61,6 @@ class CFFIndex extends BinaryCodable {
       return sizeSum;
     }
 
-    return sizeSum += 1 + _offsetListSize + offsetList.last;
+    return sizeSum += 1 + _offsetListSize;
   }
 }

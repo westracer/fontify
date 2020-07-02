@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
@@ -54,24 +53,74 @@ class CFF2Table extends FontTable {
     ByteData byteData,
     TableRecordEntry entry,
   ) {
-    int offset = entry.offset;
+    /// 3 entries with fixed location
+    int fixedOffset = entry.offset;
 
-    final header = CFF2TableHeader.fromByteData(byteData.sublistView(offset, _kHeaderSize));
-    offset += _kHeaderSize;
+    final header = CFF2TableHeader.fromByteData(byteData.sublistView(fixedOffset, _kHeaderSize));
+    fixedOffset += _kHeaderSize;
 
-    final topDict = CFFDict.fromByteData(byteData.sublistView(offset, header.topDictLength));
-    offset += header.topDictLength;
+    final topDict = CFFDict.fromByteData(byteData.sublistView(fixedOffset, header.topDictLength));
+    fixedOffset += header.topDictLength;
 
-    final globalSubrIndex = CFFIndex.fromByteData(byteData.sublistView(offset));
-    offset += globalSubrIndex.size;
+    final globalSubrIndex = CFFIndex.fromByteData(byteData.sublistView(fixedOffset));
+    fixedOffset += globalSubrIndex.size;
 
-    final vstoreEntry = topDict.entryList.firstWhere((e) => e.operator == vstoreOperator, orElse: () => null);
-    VariationStoreData vstore;
+    /// CharStrings INDEX
+    final charStringsEntry = topDict.getEntryForOperator(charStrings);
+    final charStringsOffset = charStringsEntry.operandList.first.value as int;
+    final charStringsByteData = byteData.sublistView(entry.offset + charStringsOffset);
+    final charStringsIndex = CFFIndex.fromByteData(charStringsByteData);
+
+    // TODO: charStrings decode
+
+    /// VariationStore
+    final vstoreEntry = topDict.getEntryForOperator(vstore);
+    VariationStoreData vstoreData;
 
     if (vstoreEntry != null) {
       final vstoreOffset = vstoreEntry.operandList.first.value as int;
       final vstoreByteData = byteData.sublistView(entry.offset + vstoreOffset);
-      vstore = VariationStoreData.fromByteData(vstoreByteData);
+      vstoreData = VariationStoreData.fromByteData(vstoreByteData);
+    }
+
+    /// TODO: decode FDSelect later - it's optional and not needed now
+
+    /// Font DICT INDEX
+    final fdArrayEntry = topDict.getEntryForOperator(fdArray);
+    final fdArrayOffset = fdArrayEntry.operandList.first.value as int;
+    
+    final fontIndexByteData = byteData.sublistView(entry.offset + fdArrayOffset);
+    final fontIndex = CFFIndex.fromByteData(fontIndexByteData);
+
+    /// List of Font DICT	
+    final fontDictList = <CFFDict>[];
+
+    for (int i = 0; i < fontIndex.count; i++) {
+      final relativeOffset = fontIndex.offsetList[i] - 1;  // -1 because first offset value is always 1
+      final dictLength = fontIndex.offsetList[i + 1] - fontIndex.offsetList[i];
+
+      final fontDictByteData = fontIndexByteData.sublistView(
+        fontIndex.size + relativeOffset,
+        dictLength
+      );
+
+      final dict = CFFDict.fromByteData(fontDictByteData);
+      fontDictList.add(dict);
+    }
+
+    /// Private DICT list
+    final privateDictList = <CFFDict>[];
+
+    for (int i = 0; i < fontIndex.count; i++) {
+      final op = fontDictList[i].getEntryForOperator(private);
+      final offset = entry.offset + (op.operandList.last.value as int);
+      final length = op.operandList.first.value as int;
+      final dictByteData = byteData.sublistView(offset, length);
+
+      final dict = CFFDict.fromByteData(dictByteData);
+      privateDictList.add(dict);
+
+      // TODO: local subr INDEXes
     }
 
     return CFF2Table(entry, header);

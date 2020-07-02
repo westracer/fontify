@@ -69,6 +69,13 @@ class CFFDict extends BinaryCodable {
 
   final List<CFFDictEntry> entryList;
 
+  CFFDictEntry getEntryForOperator(CFFOperator operator) {
+    return entryList.firstWhere(
+      (e) => e.operator == operator,
+      orElse: () => null
+    );
+  }
+
   @override
   void encodeToBinary(ByteData byteData) {
     // TODO: implement encodeToBinary
