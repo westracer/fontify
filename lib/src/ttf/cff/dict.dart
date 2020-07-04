@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
+import '../../utils/ttf.dart';
 import 'operand.dart';
 import 'operator.dart';
 
@@ -43,7 +44,15 @@ class CFFDictEntry extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    int offset = 0;
+    
+    for (final operand in operandList) {
+      final operandSize = operand.size;
+      operand.encodeToBinary(byteData.sublistView(offset, operandSize));
+      offset += operandSize;
+    }
+    
+    operator.encodeToBinary(byteData.sublistView(offset, operator.size));
   }
 
   @override
@@ -78,9 +87,15 @@ class CFFDict extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    int offset = 0;
+
+    for (final e in entryList) {
+      final entrySize = e.size;
+      e.encodeToBinary(byteData.sublistView(offset, entrySize));
+      offset += entrySize;
+    }
   }
 
   @override
-  int get size => throw UnimplementedError();
+  int get size => entryList.fold<int>(0, (p, e) => p + e.size);
 }

@@ -93,6 +93,7 @@ class TrueTypeFont implements BinaryCodable {
   CharacterToGlyphTable get cmap => tableMap[kCmapTag] as CharacterToGlyphTable;
   HorizontalHeaderTable get hhea => tableMap[kHheaTag] as HorizontalHeaderTable;
   HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
+  CFF2Table get cff2 => tableMap[kCFF2Tag] as CFF2Table;
 
   @override
   void encodeToBinary(ByteData byteData) {

@@ -125,6 +125,17 @@ extension TTFByteDateExt on ByteData {
   int getUFWord(int offset) => getUint16(offset);
 
   void setUFWord(int offset, int value) => setUint16(offset, value);
+  
+  Uint8List getByteList(int offset, int length) => Uint8List.fromList([
+    for (var i = 0; i < length; i++)
+      getUint8(offset + i)
+  ]);
+
+  void setByteList(int offset, Uint8List list) {
+    for (int i = 0; i < list.length; i++) {
+      setUint8(offset + i, list[i]);
+    }
+  }
 
   String getTag(int offset) {
     return convertTagToString(Uint8List.view(buffer, offset, 4));

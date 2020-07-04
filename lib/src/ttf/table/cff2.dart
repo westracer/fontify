@@ -4,7 +4,7 @@ import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../cff/dict.dart';
 import '../cff/index.dart';
-import '../cff/operator.dart';
+import '../cff/operator.dart' as op;
 import '../cff/variations.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
@@ -31,12 +31,15 @@ class CFF2TableHeader implements BinaryCodable {
   final int majorVersion;
   final int minorVersion;
   final int headerSize;
-  final int topDictLength;
+  int topDictLength;
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
-    throw UnimplementedError();
+    byteData
+      ..setUint8(0, majorVersion)
+      ..setUint8(1, minorVersion)
+      ..setUint8(2, headerSize)
+      ..setUint16(3, topDictLength);
   }
 
   @override
@@ -47,6 +50,13 @@ class CFF2Table extends FontTable {
   CFF2Table(
     TableRecordEntry entry,
     this.header,
+    this.topDict,
+    this.globalSubrsData,
+    this.charStringsData,
+    this.vstoreData,
+    this.fontDictList,
+    this.privateDictList,
+    this.localSubrsDataList,
   ) : super.fromTableRecordEntry(entry);
 
   factory CFF2Table.fromByteData(
@@ -62,19 +72,19 @@ class CFF2Table extends FontTable {
     final topDict = CFFDict.fromByteData(byteData.sublistView(fixedOffset, header.topDictLength));
     fixedOffset += header.topDictLength;
 
-    final globalSubrIndex = CFFIndex.fromByteData(byteData.sublistView(fixedOffset));
-    fixedOffset += globalSubrIndex.size;
+    final globalSubrsData = CFFIndexWithData<Uint8List>.fromByteData(byteData.sublistView(fixedOffset));
+    fixedOffset += globalSubrsData.index.size;
 
     /// CharStrings INDEX
-    final charStringsIndexEntry = topDict.getEntryForOperator(charStrings);
+    final charStringsIndexEntry = topDict.getEntryForOperator(op.charStrings);
     final charStringsIndexOffset = charStringsIndexEntry.operandList.first.value as int;
     final charStringsIndexByteData = byteData.sublistView(entry.offset + charStringsIndexOffset);
-    final charStringsIndex = CFFIndex.fromByteData(charStringsIndexByteData);
 
+    final charStringsData = CFFIndexWithData<Uint8List>.fromByteData(charStringsIndexByteData);
     // TODO: charStrings interpretation
 
     /// VariationStore
-    final vstoreEntry = topDict.getEntryForOperator(vstore);
+    final vstoreEntry = topDict.getEntryForOperator(op.vstore);
     VariationStoreData vstoreData;
 
     if (vstoreEntry != null) {
@@ -86,23 +96,22 @@ class CFF2Table extends FontTable {
     /// TODO: decode FDSelect later - it's optional and not needed now
 
     /// Font DICT INDEX
-    final fdArrayEntry = topDict.getEntryForOperator(fdArray);
+    final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
     final fdArrayOffset = fdArrayEntry.operandList.first.value as int;
     
     final fontIndexByteData = byteData.sublistView(entry.offset + fdArrayOffset);
-    final fontIndex = CFFIndex.fromByteData(fontIndexByteData);
 
     /// List of Font DICT	
-    final fontDictList = _readIndexWithData(fontIndexByteData, (bd) => CFFDict.fromByteData(bd));
+    final fontDictList = CFFIndexWithData<CFFDict>.fromByteData(fontIndexByteData);
 
     /// Private DICT list
     final privateDictList = <CFFDict>[];
 
     /// Local subroutines for each Private DICT
-    final localSubrs = <List<List<int>>>[];
+    final localSubrsDataList = <CFFIndexWithData<Uint8List>>[];
 
-    for (int i = 0; i < fontIndex.count; i++) {
-      final privateEntry = fontDictList[i].getEntryForOperator(private);
+    for (int i = 0; i < fontDictList.index.count; i++) {
+      final privateEntry = fontDictList.data[i].getEntryForOperator(op.private);
       final dictOffset = entry.offset + (privateEntry.operandList.last.value as int);
       final dictLength = privateEntry.operandList.first.value as int;
       final dictByteData = byteData.sublistView(dictOffset, dictLength);
@@ -110,21 +119,28 @@ class CFF2Table extends FontTable {
       final dict = CFFDict.fromByteData(dictByteData);
       privateDictList.add(dict);
 
-      final localSubrEntry = dict.getEntryForOperator(subrs);
+      final localSubrEntry = dict.getEntryForOperator(op.subrs);
       
       /// Offset from the start of the Private DICT
       final localSubrOffset = localSubrEntry.operandList.first.value as int;
 
       final localSubrByteData = byteData.sublistView(dictOffset + localSubrOffset);
-      final localSubrsData = _readIndexWithData(
-        localSubrByteData,
-        (bd) => bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes).toList()
-      );
+      final localSubrsData = CFFIndexWithData<Uint8List>.fromByteData(localSubrByteData);
 
-      localSubrs.add(localSubrsData);
+      localSubrsDataList.add(localSubrsData);
     }
 
-    return CFF2Table(entry, header);
+    return CFF2Table(
+      entry,
+      header,
+      topDict,
+      globalSubrsData,
+      charStringsData,
+      vstoreData,
+      fontDictList,
+      privateDictList,
+      localSubrsDataList
+    );
   }
 
   factory CFF2Table.create() {
@@ -132,32 +148,46 @@ class CFF2Table extends FontTable {
   }
 
   final CFF2TableHeader header;
+  final CFFDict topDict;
+  final CFFIndexWithData<Uint8List> globalSubrsData;
+  final CFFIndexWithData<Uint8List> charStringsData;
+  final VariationStoreData vstoreData;
+  final CFFIndexWithData<CFFDict> fontDictList;
+  final List<CFFDict> privateDictList;
+  final List<CFFIndexWithData<Uint8List>> localSubrsDataList;
+
+  void _generateTopDictEntries() {
+    final entryList = <CFFDictEntry>[
+      CFFDictEntry([], op.charStrings),
+      if (vstoreData != null)
+        CFFDictEntry([], op.vstore),
+      CFFDictEntry([], op.fdArray),
+      /// TODO: encode FDSelect later - it's optional and not needed now
+    ];
+
+    topDict.entryList.replaceRange(0, entryList.length, entryList);
+  }
 
   @override
   void encodeToBinary(ByteData byteData) {
+    _generateTopDictEntries();
+
+    int offset = 0;
+
+    header
+      ..topDictLength = topDict.size
+      ..encodeToBinary(byteData.sublistView(offset, header.size));
+    offset += header.size;
+
+    topDict.encodeToBinary(byteData.sublistView(offset, topDict.size));
+    offset += topDict.size;
+
+    globalSubrsData.encodeToBinary(byteData);
+    offset += globalSubrsData.size;
+
+    // TODO: implement
   }
 
   @override
-  int get size => throw UnimplementedError();
-}
-
-List<T> _readIndexWithData<T>(ByteData byteData, T Function(ByteData) decoder) {
-  final index = CFFIndex.fromByteData(byteData);
-  final indexSize = index.size;
-
-  final dataList = <T>[];
-
-  for (int i = 0; i < index.count; i++) {
-    final relativeOffset = index.offsetList[i] - 1; // -1 because first offset value is always 1
-    final elementLength = index.offsetList[i + 1] - index.offsetList[i];
-
-    final fontDictByteData = byteData.sublistView(
-      indexSize + relativeOffset,
-      elementLength
-    );
-
-    dataList.add(decoder(fontDictByteData));
-  }
-
-  return dataList;
+  int get size => header.size + topDict.size + globalSubrsData.size;
 }

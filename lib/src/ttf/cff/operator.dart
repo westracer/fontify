@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 
+import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
 
 // Top DICT operators
@@ -45,7 +48,7 @@ final CFFOperator languageGroup = CFFOperator(const [12, 17]);
 final CFFOperator expansionFactor = CFFOperator(const [12, 18]);
 
 @immutable
-class CFFOperator {
+class CFFOperator implements BinaryCodable {
   CFFOperator(this.byteList) 
   : intValue = byteList?.fold<int>(0, (p, e) => (p << 8) + e) 
     {
@@ -57,6 +60,7 @@ class CFFOperator {
   final List<int> byteList;
   final int intValue;
 
+  @override
   int get size => byteList.length;
 
   @override
@@ -69,5 +73,12 @@ class CFFOperator {
     }
 
     return false;
+  }
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    for (int i = 0; i < byteList.length; i++) {
+      byteData.setUint8(i, byteList[i]);
+    }
   }
 }

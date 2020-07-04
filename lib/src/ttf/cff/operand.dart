@@ -103,7 +103,72 @@ class CFFOperand extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    int offset = 0;
+
+    void writeDouble() {
+      final s = value.toString();
+
+      bool firstHalf = true;
+      int prevNibble;
+
+      for (int i = 0; i < s.length; i++) {
+        String char = s[i];
+
+        if (i + 1 < s.length && s[i + 1] == '-') {
+          char += '-';
+          i++;
+        }
+        
+        final nibble = _kStringForRealNumberByte.indexOf(char);
+
+        if (firstHalf) {
+          prevNibble = nibble;
+        } else {
+          byteData.setUint8(offset++, (prevNibble << 4) | nibble);
+        }
+
+        firstHalf = !firstHalf;
+      }
+      
+      if (firstHalf) {
+        byteData.setUint8(offset++, 0xFF);
+      } else {
+        byteData.setUint8(offset++, (prevNibble << 4) | _kRealNumberTerminator);
+      }
+    }
+
+    if (value is double) {
+      byteData.setUint8(offset++, 30);
+      writeDouble();
+    } else {
+      int intValue = value as int;
+      
+      if (intValue >= -107 && intValue <= 107) {
+        byteData.setUint8(offset++, intValue + 139);
+      } else if (intValue >= 108 && intValue <= 1131) {
+        intValue -= 108;
+
+        byteData
+          ..setUint8(offset++, (intValue >> 8) + 247)
+          ..setUint8(offset++, intValue & 0xFF);
+      } else if (intValue >= -1131 && intValue <= -108) {
+        intValue = -intValue - 108;
+
+        byteData
+          ..setUint8(offset++, (intValue >> 8) + 251)
+          ..setUint8(offset++, intValue & 0xFF);
+      } else if (intValue >= -32768 && value <= 32767) {
+        byteData
+          ..setUint8(offset++, 28)
+          ..setUint16(offset, intValue);
+        offset += 2;
+      } else {
+        byteData
+          ..setUint8(offset++, 29)
+          ..setUint32(offset, intValue);
+        offset += 4;
+      }
+    }
   }
 
   @override
