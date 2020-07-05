@@ -195,7 +195,12 @@ class CFF2Table extends FontTable {
       offset += vstoreSize;
     }
 
-    // _generateTopDictEntries(null, null, vstoreOffset: vstoreOffset); // TODO: uncomment
+    final charStringsOffset = offset;
+    final charStringsSize = charStringsData.size;
+    charStringsData.encodeToBinary(byteData.sublistView(offset, charStringsSize));
+    offset += charStringsSize;
+
+    // _generateTopDictEntries(charStringsOffset, null, vstoreOffset: vstoreOffset); // TODO: uncomment
 
     // TODO: implement
   }
@@ -205,5 +210,6 @@ class CFF2Table extends FontTable {
     header.size + 
     topDict.size + 
     globalSubrsData.size + 
-    (vstoreData?.size ?? 0);
+    (vstoreData?.size ?? 0) + 
+    charStringsData.size;
 }

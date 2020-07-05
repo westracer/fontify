@@ -64,11 +64,8 @@ class CFFIndex extends BinaryCodable {
     byteData.setUint8(offset++, offSize);
 
     for (int i = 0; i < count + 1; i++) {
-      int value = offsetList[i];
-
       for (int j = 0; j < offSize; j++) {
-        final byte = value & 0xFF;
-        value >>= 8;
+        final byte = (offsetList[i] >> 8 * (offSize - j - 1)) & 0xFF;
         byteData.setUint8(offset++, byte);
       }
     }
@@ -173,8 +170,8 @@ class CFFIndexWithData<T> implements BinaryCodable {
 
     do {
       expectedOffSize++;
-      newIndex = CFFIndex(data.length, expectedOffSize, []);
-      actualOffSize = (offsetList.last / 8).ceil();
+      newIndex = CFFIndex(data.length, expectedOffSize, offsetList);
+      actualOffSize = (offsetList.last.bitLength / 8).ceil();
     } while (actualOffSize != expectedOffSize);
 
     if (actualOffSize > 4) {
