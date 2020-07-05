@@ -4,6 +4,7 @@ import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../cff/dict.dart';
 import '../cff/index.dart';
+import '../cff/operand.dart';
 import '../cff/operator.dart' as op;
 import '../cff/variations.dart';
 import 'abstract.dart';
@@ -156,12 +157,12 @@ class CFF2Table extends FontTable {
   final List<CFFDict> privateDictList;
   final List<CFFIndexWithData<Uint8List>> localSubrsDataList;
 
-  void _generateTopDictEntries() {
+  void _generateTopDictEntries(int charStringsOffset, int fdArrayOffset, {int vstoreOffset}) {
     final entryList = <CFFDictEntry>[
-      CFFDictEntry([], op.charStrings),
-      if (vstoreData != null)
-        CFFDictEntry([], op.vstore),
-      CFFDictEntry([], op.fdArray),
+      CFFDictEntry([CFFOperand.fromValue(charStringsOffset)], op.charStrings),
+      if (vstoreData != null && vstoreOffset != null)
+        CFFDictEntry([CFFOperand.fromValue(vstoreOffset)], op.vstore),
+      CFFDictEntry([CFFOperand.fromValue(fdArrayOffset)], op.fdArray),
       /// TODO: encode FDSelect later - it's optional and not needed now
     ];
 
@@ -170,24 +171,39 @@ class CFF2Table extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    _generateTopDictEntries();
-
     int offset = 0;
 
+    final topDictSize = topDict.size;
+
     header
-      ..topDictLength = topDict.size
+      ..topDictLength = topDictSize
       ..encodeToBinary(byteData.sublistView(offset, header.size));
     offset += header.size;
 
-    topDict.encodeToBinary(byteData.sublistView(offset, topDict.size));
-    offset += topDict.size;
+    topDict.encodeToBinary(byteData.sublistView(offset, topDictSize));
+    offset += topDictSize;
 
-    globalSubrsData.encodeToBinary(byteData);
-    offset += globalSubrsData.size;
+    final globalSubrsSize = globalSubrsData.size;
+    globalSubrsData.encodeToBinary(byteData.sublistView(offset, globalSubrsSize));
+    offset += globalSubrsSize;
+    
+    int vstoreOffset;
+    if (vstoreData != null) {
+      vstoreOffset = offset;
+      final vstoreSize = vstoreData.size;
+      vstoreData.encodeToBinary(byteData.sublistView(offset, vstoreSize));
+      offset += vstoreSize;
+    }
+
+    // _generateTopDictEntries(null, null, vstoreOffset: vstoreOffset); // TODO: uncomment
 
     // TODO: implement
   }
 
   @override
-  int get size => header.size + topDict.size + globalSubrsData.size;
+  int get size =>
+    header.size + 
+    topDict.size + 
+    globalSubrsData.size + 
+    (vstoreData?.size ?? 0);
 }

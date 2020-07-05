@@ -14,6 +14,8 @@ const _kStringForRealNumberByte = [
 class CFFOperand extends BinaryCodable {
   CFFOperand(this.value, this._size);
 
+  CFFOperand.fromValue(this.value);
+
   factory CFFOperand.fromByteData(ByteData byteData, int offset, int b0) {
     /// -107 to +107
     int decodeOneByte() {

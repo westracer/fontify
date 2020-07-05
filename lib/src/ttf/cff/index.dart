@@ -52,7 +52,26 @@ class CFFIndex extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    int offset = 0;
+
+    byteData.setUint32(offset, count);
+    offset += 4;
+
+    if (isEmpty) {
+      return;
+    }
+
+    byteData.setUint8(offset++, offSize);
+
+    for (int i = 0; i < count + 1; i++) {
+      int value = offsetList[i];
+
+      for (int j = 0; j < offSize; j++) {
+        final byte = value & 0xFF;
+        value >>= 8;
+        byteData.setUint8(offset++, byte);
+      }
+    }
   }
 
   int get _offsetListSize => (count + 1) * offSize;

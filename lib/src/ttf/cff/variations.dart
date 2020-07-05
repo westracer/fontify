@@ -22,7 +22,10 @@ class RegionAxisCoordinates extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    byteData
+      ..setUint16(0, startCoord)
+      ..setUint16(2, peakCoord)
+      ..setUint16(4, endCoord);
   }
 
   @override
@@ -50,7 +53,14 @@ class ItemVariationData extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    byteData
+      ..setUint16(0, itemCount)
+      ..setUint16(2, shortDeltaCount)
+      ..setUint16(4, regionIndexCount);
+
+    for (int i = 0; i < regionIndexCount; i++) {
+      byteData.setUint16(6 + 2 * i, regionIndexes[i]);
+    }
   }
 
   @override
@@ -61,19 +71,22 @@ class VariationRegionList extends BinaryCodable {
   VariationRegionList(this.axisCount, this.regionCount, this.regions);
 
   factory VariationRegionList.fromByteData(ByteData byteData) {
-    final axesCount = byteData.getUint16(0);
+    final axisCount = byteData.getUint16(0);
     final regionCount = byteData.getUint16(2);
     
     final regions = [
-      for (var r = 0; r < regionCount; r++)
-        for (var a = 0; a < axesCount; a++)
+      for (int r = 0; r < regionCount; r++)
+        for (int a = 0; a < axisCount; a++)
           RegionAxisCoordinates.fromByteData(
-            byteData.sublistView(4 + (a + r * axesCount) * _kRegionAxisCoordinatesSize)
+            byteData.sublistView(
+              4 + (a + r * axisCount) * _kRegionAxisCoordinatesSize,
+              _kRegionAxisCoordinatesSize,
+            )
           )
     ];
 
     return VariationRegionList(
-      axesCount,
+      axisCount,
       regionCount,
       regions,
     );
@@ -85,7 +98,21 @@ class VariationRegionList extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    byteData
+      ..setUint16(0, axisCount)
+      ..setUint16(2, regionCount);
+
+      for (int r = 0; r < regionCount; r++) {
+        for (int a = 0; a < axisCount; a++) {
+          final index = r * axisCount + a;
+          final coords = regions[index];
+          final coordsByteData = byteData.sublistView(
+            4 + index * _kRegionAxisCoordinatesSize,
+            _kRegionAxisCoordinatesSize
+          );
+          coords.encodeToBinary(coordsByteData);
+        }
+      }
   }
 
   @override
@@ -124,16 +151,41 @@ class ItemVariationStore extends BinaryCodable {
   }
 
   final int format;
-  final int variationRegionListOffset;
-  final int itemVariationDataCount;
-  final List<int> itemVariationDataOffsets;
+  int variationRegionListOffset;
+  int itemVariationDataCount;
+  List<int> itemVariationDataOffsets;
 
   final VariationRegionList variationRegionList;
   final List<ItemVariationData> itemVariationDataList;
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    final variationRegionListSize = variationRegionList.size;
+    itemVariationDataCount = itemVariationDataList.length;
+    variationRegionListOffset = 8 + 4 * itemVariationDataCount;
+    itemVariationDataOffsets = [];
+
+    int offset = variationRegionListOffset + variationRegionListSize;
+
+    for (int i = 0; i < itemVariationDataCount; i++) {
+      final itemVariationData = itemVariationDataList[i];
+      final itemSize = itemVariationData.size;
+      itemVariationDataOffsets.add(offset);
+
+      byteData.setUint32(8 + 4 * i, offset);
+      itemVariationData.encodeToBinary(byteData.sublistView(offset, itemSize));
+
+      offset += itemSize;
+    }
+
+    byteData
+      ..setUint16(0, format)
+      ..setUint32(2, variationRegionListOffset)
+      ..setUint16(6, itemVariationDataCount);
+      
+    variationRegionList.encodeToBinary(
+      byteData.sublistView(variationRegionListOffset, variationRegionListSize)
+    );
   }
 
   int get _itemVariationSubtableListSize => itemVariationDataList.fold<int>(0, (p, i) => p + i.size);
@@ -155,12 +207,16 @@ class VariationStoreData extends BinaryCodable {
     );
   }
 
-  final int length;
+  int length;
   final ItemVariationStore store;
 
   @override
   void encodeToBinary(ByteData byteData) {
-    // TODO: implement encodeToBinary
+    final storeSize = store.size;
+    length = storeSize;
+    byteData.setUint16(0, length);
+
+    store.encodeToBinary(byteData.sublistView(2, storeSize));
   }
 
   @override
