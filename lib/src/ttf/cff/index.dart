@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/calculatable_offsets.dart';
 import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
 import '../../utils/ttf.dart';
@@ -85,7 +86,7 @@ class CFFIndex extends BinaryCodable {
   }
 }
 
-class CFFIndexWithData<T> implements BinaryCodable {
+class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
   CFFIndexWithData(this.index, this.data);
 
   /// Decodes INDEX and its data from [ByteData]
@@ -151,6 +152,16 @@ class CFFIndexWithData<T> implements BinaryCodable {
     throw UnsupportedError('No length callback for type $T');
   }
 
+  @override
+  void recalculateOffsets() {
+    if (data.isEmpty) {
+      index = CFFIndex.empty();
+      return;
+    }
+
+    index = _calculateIndex();
+  }
+
   // TODO: memoize: called three times when writing font - on creating ByteData for font, on creating sublistView and on calling encode
   CFFIndex _calculateIndex() {
     final lengthCallback = _getByteLengthCallback();
@@ -195,14 +206,11 @@ class CFFIndexWithData<T> implements BinaryCodable {
   @override
   void encodeToBinary(ByteData byteData) {
     if (data.isEmpty) {
-      final newIndex = CFFIndex.empty();
-      index = newIndex;
-      newIndex.encodeToBinary(byteData.sublistView(0, newIndex.size));
+      index.encodeToBinary(byteData.sublistView(0, index.size));
     }
 
     int offset = 0;
 
-    index = _calculateIndex();
     final indexSize = index.size;
 
     index.encodeToBinary(byteData.sublistView(offset, indexSize));

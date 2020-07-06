@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../../common/calculatable_offsets.dart';
 import '../../common/codable/binary.dart';
 import '../../utils/ttf.dart';
 import '../cff/dict.dart';
@@ -47,7 +48,7 @@ class CFF2TableHeader implements BinaryCodable {
   int get size => _kHeaderSize;
 }
 
-class CFF2Table extends FontTable {
+class CFF2Table extends FontTable implements CalculatableOffsets {
   CFF2Table(
     TableRecordEntry entry,
     this.header,
@@ -94,7 +95,7 @@ class CFF2Table extends FontTable {
       vstoreData = VariationStoreData.fromByteData(vstoreByteData);
     }
 
-    /// TODO: decode FDSelect later - it's optional and not needed now
+    // TODO: decode FDSelect later - it's optional and not needed now
 
     /// Font DICT INDEX
     final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
@@ -157,29 +158,101 @@ class CFF2Table extends FontTable {
   final List<CFFDict> privateDictList;
   final List<CFFIndexWithData<Uint8List>> localSubrsDataList;
 
-  void _generateTopDictEntries(int charStringsOffset, int fdArrayOffset, {int vstoreOffset}) {
+  void _generateTopDictEntries() {
     final entryList = <CFFDictEntry>[
-      CFFDictEntry([CFFOperand.fromValue(charStringsOffset)], op.charStrings),
-      if (vstoreData != null && vstoreOffset != null)
-        CFFDictEntry([CFFOperand.fromValue(vstoreOffset)], op.vstore),
-      CFFDictEntry([CFFOperand.fromValue(fdArrayOffset)], op.fdArray),
+      CFFDictEntry([CFFOperand.fromValue(0)], op.charStrings),
+      if (vstoreData != null)
+        CFFDictEntry([CFFOperand.fromValue(0)], op.vstore),
+      CFFDictEntry([CFFOperand.fromValue(0)], op.fdArray),
       /// TODO: encode FDSelect later - it's optional and not needed now
     ];
 
-    topDict.entryList.replaceRange(0, entryList.length, entryList);
+    topDict.entryList = entryList;
+  }
+
+  void _recalculateTopDictOffsets() {
+    // Generating entries with zero-values
+    _generateTopDictEntries();
+
+    int offset = header.size + globalSubrsData.size + topDict.size;
+
+    int vstoreOffset;
+    if (vstoreData != null) {
+      vstoreOffset = offset;
+      offset += vstoreData.size;
+    }
+
+    final charStringsOffset = offset;
+    offset += charStringsData.size;
+
+    final fdArrayOffset = offset;
+    offset += fontDictList.size;
+
+    final vstoreEntry = topDict.getEntryForOperator(op.vstore);
+    final charStringsEntry = topDict.getEntryForOperator(op.charStrings);
+    final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
+
+    final offsetList = [
+      if (vstoreData != null)
+        vstoreOffset,
+      charStringsOffset,
+      fdArrayOffset,
+    ];
+
+    final entryList = [
+      if (vstoreEntry != null)
+        vstoreEntry,
+      charStringsEntry,
+      fdArrayEntry,
+    ];
+
+    _calculateEntryOffsets(entryList, offsetList, 0);
+  }
+
+  @override
+  void recalculateOffsets() {
+    _recalculateTopDictOffsets();
+    
+    header.topDictLength = topDict.size;
+    
+    globalSubrsData.recalculateOffsets();
+
+    // Recalculating font DICTs private offsets and SUBRS entries offsets
+    final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
+    final fdArrayOffset = fdArrayEntry.operandList.first.value as int;
+    
+    int fontDictOffset = fdArrayOffset + fontDictList.index.size;
+
+    for (int i = 0; i < fontDictList.data.length; i++) {
+      final fontDict = fontDictList.data[i];
+      final privateDict = privateDictList[i];
+      final privateEntry = fontDict.getEntryForOperator(op.private);
+
+      final newOperands = [CFFOperand.fromValue(privateDict.size), CFFOperand.fromValue(0)];
+      privateEntry.operandList.replaceRange(0, 2, newOperands);
+      fontDictOffset += fontDict.size;
+
+      final subrsEntry = privateDict.getEntryForOperator(op.subrs);
+      subrsEntry.operandList.replaceRange(0, 1, [CFFOperand.fromValue(0)]);
+
+      _calculateEntryOffsets([privateEntry], [fontDictOffset], 1);
+      subrsEntry.recalculatePointers(0, () => privateDict.size);
+    }
+
+    // Recalculating local subrs
+    for (final localSubrs in localSubrsDataList) {
+      localSubrs.recalculateOffsets();
+    }
   }
 
   @override
   void encodeToBinary(ByteData byteData) {
     int offset = 0;
 
-    final topDictSize = topDict.size;
-
-    header
-      ..topDictLength = topDictSize
-      ..encodeToBinary(byteData.sublistView(offset, header.size));
+    header.encodeToBinary(byteData.sublistView(offset, header.size));
     offset += header.size;
 
+    final topDictSize = topDict.size;
     topDict.encodeToBinary(byteData.sublistView(offset, topDictSize));
     offset += topDictSize;
 
@@ -187,23 +260,38 @@ class CFF2Table extends FontTable {
     globalSubrsData.encodeToBinary(byteData.sublistView(offset, globalSubrsSize));
     offset += globalSubrsSize;
     
-    int vstoreOffset;
     if (vstoreData != null) {
-      vstoreOffset = offset;
       final vstoreSize = vstoreData.size;
       vstoreData.encodeToBinary(byteData.sublistView(offset, vstoreSize));
       offset += vstoreSize;
     }
 
-    final charStringsOffset = offset;
     final charStringsSize = charStringsData.size;
     charStringsData.encodeToBinary(byteData.sublistView(offset, charStringsSize));
     offset += charStringsSize;
 
-    // _generateTopDictEntries(charStringsOffset, null, vstoreOffset: vstoreOffset); // TODO: uncomment
+    final fontDictListSize = fontDictList.size;
+    fontDictList.encodeToBinary(byteData.sublistView(offset, fontDictListSize));
+    offset += fontDictListSize;
 
-    // TODO: implement
+    for (int i = 0; i < fontDictList.data.length; i++) {
+      final privateDict = privateDictList[i];
+      final privateDictSize = privateDict.size;
+
+      privateDict.encodeToBinary(byteData.sublistView(offset, privateDictSize));
+      offset += privateDictSize;
+    }
+
+    for (final localSubrs in localSubrsDataList) {
+      final localSubrsSize = localSubrs.size;
+      localSubrs.encodeToBinary(byteData.sublistView(offset, localSubrsSize));
+      offset += localSubrsSize;
+    }
   }
+
+  int get _privateDictListSize => privateDictList.fold(0, (p, d) => p + d.size);
+
+  int get _localSubrsListSize => localSubrsDataList.fold(0, (p, d) => p + d.size);
 
   @override
   int get size =>
@@ -211,5 +299,42 @@ class CFF2Table extends FontTable {
     topDict.size + 
     globalSubrsData.size + 
     (vstoreData?.size ?? 0) + 
-    charStringsData.size;
+    charStringsData.size + 
+    fontDictList.size +
+    _privateDictListSize + 
+    _localSubrsListSize;
+
+  static void _calculateEntryOffsets(
+    List<CFFDictEntry> entryList,
+    List<int> offsetList,
+    int operandIndex,
+  ) {
+    bool sizeChanged;
+
+    /// Iterating and changing offsets while operand size is changing
+    /// A bit dirty, maybe there's easier way to do that
+    do {
+      sizeChanged = false;
+
+      for (int i = 0; i < entryList.length; i++) {
+        final entry = entryList[i];
+        final oldOperand = entry.operandList[operandIndex];
+        final newOperand = CFFOperand.fromValue(offsetList[i]);
+
+        final sizeDiff = newOperand.size - oldOperand.size;
+
+        if (oldOperand.value != newOperand.value) {
+          entry.operandList.replaceRange(operandIndex, operandIndex + 1, [newOperand]);
+        }
+        
+        if (sizeDiff > 0) {
+          sizeChanged = true;
+
+          for (int i = 0; i < offsetList.length; i++) {
+            offsetList[i] += sizeDiff;
+          }
+        }
+      }
+    } while (sizeChanged);
+  }
 }

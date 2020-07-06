@@ -57,6 +57,24 @@ class CFFDictEntry extends BinaryCodable {
 
   @override
   int get size => operator.size + operandList.fold<int>(0, (p, e) => p + e.size);
+
+  void recalculatePointers(int operandIndex, num Function() valueCallback) {
+    int expectedOperandLength = 0, actualOperandLength;
+    CFFOperand subrsOperand;
+
+    do {
+      expectedOperandLength++;
+
+      // Filling with empty value and fixed length
+      operandList.replaceRange(operandIndex, operandIndex + 1, [CFFOperand(null, expectedOperandLength)]);
+
+      // Checking that offset's byte length is the same as current operand's length
+      subrsOperand = CFFOperand.fromValue(valueCallback());
+      actualOperandLength = subrsOperand.size;
+    } while (expectedOperandLength != actualOperandLength);
+
+    operandList.replaceRange(operandIndex, operandIndex + 1, [subrsOperand]);
+  }
 }
 
 class CFFDict extends BinaryCodable {
@@ -76,7 +94,7 @@ class CFFDict extends BinaryCodable {
     return CFFDict(entryList);
   }
 
-  final List<CFFDictEntry> entryList;
+  List<CFFDictEntry> entryList;
 
   CFFDictEntry getEntryForOperator(CFFOperator operator) {
     return entryList.firstWhere(

@@ -197,7 +197,7 @@ class LookupListTable implements BinaryCodable {
     final lookupCount = byteData.getUint16(offset);
     final lookups = List.generate(
       lookupCount, 
-      (i) => byteData.getUint16(offset + 2 + kLookupListTableSize * i)
+      (i) => byteData.getUint16(offset + 2 + 2 * i)
     );
     final lookupTables = List.generate(
       lookupCount,

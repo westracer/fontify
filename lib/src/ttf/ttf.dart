@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
+import '../common/calculatable_offsets.dart';
 import '../common/codable/binary.dart';
 import '../utils/exception.dart';
 import '../utils/ttf.dart';
@@ -103,6 +104,11 @@ class TrueTypeFont implements BinaryCodable {
 
     for (final tag in _kTableTagsToEncode) {
       final table = tableMap[tag];
+
+      if (table is CalculatableOffsets) {
+        (table as CalculatableOffsets).recalculateOffsets();
+      }
+
       final tableSize = table.size;
 
       table.encodeToBinary(byteData.sublistView(currentTableOffset, tableSize));

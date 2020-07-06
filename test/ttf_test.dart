@@ -11,6 +11,7 @@ import 'package:fontify/src/utils/ttf.dart';
 import 'package:test/test.dart';
 
 const _kTestFontAssetPath = './test_assets/test_font.ttf';
+const _kTestCFF2fontAssetPath = './test_assets/test_cff2_font.otf';
 
 void main() {
   TrueTypeFont font;
@@ -358,6 +359,29 @@ void main() {
 
       expect(table.version, 5);
       expect(table.xAvgCharWidth, 851);
+    });
+  });
+
+  group('CFF', () {
+    ByteData byteData;
+
+    setUpAll(() {
+      byteData = ByteData.sublistView(File(_kTestCFF2fontAssetPath).readAsBytesSync());
+      font = TTFReader.fromByteData(byteData).read();
+    });
+
+    test('CFF2 Read & Write', () {
+      final table = font.cff2;
+
+      final originalCFF2byteList = byteData.buffer.asUint8List(table.entry.offset, table.size).toList();
+      final encodedCFF2byteData = ByteData(table.size);
+
+      expect(table.size, table.entry.length);
+
+      table..recalculateOffsets()..encodeToBinary(encodedCFF2byteData);
+      
+      final encodedCFF2byteList = encodedCFF2byteData.buffer.asUint8List().toList();
+      expect(encodedCFF2byteList, originalCFF2byteList);
     });
   });
 
