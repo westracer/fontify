@@ -3,65 +3,23 @@ import 'dart:typed_data';
 import 'package:meta/meta.dart';
 
 import '../../common/codable/binary.dart';
-import '../../utils/exception.dart';
+import 'char_string_operator.dart';
+import 'dict_operator.dart';
 
-// Top DICT operators
-
-/// 1/unitsPerEm 0 0 1/unitsPerEm 0 0. Omitted if unitsPerEm is 1000.
-final CFFOperator fontMatrix = CFFOperator(const [12, 7]);
-
-/// CharStrings INDEX offset.
-final CFFOperator charStrings = CFFOperator(const [17]);
-
-/// Font DICT (FD) INDEX offset.
-final CFFOperator fdArray = CFFOperator(const [12, 36]);
-
-/// FDSelect structure offset. OOmitted if just one Font DICT.
-final CFFOperator fdSelect = CFFOperator(const [12, 37]);
-
-/// VariationStore structure offset. Omitted if there is no varation data.
-final CFFOperator vstore = CFFOperator(const [24]);
-
-// Font DICT operators
-
-/// Private DICT size and offset
-final CFFOperator private = CFFOperator(const [18]);
-
-final CFFOperator blueValues = CFFOperator(const [6]);
-final CFFOperator otherBlues = CFFOperator(const [7]);
-final CFFOperator familyBlues = CFFOperator(const [8]);
-final CFFOperator familyOtherBlues = CFFOperator(const [9]);
-final CFFOperator stdHW = CFFOperator(const [10]);
-final CFFOperator stdVW = CFFOperator(const [11]);
-final CFFOperator escape = CFFOperator(const [12]);
-final CFFOperator subrs = CFFOperator(const [19]);
-final CFFOperator vsindex = CFFOperator(const [22]);
-final CFFOperator blend = CFFOperator(const [23]);
-final CFFOperator bcd = CFFOperator(const [30]);
-
-final CFFOperator blueScale = CFFOperator(const [12, 9]);
-final CFFOperator blueShift = CFFOperator(const [12, 10]);
-final CFFOperator blueFuzz = CFFOperator(const [12, 11]);
-final CFFOperator stemSnapH = CFFOperator(const [12, 12]);
-final CFFOperator stemSnapV = CFFOperator(const [12, 13]);
-final CFFOperator languageGroup = CFFOperator(const [12, 17]);
-final CFFOperator expansionFactor = CFFOperator(const [12, 18]);
+enum CFFOperatorContext {dict, charString}
 
 @immutable
 class CFFOperator implements BinaryCodable {
-  CFFOperator(this.byteList) 
-  : intValue = byteList?.fold<int>(0, (p, e) => (p << 8) + e) 
-    {
-      if (byteList?.length != 1 && byteList?.length != 2) {
-        throw TableDataFormatException('Wrong CFF operator value');
-      }
-    }
+  const CFFOperator(this.context, this.b0, [this.b1]) 
+  : intValue = b1 != null ? ((b0 << 8) | b1) : b0;
 
-  final List<int> byteList;
+  final int b0;
+  final int b1;
   final int intValue;
+  final CFFOperatorContext context;
 
   @override
-  int get size => byteList.length;
+  int get size => b1 == null ? 1 : 2;
 
   @override
   int get hashCode => intValue.hashCode;
@@ -77,8 +35,26 @@ class CFFOperator implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    for (int i = 0; i < byteList.length; i++) {
-      byteData.setUint8(i, byteList[i]);
+    byteData.setUint8(0, b0);
+
+    if (b1 != null) {
+      byteData.setUint8(1, b1);
     }
+  }
+
+  @override
+  String toString() {
+    String name = '<unknown>';
+
+    switch (context) {
+      case CFFOperatorContext.dict:
+        name = dictOperatorNames[this];
+        break;
+      case CFFOperatorContext.charString:
+        name = charStringOperatorNames[this];
+        break;
+    }
+
+    return name;
   }
 }

@@ -21,14 +21,17 @@ class CFFDictEntry extends BinaryCodable {
 
       if (b0 < 28) {
         /// Reading an operator (b0 is not in operand range)
-        final operatorValue = <int>[b0];
+        int b1;
 
         if (b0 == _kOperatorEscapeByte) {
           /// An operator is 2-byte long
-          operatorValue.add(byteData.getUint8(offset++));
+          b1 = byteData.getUint8(offset++);
         }
 
-        return CFFDictEntry(operandList, CFFOperator(operatorValue));
+        return CFFDictEntry(
+          operandList,
+          CFFOperator(CFFOperatorContext.dict, b0, b1)
+        );
       } else {
         final operand = CFFOperand.fromByteData(byteData, offset, b0);
         operandList.add(operand);
@@ -74,6 +77,17 @@ class CFFDictEntry extends BinaryCodable {
     } while (expectedOperandLength != actualOperandLength);
 
     operandList.replaceRange(operandIndex, operandIndex + 1, [subrsOperand]);
+  }
+
+  @override
+  String toString() {
+    String operandListString = operandList.map((e) => e.toString()).join(', ');
+
+    if (operandListString.length > 10) {
+      operandListString = '${operandListString.substring(0, 10)}...';
+    }
+
+    return '$operator [$operandListString]';
   }
 }
 

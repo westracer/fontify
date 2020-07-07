@@ -1,0 +1,421 @@
+// ignore_for_file: invariant_booleans
+
+import 'dart:collection';
+import 'dart:typed_data';
+
+import '../../common/codable/binary.dart';
+import '../../utils/ttf.dart';
+import '../debugger.dart';
+import 'char_string_operator.dart';
+import 'operand.dart';
+import 'operator.dart';
+
+class CharStringOperand extends CFFOperand {
+  CharStringOperand(num value, [int size]) : super(value, size);
+
+  factory CharStringOperand.fromByteData(ByteData byteData, int offset, int b0) {
+    if (b0 == 255) {
+      final value = byteData.getUint32(0);
+      return CharStringOperand(value / 0x10000, 5);
+    } else {
+      final operand = CFFOperand.fromByteData(byteData, offset, b0);
+      return CharStringOperand(operand.value, operand.size);
+    }
+  }
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    int offset = 0;
+
+    if (value is double) {
+      byteData
+        ..setUint8(offset++, 255)
+        ..setUint32(offset, (value * 0x10000).round().toInt());
+      offset += 4;
+    } else {
+      super.encodeToBinary(byteData);
+    }
+  }
+
+  @override
+  int get size {
+    if (value is double) {
+      return 5;
+    } else {
+      return super.size;
+    }
+  }
+}
+
+class CharStringCommand implements BinaryCodable {
+  CharStringCommand(this.operator, this.operandList) 
+  : assert(
+      operator.context == CFFOperatorContext.charString,
+      "Operator's context must be CharString"
+    );
+
+  factory CharStringCommand.rmoveto(int dx, int dy) {
+    return CharStringCommand(rmoveto, _getOperandList([dx, dy]));
+  }
+
+  factory CharStringCommand.rlineto(List<int> dlist) {
+    if (dlist.length.isOdd || dlist.length < 2) {
+      throw ArgumentError('|- {dxa dya}+ rlineto (5) |-');
+    }
+
+    return CharStringCommand(rlineto, _getOperandList(dlist));
+  }
+
+  final CFFOperator operator;
+  final List<CharStringOperand> operandList;
+
+  static List<CharStringOperand> _getOperandList(List<num> operandValues) {
+    return operandValues.map((e) => CharStringOperand(e)).toList();
+  }
+
+  @override
+  String toString() {
+    String operandListString = operandList.map((e) => e.toString()).join(', ');
+
+    if (operandListString.length > 10) {
+      operandListString = '${operandListString.substring(0, 10)}...';
+    }
+
+    return '$operator [$operandListString]';
+  }
+
+  @override
+  void encodeToBinary(ByteData byteData) {
+    int offset = 0;
+
+    for (final operand in operandList) {
+      final operandSize = operand.size;
+      operand.encodeToBinary(byteData.sublistView(offset, operandSize));
+      offset += operandSize;
+    }
+
+    operator.encodeToBinary(byteData.sublistView(offset, operator.size));
+  }
+
+  @override
+  int get size => operator.size + operandList.fold<int>(0, (p, e) => e.size);
+}
+
+/// A very basic implementation of the CFF2 CharString interpreter.
+/// Doesn't support hinting, subroutines, blending.
+/// Doesn't respect interpreter implementation limits.
+class CharStringInterpreter {
+  CharStringInterpreter();
+  
+  final _commandList = <CharStringCommand>[];
+  final Queue<num> _stack = Queue();
+  
+  int getSubrBias(int length) {
+    if (length < 1240) {
+      return 107;
+    } else if (length < 33900) {
+      return 1131;
+    } else {
+      return 32768;
+    }
+  }
+  
+  void _pushCommand(Iterable<num> operandValues, int opB0, [int opB1]) {
+    final command = CharStringCommand(
+      CFFOperator(CFFOperatorContext.charString, opB0, opB1),
+      operandValues.map((e) => CharStringOperand(e)).toList()
+    );
+
+    _commandList.add(command);
+  }
+
+  List<CharStringCommand> readCommands(ByteData byteData) {
+    _stack.clear();
+    _commandList.clear();
+
+    int offset = 0;
+    final end = byteData.lengthInBytes;
+
+    while (offset < end) {
+      int op = byteData.getUint8(offset++);
+      
+      if (op == 28 || op >= 32) {
+        final operandByteData = byteData.sublistView(offset);
+        final operand = CharStringOperand.fromByteData(operandByteData, 0, op);
+        _stack.add(operand.value);
+      } else {
+        switch (op) {
+          case 1:  // hstem
+          case 3:  // vstem
+          case 18: // hstemhm
+          case 23: // vstemhm
+            _stack.clear();
+            TTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
+            break;
+
+          case 4: // vmoveto
+            final dy = _stack.removeFirstOrZero();
+            _pushCommand([dy], op);
+            break;
+
+          case 5: // rlineto
+            final arguments = <num>[];
+
+            while (_stack.length >= 2) {
+              final dx = _stack.removeFirstOrZero();
+              final dy = _stack.removeFirstOrZero();
+
+              arguments.addAll([dx, dy]);
+            }
+
+            _pushCommand(arguments, op);
+            break;
+
+          case 6: // hlineto
+          case 7: // vlineto
+            final arguments = <num>[];
+            bool isX = op == 6;
+
+            while (_stack.isNotEmpty) {
+              if (isX) {
+                final dx = _stack.removeFirstOrZero();
+                arguments.add(dx);
+              } else {
+                final dy = _stack.removeFirstOrZero();
+                arguments.add(dy);
+              }
+
+              isX = !isX;
+            }
+            
+            _pushCommand(arguments, op);
+            break;
+
+          case 8: // rrcurveto
+            final arguments = <num>[];
+
+            while (_stack.length >= 6) {
+              final dxc1 = _stack.removeFirstOrZero();
+              final dyc1 = _stack.removeFirstOrZero();
+              final dxc2 = _stack.removeFirstOrZero();
+              final dyc2 = _stack.removeFirstOrZero();
+              final dx = _stack.removeFirstOrZero();
+              final dy = _stack.removeFirstOrZero();
+              
+              arguments.addAll([dxc1, dyc1, dxc2, dyc2, dx, dy]);
+            }
+
+            _pushCommand(arguments, op);
+            break;
+
+          case 10: // callsubr
+          case 29: // callgsubr
+            _stack.clear();
+            TTFDebugger.debugUnsupportedFeature('CFF subrs not supported');
+            break;
+
+          case 16: { // blend
+            _stack.clear();
+            TTFDebugger.debugUnsupportedFeature('CFF blending not supported');
+            break;
+          }
+
+          case 19: // hintmask
+          case 20: // cntrmask
+            _stack.clear();
+            TTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
+            break;
+
+          case 21: // rmoveto
+            final dx = _stack.removeFirstOrZero();
+            final dy = _stack.removeFirstOrZero();
+
+            _pushCommand([dx, dy], op);
+            break;
+
+          case 22: // hmoveto
+            final dx = _stack.removeFirstOrZero();
+
+            _pushCommand([dx], op);
+            break;
+
+          case 24: // rcurveline
+            final arguments = <num>[];
+
+            while (_stack.length >= 8) {
+              final dxc1 = _stack.removeFirstOrZero();
+              final dyc1 = _stack.removeFirstOrZero();
+              final dxc2 = _stack.removeFirstOrZero();
+              final dyc2 = _stack.removeFirstOrZero();
+              final dx = _stack.removeFirstOrZero();
+              final dy = _stack.removeFirstOrZero();
+              
+              arguments.addAll([dxc1, dyc1, dxc2, dyc2, dx, dy]);
+            }
+
+            final dx = _stack.removeFirstOrZero();
+            final dy = _stack.removeFirstOrZero();
+
+            _pushCommand([...arguments, dx, dy], op);
+            break;
+
+          case 25: // rlinecurve
+            final arguments = <num>[];
+
+            while (_stack.length >= 8) {
+              final dx = _stack.removeFirstOrZero();
+              final dy = _stack.removeFirstOrZero();
+              
+              arguments.addAll([dx, dy]);
+            }
+
+            final dxc1 = _stack.removeFirstOrZero();
+            final dyc1 = _stack.removeFirstOrZero();
+            final dxc2 = _stack.removeFirstOrZero();
+            final dyc2 = _stack.removeFirstOrZero();
+            final dx = _stack.removeFirstOrZero();
+            final dy = _stack.removeFirstOrZero();
+
+            _pushCommand([...arguments, dxc1, dyc1, dxc2, dyc2, dx, dy], op);
+            break;
+
+          case 26: // vvcurveto
+            final arguments = <num>[];
+
+            if (_stack.length.isOdd) {
+              final dx = _stack.removeFirstOrZero();
+
+              arguments.add(dx);
+            }
+
+            while (_stack.length >= 4) {
+              final dyc1 = _stack.removeFirstOrZero();
+              final dxc2 = _stack.removeFirstOrZero();
+              final dyc2 = _stack.removeFirstOrZero();
+              final dy = _stack.removeFirstOrZero();
+              
+              arguments.addAll([dyc1, dxc2, dyc2, dy]);
+            }
+            
+            _pushCommand(arguments, op);
+            break;
+
+          case 27: // hhcurveto
+            final arguments = <num>[];
+
+            if (_stack.length.isOdd) {
+              final dy = _stack.removeFirstOrZero();
+
+              arguments.add(dy);
+            }
+
+            while (_stack.length >= 4) {
+              final dxc1 = _stack.removeFirstOrZero();
+              final dxc2 = _stack.removeFirstOrZero();
+              final dyc2 = _stack.removeFirstOrZero();
+              final dx = _stack.removeFirstOrZero();
+              
+              arguments.addAll([dxc1, dxc2, dyc2, dx]);
+            }
+            
+            _pushCommand(arguments, op);
+            break;
+
+          case 30: // vhcurveto
+          case 31: // hvcurveto
+            bool isX = op == 31;
+            final arguments = <num>[];
+            
+            while (_stack.length >= 4) {
+              if (isX) {
+                final dxc1 = _stack.removeFirstOrZero();
+                final dxc2 = _stack.removeFirstOrZero();
+                final dyc2 = _stack.removeFirstOrZero();
+                final dy = _stack.removeFirstOrZero();
+                final dx = _stack.length == 1 ? _stack.removeFirstOrZero() : null;
+
+                arguments.addAll([dxc1, dxc2, dyc2, dy, if (dx != null) dx]);
+              } else {
+                final dyc1 = _stack.removeFirstOrZero();
+                final dxc2 = _stack.removeFirstOrZero();
+                final dyc2 = _stack.removeFirstOrZero();
+                final dx = _stack.removeFirstOrZero();
+                final dy = _stack.length == 1 ? _stack.removeFirstOrZero() : null;
+
+                arguments.addAll([dyc1, dxc2, dyc2, dx, if (dy != null) dy]);
+              }
+
+              isX = !isX;
+            }
+            
+            _pushCommand(arguments, op);
+            break;
+          case 12: {
+            op = byteData.getUint8(offset++);
+
+            switch (op) {
+              case 34: // hflex
+                _pushCommand(_stack.toList().sublist(0, 7), 12, op);
+                break;
+              case 35: // flex
+                _pushCommand(_stack.toList().sublist(0, 13), 12, op);
+                break;
+              case 36: // hflex1
+                _pushCommand(_stack.toList().sublist(0, 9), 12, op);
+                break;
+              case 37: // flex1
+                _pushCommand(_stack.toList().sublist(0, 11), 12, op);
+                break;
+              default:
+                TTFDebugger.debugUnsupportedFeature('Unknown charString op: 12 $op');
+                _stack.clear();
+            }
+
+            break;
+          }
+
+          default:
+            TTFDebugger.debugUnsupportedFeature('Unknown charString op: $op');
+            _stack.clear();
+        }
+      }
+    }
+
+    return [..._commandList];
+  }
+
+  ByteData writeCommands(List<CharStringCommand> commandList) {
+    final list = <int>[];
+
+    void writeCommand(CharStringCommand command) {
+      command.operandList.map((e) {
+        final byteData = ByteData(e.size);
+        e.encodeToBinary(byteData);
+        
+        return byteData.buffer.asUint8List();
+      }).forEach(list.addAll);
+
+      final op = command.operator;
+      final opByteData = ByteData(op.size);
+      command.operator.encodeToBinary(opByteData);
+      list.addAll(opByteData.buffer.asUint8List());
+    }
+
+    commandList.forEach(writeCommand);
+    return ByteData.sublistView(Uint8List.fromList(list));
+  }
+}
+
+extension _QueueExt<T> on Queue<T> {
+  T removeFirstOrZero() {
+    if (isEmpty) {
+      if (T == num) {
+        return 0 as T;
+      } else {
+        return null;
+      }
+    }
+
+    return removeFirst();
+  }
+}

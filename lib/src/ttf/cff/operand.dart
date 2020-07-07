@@ -38,20 +38,18 @@ class CFFOperand extends BinaryCodable {
 
     /// -32768 to +32767
     int decodeThreeByte() {
-      final b1 = byteData.getUint8(offset++);
-      final b2 = byteData.getUint8(offset++);
+      final value = byteData.getUint16(offset);
+      offset += 2;
 
-      return b1 << 8 | b2;
+      return value;
     }
     
     /// -(2^31) to +(2^31 - 1)
     int decodeFiveByte() {
-      final b1 = byteData.getUint8(offset++);
-      final b2 = byteData.getUint8(offset++);
-      final b3 = byteData.getUint8(offset++);
-      final b4 = byteData.getUint8(offset++);
+      final value = byteData.getUint32(offset);
+      offset += 4;
 
-      return b1 << 24 | b2 << 16 | b3 << 8 | b4;
+      return value;
     }
 
     /// Real number
@@ -222,4 +220,7 @@ class CFFOperand extends BinaryCodable {
       }
     }();
   }
+
+  @override
+  String toString() => value.toString();
 }

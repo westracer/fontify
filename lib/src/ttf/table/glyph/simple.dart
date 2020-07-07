@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import '../../../common/codable/binary.dart';
 import '../../../utils/misc.dart';
 import '../../../utils/ttf.dart';
+import '../../cff/char_string.dart';
 import 'flag.dart';
 import 'header.dart';
 
@@ -242,6 +243,33 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
+  }
+
+  List<CharStringCommand> toCharString() {
+    final commandList = <CharStringCommand>[];
+    bool isContourStart = true;
+
+    final relX = absToRelCoordinates(xCoordinates);
+    final relY = absToRelCoordinates(yCoordinates);
+
+    for (int i = 0; i < relX.length; i++) {
+      if (isContourStart) {
+        commandList.add(CharStringCommand.rmoveto(relX[i], relY[i]));
+        isContourStart = false;
+      } else {
+        // TODO: compact rlineto
+        commandList.add(CharStringCommand.rlineto([relX[i], relY[i]]));
+      }
+
+      // TODO: handle isOnCurve == false
+
+      if (endPtsOfContours.isNotEmpty && endPtsOfContours.first == i) {
+        endPtsOfContours.removeAt(0);
+        isContourStart = true;
+      }
+    }
+
+    return commandList;
   }
 
   static int _getNumberOfPoints(List<int> endPtsOfContours) => 
