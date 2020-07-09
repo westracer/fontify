@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 const int kInt32Max = 2147483647;
 const int kInt32Min = -2147483648;
 
@@ -17,4 +19,8 @@ extension MockableDateTime on DateTime {
   static DateTime mockedDate;
 
   static DateTime now() => mockedDate ?? DateTime.now();
+}
+
+extension PointExt<T extends num> on math.Point<T> {
+  math.Point<int> toIntPoint() => math.Point<int>(x.toInt(), y.toInt());
 }

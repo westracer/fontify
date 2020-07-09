@@ -5,7 +5,6 @@ import '../../utils/exception.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 
-import '../defaults.dart';
 import 'abstract.dart';
 import 'all.dart';
 import 'table_record_entry.dart';
@@ -90,7 +89,7 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 52)
     );
 
-  factory HeaderTable.create(GlyphDataTable glyf, Revision revision) {
+  factory HeaderTable.create(GlyphDataTable glyf, Revision revision, int unitsPerEm) {
     if (revision == null || revision.int32value == 0) {
       throw TableDataFormatException('revision must not be null');
     }
@@ -108,7 +107,7 @@ class HeaderTable extends FontTable {
       revision,
       0, // Setting checkSum to zero first, calculating it at last for the entire font
       0x000B,
-      kDefaultUnitsPerEm,
+      unitsPerEm,
       now,
       now,
       xMin,

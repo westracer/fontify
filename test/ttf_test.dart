@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:fontify/src/common/generic_glyph.dart';
 import 'package:fontify/src/ttf/reader.dart';
 import 'package:fontify/src/ttf/table/all.dart';
 import 'package:fontify/src/ttf/table/hhea.dart';
@@ -29,7 +30,7 @@ void main() {
       expect(table.rangeShift, 48);
       expect(table.searchRange, 128);
       expect(table.sfntVersion, 0x10000);
-      expect(table.isOTTO, false);
+      expect(table.isOpenType, false);
     });
 
     test('Maximum Profile table', () {
@@ -93,10 +94,10 @@ void main() {
         glyphCalendRainbow.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, true, false, true, false, false]
       );
-      expect(glyphCalendRainbow.xCoordinates.first, 936);
-      expect(glyphCalendRainbow.xCoordinates.last, 681);
-      expect(glyphCalendRainbow.yCoordinates.first, 110);
-      expect(glyphCalendRainbow.yCoordinates.last, 94);
+      expect(glyphCalendRainbow.pointList.first.x, 936);
+      expect(glyphCalendRainbow.pointList.last.x, 681);
+      expect(glyphCalendRainbow.pointList.first.y, 110);
+      expect(glyphCalendRainbow.pointList.last.y, 94);
 
       final glyphReport = table.glyphList[73];
       expect(glyphReport.header.numberOfContours, 4);
@@ -108,10 +109,10 @@ void main() {
         glyphReport.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, false, true, true, false, false]
       );
-      expect(glyphReport.xCoordinates.first, 63);
-      expect(glyphReport.xCoordinates.last, 563);
-      expect(glyphReport.yCoordinates.first, 788);
-      expect(glyphReport.yCoordinates.last, 350);
+      expect(glyphReport.pointList.first.x, 63);
+      expect(glyphReport.pointList.last.x, 563);
+      expect(glyphReport.pointList.first.y, 788);
+      expect(glyphReport.pointList.last.y, 350);
 
       final glyphPdf = table.glyphList[165];
       expect(glyphPdf.header.numberOfContours, 5);
@@ -123,10 +124,10 @@ void main() {
         glyphPdf.flags.sublist(0, 7).map((f) => f.onCurvePoint).toList(), 
         [true, false, false, true, true, false, false]
       );
-      expect(glyphPdf.xCoordinates.first, 63);
-      expect(glyphPdf.xCoordinates.last, 448);
-      expect(glyphPdf.yCoordinates.first, 788);
-      expect(glyphPdf.yCoordinates.last, 208);
+      expect(glyphPdf.pointList.first.x, 63);
+      expect(glyphPdf.pointList.last.x, 448);
+      expect(glyphPdf.pointList.first.y, 788);
+      expect(glyphPdf.pointList.last.y, 208);
     });
 
     test('OS/2 V1 table', () {
@@ -323,11 +324,13 @@ void main() {
       font = TTFReader.fromByteData(originalByteData).read();
 
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
+      final glyphList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
       
       recreatedFont = TrueTypeFont.createFromGlyphs(
-        glyphList: font.glyf.glyphList,
+        glyphList: glyphList,
         glyphNameList: glyphNameList,
         fontName: 'TestFont',
+        useCFF2: false,
       );
 
       recreatedByteData = ByteData(recreatedFont.size);
@@ -358,7 +361,7 @@ void main() {
       final table = recreatedFont.os2;
 
       expect(table.version, 5);
-      expect(table.xAvgCharWidth, 851);
+      expect(table.xAvgCharWidth, 829);
     });
   });
 
@@ -383,6 +386,69 @@ void main() {
       final encodedCFF2byteList = encodedCFF2byteData.buffer.asUint8List().toList();
       expect(encodedCFF2byteList, originalCFF2byteList);
     });
+
+    test('CFF2 CharString Read & Write', () {
+      // final interpreter = CharStringInterpreter();
+
+      // final commands = [
+      //   CharStringCommand.rmoveto(0, 0),
+      //   CharStringCommand.rlineto([100, 100]),
+      //   CharStringCommand.rmoveto(-50, -50),
+      //   CharStringCommand.rlineto([100, 100]),
+      // ];
+
+      // final encoded = interpreter.writeCommands(commands);
+      // final decoded = interpreter.readCommands(encoded);
+
+      // TODO: do some tests
+    });
+  });
+
+  group('Generic Glyph', () {
+    setUpAll(() {
+      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
+    });
+    
+    test('Conversion from TrueType and back', () {
+      final genericList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
+      final simpleList = genericList.map((e) => e.toSimpleTrueTypeGlyph()).toList();
+
+      for (int i = 0; i < genericList.length; i++) {
+        expect(simpleList[i].pointList, font.glyf.glyphList[i].pointList);
+      }
+    });
+    
+    test('Decompact and compact back', () {
+      final genericList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
+
+      for (final g in genericList) {
+        for (final o in g.outlines) {
+          o..decompactImplicitPoints()..compactImplicitPoints();
+        }
+      }
+
+      final simpleList = genericList.map((e) => e.toSimpleTrueTypeGlyph()).toList();
+
+      // Those were compacted more than they were originally. Expecting just new size.
+      final changedForReason = {
+        1: 87,
+        34: 66,
+        53: 121,
+        70: 90,
+        115: 60,
+        138: 90,
+      };
+
+      for (int i = 0; i < genericList.length; i++) {
+        final newLength = simpleList[i].pointList.length;
+        final expectedLength = changedForReason[i] ?? font.glyf.glyphList[i].pointList.length;
+        expect(newLength, expectedLength);
+      }
+    });
+
+    // TODO: quad->cubic outline test
+    // TODO: generic->charstring test
+    // TODO: generic->simpleglyph test
   });
 
   group('Utils', () {

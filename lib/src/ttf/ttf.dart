@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 
 import '../common/calculatable_offsets.dart';
 import '../common/codable/binary.dart';
+import '../common/generic_glyph.dart';
 import '../utils/exception.dart';
 import '../utils/ttf.dart';
 
@@ -11,12 +12,11 @@ import 'defaults.dart';
 import 'reader.dart';
 import 'table/abstract.dart';
 import 'table/all.dart';
-import 'table/glyph/simple.dart';
 import 'table/offset.dart';
 
 /// Ordered list of table tags for encoding (Optimized Table Ordering)
 const _kTableTagsToEncode = {
-  kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kNameTag, kPostTag, kGSUBTag
+  kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kCFF2Tag, kNameTag, kPostTag, kGSUBTag
 };
 
 class TrueTypeFont implements BinaryCodable {
@@ -27,15 +27,15 @@ class TrueTypeFont implements BinaryCodable {
     return reader.read();
   }
 
-  // TODO: introduce generic glyph class later
   // TODO: pass list of char codes
   factory TrueTypeFont.createFromGlyphs({
-    @required List<SimpleGlyph> glyphList, 
+    @required List<GenericGlyph> glyphList, 
     @required String fontName,
     List<String> glyphNameList,
     String description,
     Revision revision,
     String achVendID,
+    bool useCFF2 = true,
   }) {
     if (glyphNameList != null && glyphNameList.length != glyphList.length) {
       throw TableDataFormatException(
@@ -46,24 +46,39 @@ class TrueTypeFont implements BinaryCodable {
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
 
-    final unitsPerEm = kDefaultUnitsPerEm;
-    final ascender = kDefaultUnitsPerEm - kDefaultBaselineExtension;
+    // A power of two is recommended only for TrueType outlines
+    final unitsPerEm = useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
+    
+    final ascender = unitsPerEm - kDefaultBaselineExtension;
 
-    final glyf = GlyphDataTable.fromGlyphs(glyphList, ascender);
-    final head = HeaderTable.create(glyf, revision);
+    // TODO: resize glyphs according to ascender/descender
+    final fullGlyphList = [
+      ...generateDefaultGlyphList(ascender),
+      ...glyphList,
+    ];
+
+    final glyf = GlyphDataTable.fromGlyphs(fullGlyphList);
+    final head = HeaderTable.create(glyf, revision, unitsPerEm);
     final loca = IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyf, unitsPerEm);
     final hhea = HorizontalHeaderTable.create(glyf, hmtx, ascender);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
-    final maxp = MaximumProfileTable.create(glyf);
+    final maxp = MaximumProfileTable.create(glyf, useCFF2);
     final cmap = CharacterToGlyphTable.create(glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
+    final cff2 = useCFF2 ? CFF2Table.create(fullGlyphList) : null;
+
     final tables = {
-      kGlyfTag: glyf,
-      kLocaTag: loca,
+      if (!useCFF2) 
+        ...{
+          kGlyfTag: glyf,
+          kLocaTag: loca,
+        },
+      if (useCFF2)
+        kCFF2Tag: cff2,
       kCmapTag: cmap,
       kMaxpTag: maxp,
       kHeadTag: head,
@@ -75,7 +90,7 @@ class TrueTypeFont implements BinaryCodable {
       kOS2Tag:  os2,
     };
 
-    final offsetTable = OffsetTable.create(tables.length);
+    final offsetTable = OffsetTable.create(tables.length, useCFF2);
 
     return TrueTypeFont(offsetTable, tables);
   }
@@ -104,6 +119,10 @@ class TrueTypeFont implements BinaryCodable {
 
     for (final tag in _kTableTagsToEncode) {
       final table = tableMap[tag];
+
+      if (table == null) {
+        continue;
+      }
 
       if (table is CalculatableOffsets) {
         (table as CalculatableOffsets).recalculateOffsets();

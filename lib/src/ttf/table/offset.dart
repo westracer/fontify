@@ -2,12 +2,11 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../debugger.dart';
 
 const kOffsetTableLength = 12;
 
-const _kOffsetTableNonOTTOversion = 0x00010000;
-const _kOffsetTableOTTOversion    = 0x4F54544F;
+const _kOffsetTableTrueTypeVersion = 0x00010000;
+const _kOffsetTableOpenTypeVersion = 0x4F54544F;
 
 class OffsetTable implements BinaryCodable {
   OffsetTable(
@@ -21,10 +20,6 @@ class OffsetTable implements BinaryCodable {
   factory OffsetTable.fromByteData(ByteData data) {
     final version = data.getUint32(0);
 
-    if (version != _kOffsetTableNonOTTOversion) {
-      TTFDebugger.debugUnsupportedTableVersion('Offset', version);
-    }
-
     return OffsetTable(
       version,
       data.getUint16(4), 
@@ -34,13 +29,13 @@ class OffsetTable implements BinaryCodable {
     );
   }
 
-  factory OffsetTable.create(int numTables) {
+  factory OffsetTable.create(int numTables, bool isOpenType) {
     final entrySelector = (math.log(numTables) / math.ln2).floor();
     final searchRange = 16 * math.pow(2, entrySelector).toInt();
     final rangeShift = numTables * 16 - searchRange;
     
     return OffsetTable(
-      _kOffsetTableNonOTTOversion,
+      isOpenType ? _kOffsetTableOpenTypeVersion : _kOffsetTableTrueTypeVersion,
       numTables,
       searchRange,
       entrySelector,
@@ -54,7 +49,7 @@ class OffsetTable implements BinaryCodable {
   final int entrySelector;
   final int rangeShift;
 
-  bool get isOTTO => sfntVersion == _kOffsetTableOTTOversion;
+  bool get isOpenType => sfntVersion == _kOffsetTableOpenTypeVersion;
 
   @override
   int get size => kOffsetTableLength;

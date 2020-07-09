@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common/generic_glyph.dart';
 import '../../utils/ttf.dart';
 import '../debugger.dart';
-import '../defaults.dart';
 import 'abstract.dart';
 import 'glyph/header.dart';
 import 'glyph/simple.dart';
@@ -42,13 +42,23 @@ class GlyphDataTable extends FontTable {
     return GlyphDataTable(entry, glyphList);
   }
 
-  factory GlyphDataTable.fromGlyphs(List<SimpleGlyph> glyphList, int ascender) {
-    final fullGlyphList = [
-      ...generateDefaultGlyphList(ascender),
-      ...glyphList
-    ];
+  factory GlyphDataTable.fromGlyphs(List<GenericGlyph> glyphList) {
+    final glyphListCopy = glyphList.map((e) => e.copy());
 
-    return GlyphDataTable(null, fullGlyphList);
+    for (final glyph in glyphListCopy) {
+      for (final outline in glyph.outlines) {
+        if (!outline.hasQuadCurves) {
+          // TODO: implement cubic -> quad approximation
+          throw UnimplementedError('Cubic to quadratic curve conversion not supported');
+        }
+
+        outline.compactImplicitPoints();
+      }
+    }
+
+    final simpleGlyphList = glyphListCopy.map((e) => e.toSimpleTrueTypeGlyph()).toList();
+
+    return GlyphDataTable(null, simpleGlyphList);
   }
 
   final List<SimpleGlyph> glyphList;
@@ -57,7 +67,7 @@ class GlyphDataTable extends FontTable {
   int get size => glyphList.fold<int>(0, (p, v) => p + getPaddedTableSize(v.size));
 
   int get maxPoints =>
-    glyphList.fold<int>(0, (p, g) => math.max(p, g.xCoordinates.length));
+    glyphList.fold<int>(0, (p, g) => math.max(p, g.pointList.length));
 
   int get maxContours =>
     glyphList.fold<int>(0, (p, g) => math.max(p, g.header.numberOfContours));

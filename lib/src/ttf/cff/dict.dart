@@ -93,6 +93,8 @@ class CFFDictEntry extends BinaryCodable {
 
 class CFFDict extends BinaryCodable {
   CFFDict(this.entryList);
+  
+  CFFDict.empty() : entryList = [];
 
   factory CFFDict.fromByteData(ByteData byteData) {
     final entryList = <CFFDictEntry>[];

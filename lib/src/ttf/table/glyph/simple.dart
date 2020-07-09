@@ -2,9 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../../common/codable/binary.dart';
-import '../../../utils/misc.dart';
 import '../../../utils/ttf.dart';
-import '../../cff/char_string.dart';
 import 'flag.dart';
 import 'header.dart';
 
@@ -14,12 +12,11 @@ class SimpleGlyph implements BinaryCodable {
     this.endPtsOfContours,
     this.instructions,
     this.flags,
-    this.xCoordinates,
-    this.yCoordinates,
+    this.pointList,
   );
 
   factory SimpleGlyph.empty() {
-    return SimpleGlyph(GlyphHeader(0, 0, 0, 0, 0), [], [], [], [], []);
+    return SimpleGlyph(GlyphHeader(0, 0, 0, 0, 0), [], [], [], []);
   }
 
   factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header, int glyphOffset) {
@@ -90,43 +87,21 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
+
+    final xAbsCoordinates = relToAbsCoordinates(xCoordinates);
+    final yAbsCoordinates = relToAbsCoordinates(yCoordinates);
+
+    final points = [
+      for (int i = 0; i < xAbsCoordinates.length; i++)
+        math.Point<num>(xAbsCoordinates[i], yAbsCoordinates[i])
+    ];
     
     return SimpleGlyph(
       header,
       endPtsOfContours,
       instructions,
       flags,
-      relToAbsCoordinates(xCoordinates),
-      relToAbsCoordinates(yCoordinates),
-    );
-  }
-
-  factory SimpleGlyph.fromPoints(List<int> endPtsOfContours, List<math.Point<int>> pointList) {
-    final absXcoordinates = pointList.map((p) => p.x).toList();
-    final absYcoordinates = pointList.map((p) => p.y).toList();
-
-    final relXcoordinates = absToRelCoordinates(absXcoordinates);
-    final relYcoordinates = absToRelCoordinates(absYcoordinates);
-
-    final xMin = absXcoordinates.fold<int>(kInt32Max, math.min);
-    final yMin = absYcoordinates.fold<int>(kInt32Max, math.min);
-    final xMax = absXcoordinates.fold<int>(kInt32Min, math.max);
-    final yMax = absYcoordinates.fold<int>(kInt32Min, math.max);
-
-    final flags = [
-      for (int i = 0; i < pointList.length; i++)
-        SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], true) // TODO: pass isOnCurve
-    ];
-
-    // TODO: compact flags: repeat & not short same flag
-
-    return SimpleGlyph(
-      GlyphHeader(endPtsOfContours.length, xMin, yMin, xMax, yMax),
-      endPtsOfContours,
-      [],
-      flags,
-      absXcoordinates,
-      absYcoordinates
+      points,
     );
   }
 
@@ -135,11 +110,7 @@ class SimpleGlyph implements BinaryCodable {
   final List<int> instructions;
   final List<SimpleGlyphFlag> flags;
 
-  /// Absolute X coordinates
-  final List<int> xCoordinates;
-
-  /// Absolute Y coordinates
-  final List<int> yCoordinates;
+  final List<math.Point<num>> pointList;
 
   bool get isEmpty => header.numberOfContours == 0;
 
@@ -213,8 +184,11 @@ class SimpleGlyph implements BinaryCodable {
       i += flag.repeatTimes;
     }
 
-    final xRelCoordinates = absToRelCoordinates(xCoordinates);
-    final yRelCoordinates = absToRelCoordinates(yCoordinates);
+    final xAbsCoordinates = pointList.map((e) => e.x.toInt()).toList();
+    final yAbsCoordinates = pointList.map((e) => e.y.toInt()).toList();
+
+    final xRelCoordinates = absToRelCoordinates(xAbsCoordinates);
+    final yRelCoordinates = absToRelCoordinates(yAbsCoordinates);
     
     for (int i = 0; i < numberOfPoints; i++) {
       final short = flags[i].xShortVector;
@@ -243,33 +217,6 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
-  }
-
-  List<CharStringCommand> toCharString() {
-    final commandList = <CharStringCommand>[];
-    bool isContourStart = true;
-
-    final relX = absToRelCoordinates(xCoordinates);
-    final relY = absToRelCoordinates(yCoordinates);
-
-    for (int i = 0; i < relX.length; i++) {
-      if (isContourStart) {
-        commandList.add(CharStringCommand.rmoveto(relX[i], relY[i]));
-        isContourStart = false;
-      } else {
-        // TODO: compact rlineto
-        commandList.add(CharStringCommand.rlineto([relX[i], relY[i]]));
-      }
-
-      // TODO: handle isOnCurve == false
-
-      if (endPtsOfContours.isNotEmpty && endPtsOfContours.first == i) {
-        endPtsOfContours.removeAt(0);
-        isContourStart = true;
-      }
-    }
-
-    return commandList;
   }
 
   static int _getNumberOfPoints(List<int> endPtsOfContours) => 

@@ -88,7 +88,11 @@ class MaximumProfileTable extends FontTable {
     }
   }
 
-  factory MaximumProfileTable.create(GlyphDataTable glyf) {
+  factory MaximumProfileTable.create(GlyphDataTable glyf, bool isOpenType) {
+    if (isOpenType) {
+      return MaximumProfileTable.v0(null, glyf.glyphList.length);
+    }
+
     return MaximumProfileTable.v1(
       null,
       glyf.glyphList.length,
@@ -150,7 +154,7 @@ class MaximumProfileTable extends FontTable {
         ..setUint16(26, maxSizeOfInstructions)
         ..setUint16(28, maxComponentElements)
         ..setUint16(30, maxComponentDepth);
-    } else {
+    } else if (version != _kVersion0) {
       TTFDebugger.debugUnsupportedTableVersion(kMaxpTag, version);
     }
   }

@@ -8,6 +8,7 @@ class TTFWriter {
 
   final File _file;
 
+  // TODO: extension otf/ttf warning
   void write(TrueTypeFont font) {
     final byteData = ByteData(font.size);
     font.encodeToBinary(byteData);

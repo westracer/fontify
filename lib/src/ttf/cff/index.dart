@@ -113,6 +113,8 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
     return CFFIndexWithData(index, dataList);
   }
 
+  factory CFFIndexWithData.create(List<T> data) => CFFIndexWithData(null, data);
+
   CFFIndex index;
   final List<T> data;
 

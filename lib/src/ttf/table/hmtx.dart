@@ -25,7 +25,7 @@ class LongHorMetric implements BinaryCodable {
 
   factory LongHorMetric.createForGlyph(SimpleGlyph glyph, int unitsPerEm) {
     if (glyph.isEmpty) {
-      return LongHorMetric(unitsPerEm, 0);
+      return LongHorMetric(unitsPerEm ~/ 3, 0);
     }
 
     return LongHorMetric(glyph.header.xMax - glyph.header.xMin, 0);

@@ -66,6 +66,14 @@ class CharStringCommand implements BinaryCodable {
     return CharStringCommand(rlineto, _getOperandList(dlist));
   }
 
+  factory CharStringCommand.rrcurveto(List<int> dlist) {
+    if (dlist.length % 6 != 0) {
+      throw ArgumentError('|- {dxa dya dxb dyb dxc dyc}+ rrcurveto (8) |-');
+    }
+
+    return CharStringCommand(rrcurveto, _getOperandList(dlist));
+  }
+
   final CFFOperator operator;
   final List<CharStringOperand> operandList;
 

@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 
+import '../common/generic_glyph.dart';
+import '../common/outline.dart';
 import '../utils/misc.dart';
 import '../utils/ttf.dart';
-import 'table/glyph/simple.dart';
 
 const kDefaultAchVendID = '    ';
-const kDefaultUnitsPerEm = 1024; // A power of two is recommended
+const kDefaultTrueTypeUnitsPerEm = 1024; // A power of two is recommended
+const kDefaultOpenTypeUnitsPerEm = 1000;
 const kDefaultBaselineExtension = 150;
 const kDefaultFontRevision = Revision(1, 0);
 
@@ -20,12 +22,12 @@ const kDefaultGlyphIndex = <int>[
 ];
 
 /// Generates list of default glyphs (.notdef 'rectangle' and empty space)
-List<SimpleGlyph> generateDefaultGlyphList(int ascender) => [
+List<GenericGlyph> generateDefaultGlyphList(int ascender) => [
   _generateNotdefGlyph(ascender),
-  SimpleGlyph.empty(),
+  GenericGlyph.empty(),
 ];
 
-SimpleGlyph _generateNotdefGlyph(int ascender) {
+GenericGlyph _generateNotdefGlyph(int ascender) {
   const kRelativeWidth = .7;
   const kRelativeThickness = .1;
 
@@ -42,13 +44,13 @@ SimpleGlyph _generateNotdefGlyph(int ascender) {
     math.Point(xOuterOffset - thickness, ascender - thickness)
   );
 
-  final points = [
+  final outlines = [
     // Outer rectangle clockwise
-    outerRect.bottomLeft, outerRect.bottomRight, outerRect.topRight, outerRect.topLeft,
+    Outline([outerRect.bottomLeft, outerRect.bottomRight, outerRect.topRight, outerRect.topLeft], List.filled(4, true), false, true, FillRule.nonzero),
     
     // Inner rectangle counter-clockwise
-    innerRect.bottomLeft, innerRect.topLeft, innerRect.topRight, innerRect.bottomRight,
+    Outline([innerRect.bottomLeft, innerRect.topLeft, innerRect.topRight, innerRect.bottomRight], List.filled(4, true), false, true, FillRule.nonzero),
   ];
 
-  return SimpleGlyph.fromPoints([3, 7], points);
+  return GenericGlyph(outlines);
 }

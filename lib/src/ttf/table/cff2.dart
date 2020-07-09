@@ -2,7 +2,9 @@ import 'dart:typed_data';
 
 import '../../common/calculatable_offsets.dart';
 import '../../common/codable/binary.dart';
+import '../../common/generic_glyph.dart';
 import '../../utils/ttf.dart';
+import '../cff/char_string.dart';
 import '../cff/dict.dart';
 import '../cff/dict_operator.dart' as op;
 import '../cff/index.dart';
@@ -29,6 +31,8 @@ class CFF2TableHeader implements BinaryCodable {
       byteData.getUint16(3),
     );
   }
+
+  factory CFF2TableHeader.create() => CFF2TableHeader(2, 0, _kHeaderSize, null);
 
   final int majorVersion;
   final int minorVersion;
@@ -83,7 +87,6 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     final charStringsIndexByteData = byteData.sublistView(entry.offset + charStringsIndexOffset);
 
     final charStringsData = CFFIndexWithData<Uint8List>.fromByteData(charStringsIndexByteData);
-    // TODO: charStrings interpretation
 
     /// VariationStore
     final vstoreEntry = topDict.getEntryForOperator(op.vstore);
@@ -123,13 +126,15 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
 
       final localSubrEntry = dict.getEntryForOperator(op.subrs);
       
-      /// Offset from the start of the Private DICT
-      final localSubrOffset = localSubrEntry.operandList.first.value as int;
+      if (localSubrEntry != null) {
+        /// Offset from the start of the Private DICT
+        final localSubrOffset = localSubrEntry.operandList.first.value as int;
 
-      final localSubrByteData = byteData.sublistView(dictOffset + localSubrOffset);
-      final localSubrsData = CFFIndexWithData<Uint8List>.fromByteData(localSubrByteData);
+        final localSubrByteData = byteData.sublistView(dictOffset + localSubrOffset);
+        final localSubrsData = CFFIndexWithData<Uint8List>.fromByteData(localSubrByteData);
 
-      localSubrsDataList.add(localSubrsData);
+        localSubrsDataList.add(localSubrsData);
+      }
     }
 
     return CFF2Table(
@@ -145,8 +150,49 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     );
   }
 
-  factory CFF2Table.create() {
-    return null;
+  factory CFF2Table.create(List<GenericGlyph> glyphList) {
+    final header = CFF2TableHeader.create();
+    final topDict = CFFDict.empty();
+    final globalSubrsData = CFFIndexWithData<Uint8List>.create([]);
+    const VariationStoreData vstoreData = null; // omitted - no variations
+
+    final charStringInterpreter = CharStringInterpreter();
+    
+    final charStringRawList = glyphList.map((g) {
+      final glyph = g.copy();
+
+      for (final o in glyph.outlines) {
+        o..decompactImplicitPoints()..quadToCubic();
+      }
+      
+      final commandList = glyph.toCharStringCommands();
+      final byteData = charStringInterpreter.writeCommands(commandList);
+
+      return byteData.buffer.asUint8List();
+    }).toList();
+
+    final charStringsData = CFFIndexWithData<Uint8List>.create(charStringRawList);
+
+    final fontDict = CFFDict([CFFDictEntry([], op.private)]);
+    final privateDict = CFFDict([]); // A Private DICT is required, but can be empty
+
+    final fontDictList = CFFIndexWithData<CFFDict>.create([fontDict]);
+    final privateDictList = [privateDict];
+    final localSubrsDataList = <CFFIndexWithData<Uint8List>>[];
+
+    final table = CFF2Table(
+      null,
+      header,
+      topDict,
+      globalSubrsData,
+      charStringsData,
+      vstoreData,
+      fontDictList,
+      privateDictList,
+      localSubrsDataList
+    )..recalculateOffsets();
+
+    return table;
   }
 
   final CFF2TableHeader header;
@@ -216,6 +262,8 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     header.topDictLength = topDict.size;
     
     globalSubrsData.recalculateOffsets();
+    fontDictList.recalculateOffsets();
+    charStringsData.recalculateOffsets();
 
     // Recalculating font DICTs private offsets and SUBRS entries offsets
     final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
@@ -229,14 +277,16 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
       final privateEntry = fontDict.getEntryForOperator(op.private);
 
       final newOperands = [CFFOperand.fromValue(privateDict.size), CFFOperand.fromValue(0)];
-      privateEntry.operandList.replaceRange(0, 2, newOperands);
+      privateEntry.operandList..clear()..addAll(newOperands);
       fontDictOffset += fontDict.size;
 
       final subrsEntry = privateDict.getEntryForOperator(op.subrs);
-      subrsEntry.operandList.replaceRange(0, 1, [CFFOperand.fromValue(0)]);
+      if (subrsEntry != null) {
+        subrsEntry.operandList..clear()..add(CFFOperand.fromValue(0));
+        subrsEntry.recalculatePointers(0, () => privateDict.size);
+      }
 
       _calculateEntryOffsets([privateEntry], [fontDictOffset], 1);
-      subrsEntry.recalculatePointers(0, () => privateDict.size);
     }
 
     // Recalculating local subrs
