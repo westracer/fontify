@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io'; // TODO: remove dart:io imports for dart2js compatibility
 import 'dart:typed_data';
 
 import '../utils/exception.dart';
@@ -8,6 +8,7 @@ import 'debugger.dart';
 import 'table/all.dart';
 import 'ttf.dart';
 
+/// A helper for reading an OpenType font from a binary data
 class TTFReader {
   TTFReader.fromFile(File file) 
     : _byteData = ByteData.sublistView(file.readAsBytesSync());

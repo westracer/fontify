@@ -1,3 +1,4 @@
+// TODO: replace with logger that has different levels
 class TTFDebugger {
   static void debug(String message) => print(message); // ignore: avoid_print
 

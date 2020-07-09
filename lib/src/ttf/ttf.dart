@@ -19,6 +19,9 @@ const _kTableTagsToEncode = {
   kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kCFF2Tag, kNameTag, kPostTag, kGSUBTag
 };
 
+// TODO: change naming to OpenType
+/// An OpenType font.
+/// Contains either TrueType (glyf table) or OpenType (CFF2 table) outlines
 class TrueTypeFont implements BinaryCodable {
   TrueTypeFont(this.offsetTable, this.tableMap);
 
@@ -28,6 +31,18 @@ class TrueTypeFont implements BinaryCodable {
   }
 
   // TODO: pass list of char codes
+  /// Generates new OpenType font.
+  /// 
+  /// * [fontName] is a font name. Required.
+  /// * [glyphList] is a list of generic glyphs. Required. 
+  /// * [glyphNameList] should contain a name for each glyph. 
+  /// If null, glyph names are omitted (PostScriptV3 table is generated).
+  /// * [description] is a font description for naming table.
+  /// * [revision] is a font revision. Defaults to 1.0.
+  /// * [achVendID] is a vendor ID in OS/2 table. Default two 4 spaces.
+  /// * If [useCFF2] is set to false, a font with TrueType outlines (TTF) is generated.
+  /// Otherwise, OpenType outlines in CFF2 table format are generated.
+  /// Defaults to true.
   factory TrueTypeFont.createFromGlyphs({
     @required List<GenericGlyph> glyphList, 
     @required String fontName,
