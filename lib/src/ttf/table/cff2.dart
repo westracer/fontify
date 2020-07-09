@@ -98,7 +98,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
       vstoreData = VariationStoreData.fromByteData(vstoreByteData);
     }
 
-    // TODO: decode FDSelect later - it's optional and not needed now
+    // NOTE: not decoding FDSelect - using single Font DICT only
 
     /// Font DICT INDEX
     final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
@@ -210,7 +210,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
       if (vstoreData != null)
         CFFDictEntry([CFFOperand.fromValue(0)], op.vstore),
       CFFDictEntry([CFFOperand.fromValue(0)], op.fdArray),
-      /// TODO: encode FDSelect later - it's optional and not needed now
+      // NOTE: not encoding FDSelect - using single Font DICT only
     ];
 
     topDict.entryList = entryList;

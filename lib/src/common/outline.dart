@@ -2,7 +2,7 @@ import 'dart:math';
 
 import '../utils/misc.dart';
 
-/// How shape with more than one closed outline are filled
+/// How shapes with more than one closed outline are filled
 /// 
 /// * CharStrings must always be the nonzero
 /// * TrueType is either always nonzero 

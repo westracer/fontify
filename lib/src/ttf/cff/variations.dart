@@ -9,6 +9,7 @@ class RegionAxisCoordinates extends BinaryCodable {
   RegionAxisCoordinates(this.startCoord, this.peakCoord, this.endCoord);
 
   factory RegionAxisCoordinates.fromByteData(ByteData byteData) {
+    // NOTE: not converting F2DOT14, because variations are ignored anyway
     return RegionAxisCoordinates(
       byteData.getUint16(0),
       byteData.getUint16(2),
@@ -16,7 +17,7 @@ class RegionAxisCoordinates extends BinaryCodable {
     );
   }
 
-  final int startCoord; // TODO: F2DOT14 conversion
+  final int startCoord;
   final int peakCoord;
   final int endCoord;
 

@@ -19,7 +19,7 @@ const _kTableTagsToEncode = {
   kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kCFF2Tag, kNameTag, kPostTag, kGSUBTag
 };
 
-// TODO: change naming to OpenType
+// TODO: !!! change naming to OpenType
 /// An OpenType font.
 /// Contains either TrueType (glyf table) or OpenType (CFF2 table) outlines
 class TrueTypeFont implements BinaryCodable {
@@ -30,7 +30,6 @@ class TrueTypeFont implements BinaryCodable {
     return reader.read();
   }
 
-  // TODO: pass list of char codes
   /// Generates new OpenType font.
   /// 
   /// * [fontName] is a font name. Required.
@@ -51,6 +50,7 @@ class TrueTypeFont implements BinaryCodable {
     Revision revision,
     String achVendID,
     bool useCFF2 = true,
+    // NOTE: might pass a list of char codes as well - not needed now.
   }) {
     if (glyphNameList != null && glyphNameList.length != glyphList.length) {
       throw TableDataFormatException(
@@ -66,7 +66,7 @@ class TrueTypeFont implements BinaryCodable {
     
     final ascender = unitsPerEm - kDefaultBaselineExtension;
 
-    // TODO: resize glyphs according to ascender/descender
+    // TODO: !!! resize glyphs according to ascender/descender
     final fullGlyphList = [
       ...generateDefaultGlyphList(ascender),
       ...glyphList,

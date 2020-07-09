@@ -89,13 +89,13 @@ class GenericGlyph {
 
     for (int i = 0; i < relX.length; i++) {
       if (isContourStart) {
-        // TODO: use v/h
+        // TODO: !!! use v/h
         commandList.add(CharStringCommand.rmoveto(relX[i], relY[i]));
         isContourStart = false;
         continue;
       }
 
-      // TODO: use v/h, compact consequent
+      // TODO: !!! use v/h, compact consequent
       if (!isOnCurveList[i] && !isOnCurveList[i + 1]) {
         final points = [
           for (int p = 0; p < 3; p++)
@@ -138,7 +138,7 @@ class GenericGlyph {
         SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], isOnCurveList[i])
     ];
 
-    // TODO: compact flags: repeat & not short same flag
+    // TODO: !!! compact flags: repeat & not short same flag
 
     return SimpleGlyph(
       GlyphHeader(endPoints.length, xMin, yMin, xMax, yMax),
