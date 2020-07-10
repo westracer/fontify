@@ -361,7 +361,7 @@ void main() {
       final table = recreatedFont.os2;
 
       expect(table.version, 5);
-      expect(table.xAvgCharWidth, 829);
+      expect(table.xAvgCharWidth, 843);
     });
   });
 

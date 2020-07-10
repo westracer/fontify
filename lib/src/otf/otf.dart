@@ -19,7 +19,6 @@ const _kTableTagsToEncode = {
   kHeadTag, kHheaTag, kMaxpTag, kOS2Tag, kHmtxTag, kCmapTag, kLocaTag, kGlyfTag, kCFF2Tag, kNameTag, kPostTag, kGSUBTag
 };
 
-// TODO: !!! change naming to OpenType
 /// An OpenType font.
 /// Contains either TrueType (glyf table) or OpenType (CFF2 table) outlines
 class OpenTypeFont implements BinaryCodable {
