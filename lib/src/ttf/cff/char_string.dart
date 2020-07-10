@@ -54,8 +54,34 @@ class CharStringCommand implements BinaryCodable {
       "Operator's context must be CharString"
     );
 
+  factory CharStringCommand.hmoveto(int dx) {
+    return CharStringCommand(hmoveto, _getOperandList([dx]));
+  }
+
+  factory CharStringCommand.vmoveto(int dy) {
+    return CharStringCommand(vmoveto, _getOperandList([dy]));
+  }
+
   factory CharStringCommand.rmoveto(int dx, int dy) {
     return CharStringCommand(rmoveto, _getOperandList([dx, dy]));
+  }
+
+  factory CharStringCommand.moveto(int dx, int dy) {
+    if (dx == 0) {
+      return CharStringCommand.vmoveto(dy);
+    } else if (dy == 0) {
+      return CharStringCommand.hmoveto(dx);
+    }
+
+    return CharStringCommand.rmoveto(dx, dy);
+  }
+
+  factory CharStringCommand.hlineto(int dx) {
+    return CharStringCommand(hlineto, _getOperandList([dx]));
+  }
+
+  factory CharStringCommand.vlineto(int dy) {
+    return CharStringCommand(vlineto, _getOperandList([dy]));
   }
 
   factory CharStringCommand.rlineto(List<int> dlist) {
@@ -66,9 +92,63 @@ class CharStringCommand implements BinaryCodable {
     return CharStringCommand(rlineto, _getOperandList(dlist));
   }
 
+  factory CharStringCommand.lineto(int dx, int dy) {
+    if (dx == 0) {
+      return CharStringCommand.vlineto(dy);
+    } else if (dy == 0) {
+      return CharStringCommand.hlineto(dx);
+    }
+
+    return CharStringCommand.rlineto([dx, dy]);
+  }
+
+  factory CharStringCommand.hhcurveto(List<int> dlist) {
+    if (dlist.length < 4 || (dlist.length % 4 != 0 && dlist.length % 4 != 1)) {
+      throw ArgumentError('|- dy1? {dxa dxb dyb dxc}+ hhcurveto (27) |-');
+    }
+
+    return CharStringCommand(hhcurveto, _getOperandList(dlist));
+  }
+
+  factory CharStringCommand.vvcurveto(List<int> dlist) {
+    if (dlist.length < 4 || (dlist.length % 4 != 0 && dlist.length % 4 != 1)) {
+      throw ArgumentError('|- dx1? {dya dxb dyb dyc}+ vvcurveto (26) |-');
+    }
+
+    return CharStringCommand(vvcurveto, _getOperandList(dlist));
+  }
+
   factory CharStringCommand.rrcurveto(List<int> dlist) {
-    if (dlist.length % 6 != 0) {
+    if (dlist.length < 6 || dlist.length % 6 != 0) {
       throw ArgumentError('|- {dxa dya dxb dyb dxc dyc}+ rrcurveto (8) |-');
+    }
+
+    return CharStringCommand(rrcurveto, _getOperandList(dlist));
+  }
+
+  factory CharStringCommand.curveto(List<int> dlist) {
+    if (dlist.length != 6) {
+      throw ArgumentError('List length must be equal 6');
+    }
+
+    if (dlist[4] == 0) {
+      dlist.removeAt(4);
+      final dx = dlist.removeAt(0);
+
+      if (dx != 0) {
+        dlist.insert(0, dx);
+      }
+
+      return CharStringCommand.vvcurveto(dlist);
+    } else if (dlist[5] == 0) {
+      dlist.removeAt(5);
+      final dy = dlist.removeAt(1);
+
+      if (dy != 0) {
+        dlist.insert(0, dy);
+      }
+
+      return CharStringCommand.hhcurveto(dlist);
     }
 
     return CharStringCommand(rrcurveto, _getOperandList(dlist));
@@ -80,6 +160,8 @@ class CharStringCommand implements BinaryCodable {
   static List<CharStringOperand> _getOperandList(List<num> operandValues) {
     return operandValues.map((e) => CharStringOperand(e)).toList();
   }
+
+  CharStringCommand copy() => CharStringCommand(operator, [...operandList]);
 
   @override
   String toString() {

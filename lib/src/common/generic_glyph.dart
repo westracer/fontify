@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../ttf/cff/char_string.dart';
+import '../ttf/cff/char_string_optimizer.dart';
 import '../ttf/table/glyph/flag.dart';
 import '../ttf/table/glyph/header.dart';
 import '../ttf/table/glyph/simple.dart';
@@ -89,23 +90,21 @@ class GenericGlyph {
 
     for (int i = 0; i < relX.length; i++) {
       if (isContourStart) {
-        // TODO: !!! use v/h
-        commandList.add(CharStringCommand.rmoveto(relX[i], relY[i]));
+        commandList.add(CharStringCommand.moveto(relX[i], relY[i]));
         isContourStart = false;
         continue;
       }
 
-      // TODO: !!! use v/h, compact consequent
       if (!isOnCurveList[i] && !isOnCurveList[i + 1]) {
         final points = [
           for (int p = 0; p < 3; p++)
             ...[relX[i + p], relY[i + p]]
         ];
 
-        commandList.add(CharStringCommand.rrcurveto(points));
+        commandList.add(CharStringCommand.curveto(points));
         i += 2;
       } else {
-        commandList.add(CharStringCommand.rlineto([relX[i], relY[i]]));
+        commandList.add(CharStringCommand.lineto(relX[i], relY[i]));
       }
 
       if (endPoints.isNotEmpty && endPoints.first == i) {
@@ -114,7 +113,7 @@ class GenericGlyph {
       }
     }
 
-    return commandList;
+    return CharStringOptimizer.optimize(commandList);
   }
 
   SimpleGlyph toSimpleTrueTypeGlyph() {
@@ -138,7 +137,7 @@ class GenericGlyph {
         SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], isOnCurveList[i])
     ];
 
-    // TODO: !!! compact flags: repeat & not short same flag
+    // TODO: compact flags: repeat & not short same flag
 
     return SimpleGlyph(
       GlyphHeader(endPoints.length, xMin, yMin, xMax, yMax),
