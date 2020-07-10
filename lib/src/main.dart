@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'common/generic_glyph.dart';
-import 'ttf/reader.dart';
-import 'ttf/table/all.dart';
-import 'ttf/ttf.dart';
-import 'ttf/writer.dart';
+import 'otf/reader.dart';
+import 'otf/table/all.dart';
+import 'otf/ttf.dart';
+import 'otf/writer.dart';
 
 void main(List<String> args) {
   final font = TTFReader.fromFile(File('./test_assets/test_font.ttf')).read();

@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
-import '../ttf/cff/char_string.dart';
-import '../ttf/cff/char_string_optimizer.dart';
-import '../ttf/table/glyph/flag.dart';
-import '../ttf/table/glyph/header.dart';
-import '../ttf/table/glyph/simple.dart';
+import '../otf/cff/char_string.dart';
+import '../otf/cff/char_string_optimizer.dart';
+import '../otf/table/glyph/flag.dart';
+import '../otf/table/glyph/header.dart';
+import '../otf/table/glyph/simple.dart';
 import '../utils/ttf.dart';
 import 'outline.dart';
 

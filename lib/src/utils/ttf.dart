@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
-import '../ttf/table/head.dart';
+import '../otf/table/head.dart';
 import 'misc.dart';
 
 const String kHeadTag = 'head';

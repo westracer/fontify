@@ -3,10 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fontify/src/common/generic_glyph.dart';
-import 'package:fontify/src/ttf/reader.dart';
-import 'package:fontify/src/ttf/table/all.dart';
-import 'package:fontify/src/ttf/table/hhea.dart';
-import 'package:fontify/src/ttf/ttf.dart';
+import 'package:fontify/src/otf/reader.dart';
+import 'package:fontify/src/otf/table/all.dart';
+import 'package:fontify/src/otf/table/hhea.dart';
+import 'package:fontify/src/otf/ttf.dart';
 import 'package:fontify/src/utils/misc.dart';
 import 'package:fontify/src/utils/ttf.dart';
 import 'package:test/test.dart';
