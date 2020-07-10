@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import '../../common/generic_glyph.dart';
 import '../../utils/otf.dart';
-import '../defaults.dart';
 import 'abstract.dart';
 import 'hmtx.dart';
 import 'table_record_entry.dart';
@@ -52,13 +51,14 @@ class HorizontalHeaderTable extends FontTable {
     List<GenericGlyphMetrics> glyphMetricsList, 
     HorizontalMetricsTable hmtx,
     int ascender,
+    int descender,
   ) {
     return HorizontalHeaderTable(
       null,
       1,    // major version 1
       0,    // minor version 0
       ascender,
-      -kDefaultBaselineExtension, // descender must be negative
+      descender, // descender must be negative
       0,    // 0 line gap
       hmtx.advanceWidthMax,
       hmtx.minLeftSideBearing,

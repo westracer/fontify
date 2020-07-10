@@ -34,7 +34,7 @@ class OpenTypeFont implements BinaryCodable {
   /// * [fontName] is a font name. Required.
   /// * [glyphList] is a list of generic glyphs. Required. 
   /// * [glyphNameList] should contain a name for each glyph. 
-  /// If null, glyph names are omitted (PostScriptV3 table is generated).
+  ///   If null, glyph names are omitted (PostScriptV3 table is generated).
   /// * [description] is a font description for naming table.
   /// * [revision] is a font revision. Defaults to 1.0.
   /// * [achVendID] is a vendor ID in OS/2 table. Default two 4 spaces.
@@ -64,28 +64,29 @@ class OpenTypeFont implements BinaryCodable {
     final unitsPerEm = useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
     
     final ascender = unitsPerEm - kDefaultBaselineExtension;
+    final descender = -kDefaultBaselineExtension;
 
-    // TODO: !!! resize glyphs according to ascender/descender
     final fullGlyphList = [
       ...generateDefaultGlyphList(ascender),
       ...glyphList,
     ];
 
-    final glyphMetricsList = fullGlyphList.map((g) => g.metrics).toList();
+    final resizedGlyphList = _resizeAndCenter(fullGlyphList, unitsPerEm, ascender, descender);
+    final glyphMetricsList = resizedGlyphList.map((g) => g.metrics).toList();
 
-    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
+    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(resizedGlyphList);
     final head = HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
     final loca = useCFF2 ? null : IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
-    final hhea = HorizontalHeaderTable.create(glyphMetricsList, hmtx, ascender);
+    final hhea = HorizontalHeaderTable.create(glyphMetricsList, hmtx, ascender, descender);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
-    final maxp = MaximumProfileTable.create(fullGlyphList.length, glyf);
+    final maxp = MaximumProfileTable.create(resizedGlyphList.length, glyf);
     final cmap = CharacterToGlyphTable.create(glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
-    final cff2 = useCFF2 ? CFF2Table.create(fullGlyphList) : null;
+    final cff2 = useCFF2 ? CFF2Table.create(resizedGlyphList) : null;
 
     final tables = {
       if (!useCFF2) 
@@ -177,4 +178,17 @@ class OpenTypeFont implements BinaryCodable {
 
   @override
   int get size => kOffsetTableLength + entryListSize + tableListSize;
+
+  static List<GenericGlyph> _resizeAndCenter(
+    List<GenericGlyph> glyphList,
+    int unitsPerEm,
+    int ascender,
+    int descender,
+  ) {
+    return glyphList.map(
+      (g) => g
+        .resize(unitsPerEm, ascender, descender)
+        .center(unitsPerEm, ascender, descender)
+    ).toList();
+  }
 }

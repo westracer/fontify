@@ -103,10 +103,10 @@ class HeaderTable extends FontTable {
     final isOpenType = glyf == null;
     final now = MockableDateTime.now();
 
-    final xMin = glyphMetricsList.fold<int>(0, (prev, m) => math.min(prev, m.xMin));
-    final yMin = glyphMetricsList.fold<int>(0, (prev, m) => math.min(prev, m.yMin));
-    final xMax = glyphMetricsList.fold<int>(0, (prev, m) => math.max(prev, m.xMax));
-    final yMax = glyphMetricsList.fold<int>(0, (prev, m) => math.max(prev, m.yMax));
+    final xMin = glyphMetricsList.fold<int>(kInt32Max, (prev, m) => math.min(prev, m.xMin));
+    final yMin = glyphMetricsList.fold<int>(kInt32Max, (prev, m) => math.min(prev, m.yMin));
+    final xMax = glyphMetricsList.fold<int>(kInt32Min, (prev, m) => math.max(prev, m.xMax));
+    final yMax = glyphMetricsList.fold<int>(kInt32Min, (prev, m) => math.max(prev, m.yMax));
     
     return HeaderTable(
       null,

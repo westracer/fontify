@@ -77,7 +77,7 @@ int calculateFontChecksum(ByteData byteData) {
 int getPaddedTableSize(int actualSize) => (actualSize / 4).ceil() * 4;
 
 /// Tells if integer is 1 byte long
-bool isShortInteger(int number) => number.bitLength < 9;
+bool isShortInteger(int number) => number >= -0xFF && number <= 0xFF;
 
 /// Converts relative coordinates to absolute ones
 List<int> relToAbsCoordinates(List<int> relCoordinates) {

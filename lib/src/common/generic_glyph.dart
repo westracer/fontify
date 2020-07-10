@@ -5,6 +5,7 @@ import '../otf/cff/char_string_optimizer.dart';
 import '../otf/table/glyph/flag.dart';
 import '../otf/table/glyph/header.dart';
 import '../otf/table/glyph/simple.dart';
+import '../utils/misc.dart';
 import '../utils/otf.dart';
 import 'outline.dart';
 
@@ -139,10 +140,10 @@ class GenericGlyph {
     final relXcoordinates = absToRelCoordinates(absXcoordinates);
     final relYcoordinates = absToRelCoordinates(absYcoordinates);
 
-    final xMin = absXcoordinates.fold<int>(0, math.min);
-    final yMin = absYcoordinates.fold<int>(0, math.min);
-    final xMax = absXcoordinates.fold<int>(0, math.max);
-    final yMax = absYcoordinates.fold<int>(0, math.max);
+    final xMin = absXcoordinates.fold<int>(kInt32Max, math.min);
+    final yMin = absYcoordinates.fold<int>(kInt32Max, math.min);
+    final xMax = absXcoordinates.fold<int>(kInt32Min, math.max);
+    final yMax = absYcoordinates.fold<int>(kInt32Min, math.max);
 
     final flags = [
       for (int i = 0; i < pointList.length; i++)
@@ -160,16 +161,56 @@ class GenericGlyph {
     );
   }
 
+  GenericGlyph resize(int unitsPerEm, int ascender, int descender) {
+    final metrics = this.metrics;
+    final longestSide = math.max(metrics.height, metrics.width);
+    final sideRatio = (ascender + descender) / longestSide;
+
+    // No need to resize
+    if ((sideRatio - 1).abs() < .02) {
+      return this;
+    }
+    
+    final newOutlines = outlines.map((o) {
+      final newOutline = o.copy();
+      final newPointList = newOutline.pointList.map(
+        (e) => math.Point<num>(e.x, e.y) * sideRatio
+      ).toList();
+      newOutline.pointList..clear()..addAll(newPointList);
+      return newOutline;
+    }).toList();
+
+    return GenericGlyph(newOutlines);
+  }
+
+  GenericGlyph center(int unitsPerEm, int ascender, int descender) {
+    final metrics = this.metrics;
+    
+    final offsetX = -metrics.xMin;
+    final offsetY = (ascender + descender) / 2 - metrics.height / 2 - metrics.yMin;
+    
+    final newOutlines = outlines.map((o) {
+      final newOutline = o.copy();
+      final newPointList = newOutline.pointList.map(
+        (e) => math.Point<num>(e.x + offsetX, e.y + offsetY)
+      ).toList();
+      newOutline.pointList..clear()..addAll(newPointList);
+      return newOutline;
+    }).toList();
+
+    return GenericGlyph(newOutlines);
+  }
+
   GenericGlyphMetrics get metrics {
     final points = _getPointList();
 
-    int xMin = 0, yMin = 0, xMax = 0, yMax = 0;
+    int xMin = kInt32Max, yMin = kInt32Max, xMax = kInt32Min, yMax = kInt32Min;
     
     for (final p in points) {
       xMin = math.min(xMin, p.x.toInt());
       xMax = math.max(xMax, p.x.toInt());
       yMin = math.min(yMin, p.y.toInt());
-      yMax = math.max(yMax, p.x.toInt());
+      yMax = math.max(yMax, p.y.toInt());
     }
 
     return GenericGlyphMetrics(xMin, xMax, yMin, yMax);
