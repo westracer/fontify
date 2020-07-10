@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
 import '../../utils/misc.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 import '../defaults.dart';
 import 'abstract.dart';
@@ -175,7 +175,7 @@ abstract class CmapData implements BinaryCodable {
       case _kFormat12:
         return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
+        OTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
         return null;
     }
   }
@@ -189,7 +189,7 @@ abstract class CmapData implements BinaryCodable {
       case _kFormat12:
         return CmapSegmentedCoverageTable.create(segmentList);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
+        OTFDebugger.debugUnsupportedTableFormat(kCmapTag, format);
         return null;
     }
   }

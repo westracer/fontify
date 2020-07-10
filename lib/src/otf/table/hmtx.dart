@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import '../../common/codable/binary.dart';
 import '../../common/generic_glyph.dart';
 import '../../utils/misc.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 
 import 'abstract.dart';
 import 'hhea.dart';

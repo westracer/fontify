@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import '../../common/calculatable_offsets.dart';
 import '../../common/codable/binary.dart';
 import '../../common/generic_glyph.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../cff/char_string.dart';
 import '../cff/dict.dart';
 import '../cff/dict_operator.dart' as op;

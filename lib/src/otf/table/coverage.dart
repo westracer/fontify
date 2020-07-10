@@ -15,7 +15,7 @@ abstract class CoverageTable implements BinaryCodable {
       case 1:
         return CoverageTableFormat1.fromByteData(byteData, offset);
       default:
-        TTFDebugger.debugUnsupportedTableFormat('Coverage', format);
+        OTFDebugger.debugUnsupportedTableFormat('Coverage', format);
         return null;
     }
   }

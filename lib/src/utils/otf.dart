@@ -113,7 +113,7 @@ List<int> absToRelCoordinates(List<int> absCoordinates) {
   return relCoordinates;
 }
 
-extension TTFByteDateExt on ByteData {
+extension OTFByteDateExt on ByteData {
   int getFixed(int offset) => getUint16(offset);
 
   void setFixed(int offset, int value) => setUint16(offset, value);
@@ -159,7 +159,7 @@ extension TTFByteDateExt on ByteData {
   }
 }
 
-extension TTFStringExt on String {
+extension OTFStringExt on String {
   String getAsciiPrintable() =>
     replaceAll(RegExp(r'([^\x00-\x7E]|[\(\[\]\(\)\{\}<>\/%])'), '');
 }

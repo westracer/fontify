@@ -6,20 +6,20 @@ import 'package:fontify/src/common/generic_glyph.dart';
 import 'package:fontify/src/otf/reader.dart';
 import 'package:fontify/src/otf/table/all.dart';
 import 'package:fontify/src/otf/table/hhea.dart';
-import 'package:fontify/src/otf/ttf.dart';
+import 'package:fontify/src/otf/otf.dart';
 import 'package:fontify/src/utils/misc.dart';
-import 'package:fontify/src/utils/ttf.dart';
+import 'package:fontify/src/utils/otf.dart';
 import 'package:test/test.dart';
 
 const _kTestFontAssetPath = './test_assets/test_font.ttf';
 const _kTestCFF2fontAssetPath = './test_assets/test_cff2_font.otf';
 
 void main() {
-  TrueTypeFont font;
+  OpenTypeFont font;
 
   group('Reader', () {
     setUpAll(() {
-      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
+      font = OTFReader.fromFile(File(_kTestFontAssetPath)).read();
     });
 
     test('Offset table', () {
@@ -316,17 +316,17 @@ void main() {
   
   group('Creation & Writer', () {
     ByteData originalByteData, recreatedByteData;
-    TrueTypeFont recreatedFont;
+    OpenTypeFont recreatedFont;
 
     setUpAll(() {
       MockableDateTime.mockedDate = DateTime.utc(2020, 2, 2, 2, 2);
       originalByteData = ByteData.sublistView(File(_kTestFontAssetPath).readAsBytesSync());
-      font = TTFReader.fromByteData(originalByteData).read();
+      font = OTFReader.fromByteData(originalByteData).read();
 
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
       final glyphList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
       
-      recreatedFont = TrueTypeFont.createFromGlyphs(
+      recreatedFont = OpenTypeFont.createFromGlyphs(
         glyphList: glyphList,
         glyphNameList: glyphNameList,
         fontName: 'TestFont',
@@ -370,7 +370,7 @@ void main() {
 
     setUpAll(() {
       byteData = ByteData.sublistView(File(_kTestCFF2fontAssetPath).readAsBytesSync());
-      font = TTFReader.fromByteData(byteData).read();
+      font = OTFReader.fromByteData(byteData).read();
     });
 
     test('CFF2 Read & Write', () {
@@ -406,7 +406,7 @@ void main() {
 
   group('Generic Glyph', () {
     setUpAll(() {
-      font = TTFReader.fromFile(File(_kTestFontAssetPath)).read();
+      font = OTFReader.fromFile(File(_kTestFontAssetPath)).read();
     });
     
     test('Conversion from TrueType and back', () {

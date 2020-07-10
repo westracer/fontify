@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 import 'char_string_operator.dart';
 import 'operand.dart';
@@ -240,7 +240,7 @@ class CharStringInterpreter {
           case 18: // hstemhm
           case 23: // vstemhm
             _stack.clear();
-            TTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
+            OTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
             break;
 
           case 4: // vmoveto
@@ -301,19 +301,19 @@ class CharStringInterpreter {
           case 10: // callsubr
           case 29: // callgsubr
             _stack.clear();
-            TTFDebugger.debugUnsupportedFeature('CFF subrs not supported');
+            OTFDebugger.debugUnsupportedFeature('CFF subrs not supported');
             break;
 
           case 16: { // blend
             _stack.clear();
-            TTFDebugger.debugUnsupportedFeature('CFF blending not supported');
+            OTFDebugger.debugUnsupportedFeature('CFF blending not supported');
             break;
           }
 
           case 19: // hintmask
           case 20: // cntrmask
             _stack.clear();
-            TTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
+            OTFDebugger.debugUnsupportedFeature('CFF hinting not supported');
             break;
 
           case 21: // rmoveto
@@ -457,7 +457,7 @@ class CharStringInterpreter {
                 _pushCommand(_stack.toList().sublist(0, 11), 12, op);
                 break;
               default:
-                TTFDebugger.debugUnsupportedFeature('Unknown charString op: 12 $op');
+                OTFDebugger.debugUnsupportedFeature('Unknown charString op: 12 $op');
                 _stack.clear();
             }
 
@@ -465,7 +465,7 @@ class CharStringInterpreter {
           }
 
           default:
-            TTFDebugger.debugUnsupportedFeature('Unknown charString op: $op');
+            OTFDebugger.debugUnsupportedFeature('Unknown charString op: $op');
             _stack.clear();
         }
       }

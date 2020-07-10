@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import 'language_system.dart';
 
 const kScriptRecordSize = 6;

@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -83,7 +83,7 @@ class MaximumProfileTable extends FontTable {
         data.getUint16(entry.offset + 30),
       );
     } else {
-      TTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
+      OTFDebugger.debugUnsupportedTableVersion(entry.tag, version);
       return null;
     }
   }
@@ -157,7 +157,7 @@ class MaximumProfileTable extends FontTable {
         ..setUint16(28, maxComponentElements)
         ..setUint16(30, maxComponentDepth);
     } else if (version != _kVersion0) {
-      TTFDebugger.debugUnsupportedTableVersion(kMaxpTag, version);
+      OTFDebugger.debugUnsupportedTableVersion(kMaxpTag, version);
     }
   }
 

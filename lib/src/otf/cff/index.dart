@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import '../../common/calculatable_offsets.dart';
 import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import 'dict.dart';
 
 const kEmptyIndexSize = 4;

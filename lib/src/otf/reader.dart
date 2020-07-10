@@ -2,23 +2,23 @@ import 'dart:io'; // TODO: remove dart:io imports for dart2js compatibility
 import 'dart:typed_data';
 
 import '../utils/exception.dart';
-import '../utils/ttf.dart';
+import '../utils/otf.dart';
 
 import 'debugger.dart';
+import 'otf.dart';
 import 'table/all.dart';
-import 'ttf.dart';
 
 /// A helper for reading an OpenType font from a binary data
-class TTFReader {
-  TTFReader.fromFile(File file) 
+class OTFReader {
+  OTFReader.fromFile(File file) 
     : _byteData = ByteData.sublistView(file.readAsBytesSync());
 
-  TTFReader.fromByteData(this._byteData);
+  OTFReader.fromByteData(this._byteData);
 
   final ByteData _byteData;
 
   OffsetTable _offsetTable;
-  TrueTypeFont _font;
+  OpenTypeFont _font;
 
   /// Tables by tags
   final _tableMap = <String, FontTable>{};
@@ -31,16 +31,16 @@ class TTFReader {
   int get _indexToLocFormat => _font.head.indexToLocFormat;
   int get numGlyphs => _font.maxp.numGlyphs;
 
-  /// Reads an OpenType font file and returns [TrueTypeFont] instance
+  /// Reads an OpenType font file and returns [OpenTypeFont] instance
   /// 
   /// Throws [ChecksumException] if calculated checksum is different than expected
-  TrueTypeFont read() {
+  OpenTypeFont read() {
     _tableMap.clear();
 
     final entryMap = <String, TableRecordEntry>{};
 
     _offsetTable = OffsetTable.fromByteData(_byteData);
-    _font = TrueTypeFont(_offsetTable, _tableMap);
+    _font = OpenTypeFont(_offsetTable, _tableMap);
 
     _readTableRecordEntries(entryMap);
     _readTables(entryMap);
@@ -109,7 +109,7 @@ class TTFReader {
       case kCFF2Tag:
         return CFF2Table.fromByteData(_byteData, entry);
       default:
-        TTFDebugger.debugUnsupportedTable(entry.tag);
+        OTFDebugger.debugUnsupportedTable(entry.tag);
         return null;
     }
   }

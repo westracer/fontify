@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../../common/codable/binary.dart';
-import '../../../utils/ttf.dart';
+import '../../../utils/otf.dart';
 import 'flag.dart';
 import 'header.dart';
 

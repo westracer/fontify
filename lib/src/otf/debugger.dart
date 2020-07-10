@@ -1,5 +1,5 @@
 // TODO: replace with logger that has different levels
-class TTFDebugger {
+class OTFDebugger {
   static void debug(String message) => print(message); // ignore: avoid_print
 
   static void debugUnsupportedTable(String tableName) => 

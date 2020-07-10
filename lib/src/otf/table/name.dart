@@ -4,7 +4,7 @@ import '../../common/codable/binary.dart';
 import '../../common/constant.dart';
 import '../../utils/enum_class.dart';
 import '../../utils/exception.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../../utils/ucs2.dart';
 import '../debugger.dart';
 
@@ -181,7 +181,7 @@ class NamingTableFormat0Header implements BinaryCodable {
     final format = byteData.getUint16(entry.offset);
 
     if (format != _kFormat0) {
-      TTFDebugger.debugUnsupportedTableFormat(entry.tag, format);
+      OTFDebugger.debugUnsupportedTableFormat(entry.tag, format);
       return null;
     }
 
@@ -239,7 +239,7 @@ abstract class NamingTable extends FontTable {
       case _kFormat0:
         return NamingTableFormat0.fromByteData(byteData, entry);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
+        OTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
         return null;
     }
   }
@@ -254,7 +254,7 @@ abstract class NamingTable extends FontTable {
       case _kFormat0:
         return NamingTableFormat0.create(fontName, description, revision);
       default:
-        TTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
+        OTFDebugger.debugUnsupportedTableFormat(kNameTag, format);
         return null;
     }
   }

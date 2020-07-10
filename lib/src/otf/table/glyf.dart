@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../common/generic_glyph.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 import 'abstract.dart';
 import 'glyph/header.dart';
@@ -32,7 +32,7 @@ class GlyphDataTable extends FontTable {
       final header = GlyphHeader.fromByteData(byteData, headerOffset);
 
       if (header.isComposite) {
-        TTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
+        OTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
       } else {
         final glyph = isEmpty ? SimpleGlyph.empty() : SimpleGlyph.fromByteData(byteData, header, headerOffset);
         glyphList.add(glyph);

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 import 'abstract.dart';
 import 'feature_list.dart';
@@ -30,7 +30,7 @@ class GlyphSubstitutionTableHeader implements BinaryCodable {
     final isV10 = version == const Revision(1, 0);
 
     if (!isV10) {
-      TTFDebugger.debugUnsupportedTableVersion(kGSUBTag, version.int32value);
+      OTFDebugger.debugUnsupportedTableVersion(kGSUBTag, version.int32value);
     }
 
     return GlyphSubstitutionTableHeader(

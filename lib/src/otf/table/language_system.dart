@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 
 const kLangSysRecordSize = 6;
 

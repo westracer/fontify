@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import 'abstract.dart';
 import 'glyf.dart';
 import 'table_record_entry.dart';

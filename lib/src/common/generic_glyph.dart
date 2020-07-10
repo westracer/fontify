@@ -5,7 +5,7 @@ import '../otf/cff/char_string_optimizer.dart';
 import '../otf/table/glyph/flag.dart';
 import '../otf/table/glyph/header.dart';
 import '../otf/table/glyph/simple.dart';
-import '../utils/ttf.dart';
+import '../utils/otf.dart';
 import 'outline.dart';
 
 class GenericGlyphMetrics {

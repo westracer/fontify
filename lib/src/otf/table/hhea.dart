@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/generic_glyph.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../defaults.dart';
 import 'abstract.dart';
 import 'hmtx.dart';

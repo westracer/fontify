@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../../common/codable/binary.dart';
-import '../../../utils/ttf.dart';
+import '../../../utils/otf.dart';
 
 const _kOnCurvePointValue = 0x01;
 const _kXshortVectorValue = 0x02;

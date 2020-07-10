@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 import 'coverage.dart';
 
@@ -25,7 +25,7 @@ abstract class SubstitutionSubtable implements BinaryCodable {
       case 4:
         return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
       default:
-        TTFDebugger.debugUnsupportedTableFormat('Lookup', lookupType);
+        OTFDebugger.debugUnsupportedTableFormat('Lookup', lookupType);
         return null;
     }
   }

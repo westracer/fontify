@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import '../../utils/exception.dart';
 import '../../utils/misc.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 import '../debugger.dart';
 
 import 'abstract.dart';
@@ -95,7 +95,7 @@ class OS2Table extends FontTable {
     final isV5 = version >= _kVersion5;
 
     if (version > _kVersion5) {
-      TTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
+      OTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
     }
 
     return OS2Table._(
@@ -330,7 +330,7 @@ class OS2Table extends FontTable {
     final isV5 = version >= _kVersion5;
 
     if (version > _kVersion5) {
-      TTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
+      OTFDebugger.debugUnsupportedTableVersion(kOS2Tag, version);
     }
 
     byteData

@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
+import '../../utils/otf.dart';
 import '../../utils/pascal_string.dart';
-import '../../utils/ttf.dart';
 import '../debugger.dart';
 import '../defaults.dart';
 import 'abstract.dart';
@@ -103,7 +103,7 @@ abstract class PostScriptData implements BinaryCodable {
       case _kVersion30:
         return PostScriptVersion30();
       default:
-        TTFDebugger.debugUnsupportedTableVersion(kPostTag, version);
+        OTFDebugger.debugUnsupportedTableVersion(kPostTag, version);
         return null;
     }
   }

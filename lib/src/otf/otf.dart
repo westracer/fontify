@@ -6,7 +6,7 @@ import '../common/calculatable_offsets.dart';
 import '../common/codable/binary.dart';
 import '../common/generic_glyph.dart';
 import '../utils/exception.dart';
-import '../utils/ttf.dart';
+import '../utils/otf.dart';
 
 import 'defaults.dart';
 import 'reader.dart';
@@ -22,11 +22,11 @@ const _kTableTagsToEncode = {
 // TODO: !!! change naming to OpenType
 /// An OpenType font.
 /// Contains either TrueType (glyf table) or OpenType (CFF2 table) outlines
-class TrueTypeFont implements BinaryCodable {
-  TrueTypeFont(this.offsetTable, this.tableMap);
+class OpenTypeFont implements BinaryCodable {
+  OpenTypeFont(this.offsetTable, this.tableMap);
 
-  factory TrueTypeFont.fromByteData(ByteData byteData) {
-    final reader = TTFReader.fromByteData(byteData);
+  factory OpenTypeFont.fromByteData(ByteData byteData) {
+    final reader = OTFReader.fromByteData(byteData);
     return reader.read();
   }
 
@@ -42,7 +42,7 @@ class TrueTypeFont implements BinaryCodable {
   /// * If [useCFF2] is set to false, a font with TrueType outlines (TTF) is generated.
   /// Otherwise, OpenType outlines in CFF2 table format are generated.
   /// Defaults to true.
-  factory TrueTypeFont.createFromGlyphs({
+  factory OpenTypeFont.createFromGlyphs({
     @required List<GenericGlyph> glyphList, 
     @required String fontName,
     List<String> glyphNameList,
@@ -109,7 +109,7 @@ class TrueTypeFont implements BinaryCodable {
 
     final offsetTable = OffsetTable.create(tables.length, useCFF2);
 
-    return TrueTypeFont(offsetTable, tables);
+    return OpenTypeFont(offsetTable, tables);
   }
   
   final OffsetTable offsetTable;

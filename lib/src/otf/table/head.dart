@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import '../../common/generic_glyph.dart';
 import '../../utils/exception.dart';
 import '../../utils/misc.dart';
-import '../../utils/ttf.dart';
+import '../../utils/otf.dart';
 
 import 'abstract.dart';
 import 'all.dart';

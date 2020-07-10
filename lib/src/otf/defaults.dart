@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import '../common/generic_glyph.dart';
 import '../common/outline.dart';
 import '../utils/misc.dart';
-import '../utils/ttf.dart';
+import '../utils/otf.dart';
 
 const kDefaultAchVendID = '    ';
 const kDefaultTrueTypeUnitsPerEm = 1024; // A power of two is recommended
