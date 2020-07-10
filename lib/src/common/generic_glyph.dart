@@ -5,9 +5,21 @@ import '../ttf/cff/char_string_optimizer.dart';
 import '../ttf/table/glyph/flag.dart';
 import '../ttf/table/glyph/header.dart';
 import '../ttf/table/glyph/simple.dart';
-import '../utils/misc.dart';
 import '../utils/ttf.dart';
 import 'outline.dart';
+
+class GenericGlyphMetrics {
+  GenericGlyphMetrics(this.xMin, this.xMax, this.yMin, this.yMax);
+
+  final int xMin;
+  final int xMax;
+  final int yMin;
+  final int yMax;
+
+  int get width => xMax - xMin;
+
+  int get height => yMax - yMin;
+}
 
 /// Generic glyph. 
 /// Used as an intermediate storage between different types of glyphs
@@ -127,10 +139,10 @@ class GenericGlyph {
     final relXcoordinates = absToRelCoordinates(absXcoordinates);
     final relYcoordinates = absToRelCoordinates(absYcoordinates);
 
-    final xMin = absXcoordinates.fold<int>(kInt32Max, math.min);
-    final yMin = absYcoordinates.fold<int>(kInt32Max, math.min);
-    final xMax = absXcoordinates.fold<int>(kInt32Min, math.max);
-    final yMax = absYcoordinates.fold<int>(kInt32Min, math.max);
+    final xMin = absXcoordinates.fold<int>(0, math.min);
+    final yMin = absYcoordinates.fold<int>(0, math.min);
+    final xMax = absXcoordinates.fold<int>(0, math.max);
+    final yMax = absYcoordinates.fold<int>(0, math.max);
 
     final flags = [
       for (int i = 0; i < pointList.length; i++)
@@ -146,5 +158,20 @@ class GenericGlyph {
       flags,
       pointList,
     );
+  }
+
+  GenericGlyphMetrics get metrics {
+    final points = _getPointList();
+
+    int xMin = 0, yMin = 0, xMax = 0, yMax = 0;
+    
+    for (final p in points) {
+      xMin = math.min(xMin, p.x.toInt());
+      xMax = math.max(xMax, p.x.toInt());
+      yMin = math.min(yMin, p.y.toInt());
+      yMax = math.max(yMax, p.x.toInt());
+    }
+
+    return GenericGlyphMetrics(xMin, xMax, yMin, yMax);
   }
 }

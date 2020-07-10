@@ -2,12 +2,11 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
+import '../../common/generic_glyph.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
 
 import 'abstract.dart';
-import 'glyf.dart';
-import 'glyph/simple.dart';
 import 'hhea.dart';
 import 'table_record_entry.dart';
 
@@ -23,12 +22,12 @@ class LongHorMetric implements BinaryCodable {
     );
   }
 
-  factory LongHorMetric.createForGlyph(SimpleGlyph glyph, int unitsPerEm) {
-    if (glyph.isEmpty) {
+  factory LongHorMetric.createForGlyph(GenericGlyphMetrics metrics, int unitsPerEm) {
+    if (metrics.width == 0) {
       return LongHorMetric(unitsPerEm ~/ 3, 0);
     }
 
-    return LongHorMetric(glyph.header.xMax - glyph.header.xMin, 0);
+    return LongHorMetric(metrics.xMax - metrics.xMin, 0);
   }
   
   final int advanceWidth;
@@ -73,10 +72,10 @@ class HorizontalMetricsTable extends FontTable {
     return HorizontalMetricsTable(entry, hMetrics, leftSideBearings);
   }
 
-  factory HorizontalMetricsTable.create(GlyphDataTable glyf, int unitsPerEm) {
+  factory HorizontalMetricsTable.create(List<GenericGlyphMetrics> glyphMetricsList, int unitsPerEm) {
     final hMetrics = List.generate(
-      glyf.glyphList.length,
-      (i) => LongHorMetric.createForGlyph(glyf.glyphList[i], unitsPerEm)
+      glyphMetricsList.length,
+      (i) => LongHorMetric.createForGlyph(glyphMetricsList[i], unitsPerEm)
     );
 
     return HorizontalMetricsTable(null, hMetrics, []);
@@ -92,12 +91,12 @@ class HorizontalMetricsTable extends FontTable {
 
   int get minLeftSideBearing => hMetrics.fold<int>(kInt32Max, (p, v) => math.min(p, v.lsb));
 
-  int getMinRightSideBearing(GlyphDataTable glyf) {
+  int getMinRightSideBearing(List<GenericGlyphMetrics> glyphMetricsList) {
     int minRsb = kInt32Max;
 
-    for (int i = 0; i < glyf.glyphList.length; i++) {
-      final g = glyf.glyphList[i];
-      final rsb = hMetrics[i].getRsb(g.header.xMax, g.header.xMin);
+    for (int i = 0; i < glyphMetricsList.length; i++) {
+      final m = glyphMetricsList[i];
+      final rsb = hMetrics[i].getRsb(m.xMax, m.xMin);
 
       minRsb = math.min(minRsb, rsb);
     }
@@ -105,12 +104,12 @@ class HorizontalMetricsTable extends FontTable {
     return minRsb;
   }
 
-  int getMaxExtent(GlyphDataTable glyf) {
+  int getMaxExtent(List<GenericGlyphMetrics> glyphMetricsList) {
     int maxExtent = kInt32Min;
 
-    for (int i = 0; i < glyf.glyphList.length; i++) {
-      final g = glyf.glyphList[i];
-      final extent = hMetrics[i].lsb + (g.header.xMax - g.header.xMin);
+    for (int i = 0; i < glyphMetricsList.length; i++) {
+      final m = glyphMetricsList[i];
+      final extent = hMetrics[i].lsb + (m.xMax - m.xMin);
 
       maxExtent = math.max(maxExtent, extent);
     }

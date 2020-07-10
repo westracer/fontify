@@ -72,14 +72,16 @@ class TrueTypeFont implements BinaryCodable {
       ...glyphList,
     ];
 
-    final glyf = GlyphDataTable.fromGlyphs(fullGlyphList);
-    final head = HeaderTable.create(glyf, revision, unitsPerEm);
-    final loca = IndexToLocationTable.create(head.indexToLocFormat, glyf);
-    final hmtx = HorizontalMetricsTable.create(glyf, unitsPerEm);
-    final hhea = HorizontalHeaderTable.create(glyf, hmtx, ascender);
+    final glyphMetricsList = fullGlyphList.map((g) => g.metrics).toList();
+
+    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
+    final head = HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
+    final loca = useCFF2 ? null : IndexToLocationTable.create(head.indexToLocFormat, glyf);
+    final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
+    final hhea = HorizontalHeaderTable.create(glyphMetricsList, hmtx, ascender);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
-    final maxp = MaximumProfileTable.create(glyf, useCFF2);
+    final maxp = MaximumProfileTable.create(fullGlyphList.length, glyf);
     final cmap = CharacterToGlyphTable.create(glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);

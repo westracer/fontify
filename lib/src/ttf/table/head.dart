@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common/generic_glyph.dart';
 import '../../utils/exception.dart';
 import '../../utils/misc.dart';
 import '../../utils/ttf.dart';
@@ -89,18 +90,23 @@ class HeaderTable extends FontTable {
       data.getInt16(entry.offset + 52)
     );
 
-  factory HeaderTable.create(GlyphDataTable glyf, Revision revision, int unitsPerEm) {
+  factory HeaderTable.create(
+    List<GenericGlyphMetrics> glyphMetricsList,
+    GlyphDataTable glyf,
+    Revision revision,
+    int unitsPerEm,
+  ) {
     if (revision == null || revision.int32value == 0) {
       throw TableDataFormatException('revision must not be null');
     }
 
+    final isOpenType = glyf == null;
     final now = MockableDateTime.now();
-    final glyphList = glyf.glyphList;
 
-    final xMin = glyphList.fold<int>(0, (prev, glyph) => math.min(prev, glyph.header.xMin));
-    final yMin = glyphList.fold<int>(0, (prev, glyph) => math.min(prev, glyph.header.yMin));
-    final xMax = glyphList.fold<int>(0, (prev, glyph) => math.max(prev, glyph.header.xMax));
-    final yMax = glyphList.fold<int>(0, (prev, glyph) => math.max(prev, glyph.header.yMax));
+    final xMin = glyphMetricsList.fold<int>(0, (prev, m) => math.min(prev, m.xMin));
+    final yMin = glyphMetricsList.fold<int>(0, (prev, m) => math.min(prev, m.yMin));
+    final xMax = glyphMetricsList.fold<int>(0, (prev, m) => math.max(prev, m.xMax));
+    final yMax = glyphMetricsList.fold<int>(0, (prev, m) => math.max(prev, m.yMax));
     
     return HeaderTable(
       null,
@@ -116,7 +122,7 @@ class HeaderTable extends FontTable {
       yMax,
       _kMacStyleRegular,
       _kLowestRecPPEMdefault,
-      glyf.size < 0x20000 ? _kIndexToLocFormatShort : _kIndexToLocFormatLong
+      !isOpenType && glyf.size < 0x20000 ? _kIndexToLocFormatShort : _kIndexToLocFormatLong
     );
   }
 

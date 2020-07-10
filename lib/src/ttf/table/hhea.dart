@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
+import '../../common/generic_glyph.dart';
 import '../../utils/ttf.dart';
 import '../defaults.dart';
 import 'abstract.dart';
-import 'glyf.dart';
 import 'hmtx.dart';
 import 'table_record_entry.dart';
 
@@ -49,7 +49,7 @@ class HorizontalHeaderTable extends FontTable {
   }
 
   factory HorizontalHeaderTable.create(
-    GlyphDataTable glyf, 
+    List<GenericGlyphMetrics> glyphMetricsList, 
     HorizontalMetricsTable hmtx,
     int ascender,
   ) {
@@ -62,13 +62,13 @@ class HorizontalHeaderTable extends FontTable {
       0,    // 0 line gap
       hmtx.advanceWidthMax,
       hmtx.minLeftSideBearing,
-      hmtx.getMinRightSideBearing(glyf),
-      hmtx.getMaxExtent(glyf),
+      hmtx.getMinRightSideBearing(glyphMetricsList),
+      hmtx.getMaxExtent(glyphMetricsList),
       1, // caretSlopeRise - vertical
       0, // caretSlopeRun - vertical
       0, // non-slanted font - no offset
       0, // 0 for current metric format
-      glyf.glyphList.length
+      glyphMetricsList.length
     );
   }
 

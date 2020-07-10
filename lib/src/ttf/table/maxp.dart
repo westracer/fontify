@@ -88,14 +88,16 @@ class MaximumProfileTable extends FontTable {
     }
   }
 
-  factory MaximumProfileTable.create(GlyphDataTable glyf, bool isOpenType) {
+  factory MaximumProfileTable.create(int numGlyphs, GlyphDataTable glyf) {
+    final isOpenType = glyf == null;
+
     if (isOpenType) {
-      return MaximumProfileTable.v0(null, glyf.glyphList.length);
+      return MaximumProfileTable.v0(null, numGlyphs);
     }
 
     return MaximumProfileTable.v1(
       null,
-      glyf.glyphList.length,
+      numGlyphs,
       glyf.maxPoints,
       glyf.maxContours,
       0, // Composite glyphs are not supported
