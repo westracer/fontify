@@ -58,3 +58,34 @@ class RectElement implements SvgElement, PathConvertible {
     return PathElement(null, transform, d);
   }
 }
+
+class CircleElement implements SvgElement, PathConvertible {
+  CircleElement(this.origin, this.r, this.transform);
+
+  factory CircleElement.fromXmlElement(XmlElement element) {
+    final origin = math.Point(
+      element.getScalarAttribute('cx'),
+      element.getScalarAttribute('cy')
+    );
+
+    final r = element.getScalarAttribute('r');
+    final transform = element.getAttribute('transform');
+
+    return CircleElement(origin, r, transform);
+  }
+
+  final math.Point origin;
+  final num r;
+  final String transform;
+
+  num get cx => origin.x;
+
+  num get cy => origin.y;
+
+  @override
+  PathElement getPath() {
+    final d = 'M${cx - r},${cy}A$r,$r 0,0,0 ${cx + r},${cy}A$r,$r 0,0,0 ${cx - r},${cy}z';
+    
+    return PathElement(null, transform, d);
+  }
+}

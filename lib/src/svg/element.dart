@@ -12,6 +12,8 @@ abstract class SvgElement {
         return GroupElement.fromXmlElement(element);
       case 'rect':
         return RectElement.fromXmlElement(element);
+      case 'circle':
+        return CircleElement.fromXmlElement(element);
     }
 
     return null;
