@@ -2,9 +2,13 @@ import 'dart:math' as math;
 
 import '../otf/cff/char_string.dart';
 import '../otf/cff/char_string_optimizer.dart';
+import '../otf/debugger.dart';
 import '../otf/table/glyph/flag.dart';
 import '../otf/table/glyph/header.dart';
 import '../otf/table/glyph/simple.dart';
+import '../svg/outline_converter.dart';
+import '../svg/path.dart';
+import '../svg/svg.dart';
 import '../utils/misc.dart';
 import '../utils/otf.dart';
 import 'outline.dart';
@@ -50,6 +54,17 @@ class GenericGlyph {
     return GenericGlyph(outlines);
   }
 
+  factory GenericGlyph.fromSvg(Svg svg) {
+    final pathList = svg.elementList.whereType<PathElement>();
+
+    final outlines = [
+      for (final p in pathList)
+        ...PathToOutlineConverter(svg, p).convert()
+    ];
+
+    return GenericGlyph(outlines);
+  }
+
   final List<Outline> outlines;
 
   /// Deep copy of a glyph and its outlines
@@ -89,6 +104,10 @@ class GenericGlyph {
       if (outline.hasQuadCurves) {
         // NOTE: what about doing it implicitly?
         throw UnsupportedError('CharString outlines must contain cubic curves');
+      }
+
+      if (outline.fillRule == FillRule.evenodd) {
+        OTFDebugger.debug('Warning: Fill rule for OpenType outlines should be non-zero');
       }
     }
 

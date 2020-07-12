@@ -17,3 +17,12 @@ class ChecksumException implements Exception {
   @override
   String toString() => 'Wrong checksum for $entityName';
 }
+
+class SvgParserException implements Exception {
+  SvgParserException([this.message]);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}

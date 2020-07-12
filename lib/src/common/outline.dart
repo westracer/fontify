@@ -2,7 +2,7 @@ import 'dart:math';
 
 import '../utils/misc.dart';
 
-/// How shapes with more than one closed outline are filled
+/// How shapes with more than one closed outlines are filled.
 /// 
 /// * CharStrings must always be the nonzero
 /// * TrueType is either always nonzero 
@@ -15,11 +15,11 @@ enum FillRule {nonzero, evenodd}
 /// 
 /// TODO: It's very basic class for now used for generic glyph description. Replace it with a proper Path class (like java.awt.geom.Path2D or dart:ui's Path)
 class Outline {
-  Outline(this.pointList, this.isOnCurveList, this._hasCompactCurves, this._hasQuadCurves, this.fullRule);
+  Outline(this.pointList, this.isOnCurveList, this._hasCompactCurves, this._hasQuadCurves, this.fillRule);
 
   final List<Point<num>> pointList;
   final List<bool> isOnCurveList;
-  final FillRule fullRule;
+  final FillRule fillRule;
 
   /// Indicates weather curves are compact (midpoints and endpoint are implicit)
   bool _hasCompactCurves;
@@ -36,18 +36,18 @@ class Outline {
       [...isOnCurveList],
       _hasCompactCurves,
       _hasQuadCurves,
-      fullRule
+      fillRule
     );
   }
 
   /// Decompacts implicit points of quadratic curves (midpoints and end points)
   void decompactImplicitPoints() {
-    if (!hasQuadCurves) {
-      throw UnsupportedError('Only quadratic curves supported');
-    }
-
     if (!hasCompactCurves) {
       return;
+    }
+
+    if (!hasQuadCurves) {
+      throw UnsupportedError('Only quadratic curves supported');
     }
 
     // Starting with 2, because first point can't be a CP and we need 2 of them
@@ -134,10 +134,7 @@ class Outline {
       final qp1 = pointList[i];
       final qp2 = i + 1 < pointList.length ? pointList[i + 1] : pointList.first;
 
-      final cp1 = qp0 + (qp1 - qp0) * (2/3);
-      final cp2 = qp2 + (qp1 - qp2) * (2/3);
-
-      pointList.replaceRange(i, i + 1, [cp1, cp2]);
+      pointList.replaceRange(i, i + 1, quadCurveToCubic(qp0, qp1, qp2));
       isOnCurveList.insert(i, false);
       i++;
     }
