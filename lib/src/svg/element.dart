@@ -1,15 +1,16 @@
 import 'package:xml/xml.dart';
 
+import '../utils/svg.dart';
 import 'path.dart';
 import 'shapes.dart';
 
 abstract class SvgElement {
-  factory SvgElement.fromXmlElement(XmlElement element) {
+  factory SvgElement.fromXmlElement(XmlElement element, bool parseShapes) {
     switch (element.name.local) {
       case 'path':
         return PathElement.fromXmlElement(element);
       case 'g':
-        return GroupElement.fromXmlElement(element);
+        return GroupElement.fromXmlElement(element, parseShapes);
       case 'rect':
         return RectElement.fromXmlElement(element);
       case 'circle':
@@ -18,6 +19,8 @@ abstract class SvgElement {
         return PolylineElement.fromXmlElement(element);
       case 'polygon':
         return PolygonElement.fromXmlElement(element);
+      case 'line':
+        return LineElement.fromXmlElement(element);
     }
 
     return null;
@@ -27,15 +30,9 @@ abstract class SvgElement {
 class GroupElement implements SvgElement {
   GroupElement(this.elementList);
 
-  factory GroupElement.fromXmlElement(XmlElement element) {
+  factory GroupElement.fromXmlElement(XmlElement element, bool parseShapes) {
     // TODO: apply transform
-    final elementList = element.children
-      .whereType<XmlElement>()
-      .map((e) => SvgElement.fromXmlElement(e))
-      .where((e) => e != null)
-      .toList();
-
-    return GroupElement(elementList);
+    return GroupElement(element.parseSvgElements(parseShapes));
   }
 
   final List<SvgElement> elementList;

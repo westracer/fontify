@@ -64,7 +64,7 @@ class OpenTypeFont implements BinaryCodable {
     final unitsPerEm = useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
     
     final ascender = unitsPerEm - kDefaultBaselineExtension;
-    final descender = -kDefaultBaselineExtension;
+    const descender = -kDefaultBaselineExtension;
 
     final fullGlyphList = [
       ...generateDefaultGlyphList(ascender),

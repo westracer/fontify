@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:xml/xml.dart';
 
 import '../utils/exception.dart';
+import '../utils/svg.dart';
 import 'element.dart';
-import 'shapes.dart';
 
 class Svg {
   Svg(this.name, this.viewBox, this.elementList);
@@ -13,7 +13,7 @@ class Svg {
   /// 
   /// Throws [XmlParserException] if XML parsing exception occurs.
   /// Throws [SvgParserException] on any problem related to SVG parsing.
-  factory Svg.parse(String name, String xmlString) {
+  factory Svg.parse(String name, String xmlString, {bool parseShapes = false}) {
     final xml = XmlDocument.parse(xmlString);
     final root = xml.rootElement;
 
@@ -36,17 +36,9 @@ class Svg {
       ...vb,
     ];
 
-    final elementList = root.children
-      .whereType<XmlElement>()
-      .map((e) => SvgElement.fromXmlElement(e))
-      .where((e) => e != null)
-      .map((e) => e is PathConvertible ? (e as PathConvertible).getPath() : e)
-      .expand((e) => e is GroupElement ? e.elementList : [e])
-      .toList();
-
     final viewBox = math.Rectangle(fvb[0], fvb[1], fvb[2], fvb[3]);
 
-    return Svg(name, viewBox, elementList);
+    return Svg(name, viewBox, root.parseSvgElements(parseShapes));
   }
 
   final String name;

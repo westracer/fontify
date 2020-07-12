@@ -30,7 +30,7 @@ class RectElement implements SvgElement, PathConvertible {
 
     final transform = element.getAttribute('transform');
 
-    return RectElement(rect, rx, ry, transform);
+    return RectElement(rect, rx ?? 0, ry ?? 0, transform);
   }
 
   final math.Rectangle rectangle;
@@ -127,6 +127,48 @@ class PolygonElement implements SvgElement, PathConvertible {
   @override
   PathElement getPath() {
     final d = 'M${points}z';
+    
+    return PathElement(null, transform, d);
+  }
+}
+
+class LineElement implements SvgElement, PathConvertible {
+  LineElement(this.p1, this.p2, this.transform);
+
+  factory LineElement.fromXmlElement(XmlElement element) {
+    final p1 = math.Point(
+      element.getScalarAttribute('x1'),
+      element.getScalarAttribute('y1')
+    );
+    
+    final p2 = math.Point(
+      element.getScalarAttribute('x2'),
+      element.getScalarAttribute('y2')
+    );
+
+    final transform = element.getAttribute('transform');
+
+    return LineElement(p1, p2, transform);
+  }
+
+  /// Line width
+  static const _kW = 1;
+
+  final math.Point p1;
+  final math.Point p2;
+  final String transform;
+
+  num get x1 => p1.x;
+
+  num get y1 => p1.y;
+
+  num get x2 => p2.x;
+
+  num get y2 => p2.y;
+
+  @override
+  PathElement getPath() {
+    final d = 'M$x1 $y1 ${x1 + _kW} ${y1 + _kW} ${x2 + _kW} ${y2 + _kW} $x2 $y2 z';
     
     return PathElement(null, transform, d);
   }
