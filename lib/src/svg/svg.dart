@@ -4,6 +4,7 @@ import 'package:xml/xml.dart';
 
 import '../utils/exception.dart';
 import 'element.dart';
+import 'shapes.dart';
 
 class Svg {
   Svg(this.name, this.viewBox, this.elementList);
@@ -39,6 +40,7 @@ class Svg {
       .whereType<XmlElement>()
       .map((e) => SvgElement.fromXmlElement(e))
       .where((e) => e != null)
+      .map((e) => e is PathConvertible ? (e as PathConvertible).getPath() : e)
       .expand((e) => e is GroupElement ? e.elementList : [e])
       .toList();
 

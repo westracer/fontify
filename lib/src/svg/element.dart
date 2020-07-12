@@ -1,8 +1,8 @@
 import 'package:xml/xml.dart';
 
 import 'path.dart';
+import 'shapes.dart';
 
-// TODO: rectangle, circle etc.
 abstract class SvgElement {
   factory SvgElement.fromXmlElement(XmlElement element) {
     switch (element.name.local) {
@@ -10,6 +10,8 @@ abstract class SvgElement {
         return PathElement.fromXmlElement(element);
       case 'g':
         return GroupElement.fromXmlElement(element);
+      case 'rect':
+        return RectElement.fromXmlElement(element);
     }
 
     return null;
