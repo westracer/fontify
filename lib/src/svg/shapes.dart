@@ -105,7 +105,28 @@ class PolylineElement implements SvgElement, PathConvertible {
 
   @override
   PathElement getPath() {
-    final d = 'M$points';
+    final d = 'M${points}z';
+    
+    return PathElement(null, transform, d);
+  }
+}
+
+class PolygonElement implements SvgElement, PathConvertible {
+  PolygonElement(this.points, this.transform);
+
+  factory PolygonElement.fromXmlElement(XmlElement element) {
+    final points = element.getAttribute('points');
+    final transform = element.getAttribute('transform');
+
+    return PolygonElement(points, transform);
+  }
+
+  final String points;
+  final String transform;
+
+  @override
+  PathElement getPath() {
+    final d = 'M${points}z';
     
     return PathElement(null, transform, d);
   }
