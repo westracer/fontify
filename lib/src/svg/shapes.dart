@@ -89,3 +89,24 @@ class CircleElement implements SvgElement, PathConvertible {
     return PathElement(null, transform, d);
   }
 }
+
+class PolylineElement implements SvgElement, PathConvertible {
+  PolylineElement(this.points, this.transform);
+
+  factory PolylineElement.fromXmlElement(XmlElement element) {
+    final points = element.getAttribute('points');
+    final transform = element.getAttribute('transform');
+
+    return PolylineElement(points, transform);
+  }
+
+  final String points;
+  final String transform;
+
+  @override
+  PathElement getPath() {
+    final d = 'M$points';
+    
+    return PathElement(null, transform, d);
+  }
+}
