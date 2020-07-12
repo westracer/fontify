@@ -39,6 +39,7 @@ class Svg {
       .whereType<XmlElement>()
       .map((e) => SvgElement.fromXmlElement(e))
       .where((e) => e != null)
+      .expand((e) => e is GroupElement ? e.elementList : [e])
       .toList();
 
     final viewBox = math.Rectangle(fvb[0], fvb[1], fvb[2], fvb[3]);
