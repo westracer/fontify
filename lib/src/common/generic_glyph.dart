@@ -12,6 +12,8 @@ import 'outline.dart';
 class GenericGlyphMetrics {
   GenericGlyphMetrics(this.xMin, this.xMax, this.yMin, this.yMax);
 
+  factory GenericGlyphMetrics.empty() => GenericGlyphMetrics(0,0,0,0);
+
   final int xMin;
   final int xMax;
   final int yMin;
@@ -203,6 +205,10 @@ class GenericGlyph {
 
   GenericGlyphMetrics get metrics {
     final points = _getPointList();
+
+    if (points.isEmpty) {
+      return GenericGlyphMetrics.empty();
+    }
 
     int xMin = kInt32Max, yMin = kInt32Max, xMax = kInt32Min, yMax = kInt32Min;
     
