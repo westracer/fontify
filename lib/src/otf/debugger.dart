@@ -1,16 +1,17 @@
-// TODO: replace with logger that has different levels
+import '../utils/logger.dart';
+
 class OTFDebugger {
-  static void debug(String message) => print(message); // ignore: avoid_print
+  static void _debug(String message) => logger.w(message);
 
   static void debugUnsupportedTable(String tableName) => 
-    debug('Unsupported table: $tableName');
+    _debug('Unsupported table: $tableName');
 
   static void debugUnsupportedTableVersion(String tableName, int version) => 
-    debug('Unsupported $tableName table version: $version');
+    _debug('Unsupported $tableName table version: $version');
 
   static void debugUnsupportedTableFormat(String tableName, int format) => 
-    debug('Unsupported $tableName table format: $format');
+    _debug('Unsupported $tableName table format: $format');
 
   static void debugUnsupportedFeature(String featureDescription) => 
-    debug('Unsupported feature: $featureDescription');
+    _debug('Unsupported feature: $featureDescription');
 }

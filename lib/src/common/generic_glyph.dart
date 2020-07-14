@@ -2,13 +2,13 @@ import 'dart:math' as math;
 
 import '../otf/cff/char_string.dart';
 import '../otf/cff/char_string_optimizer.dart';
-import '../otf/debugger.dart';
 import '../otf/table/glyph/flag.dart';
 import '../otf/table/glyph/header.dart';
 import '../otf/table/glyph/simple.dart';
 import '../svg/outline_converter.dart';
 import '../svg/path.dart';
 import '../svg/svg.dart';
+import '../utils/logger.dart';
 import '../utils/misc.dart';
 import '../utils/otf.dart';
 import 'outline.dart';
@@ -107,7 +107,10 @@ class GenericGlyph {
       }
 
       if (outline.fillRule == FillRule.evenodd) {
-        OTFDebugger.debug('Warning: Fill rule for OpenType outlines should be non-zero');
+        logger.logOnce(
+          Level.warning,
+          'Some of the outlines are using even-odd fill rule. Make sure using a non-zero winding number fill rule for OpenType outlines.'
+        );
       }
     }
 

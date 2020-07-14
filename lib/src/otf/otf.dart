@@ -128,6 +128,8 @@ class OpenTypeFont implements BinaryCodable {
   HorizontalMetricsTable get hmtx => tableMap[kHmtxTag] as HorizontalMetricsTable;
   CFF2Table get cff2 => tableMap[kCFF2Tag] as CFF2Table;
 
+  bool get isOpenType => offsetTable.isOpenType;
+
   @override
   void encodeToBinary(ByteData byteData) {
     int currentTableOffset = kOffsetTableLength + entryListSize;
