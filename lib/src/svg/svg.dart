@@ -16,9 +16,13 @@ class Svg extends SvgElement {
 
   /// Parses SVG.
   /// 
+  /// If [ignoreShapes] is set to false, shapes (circle, rect, etc.) are converted into paths.
+  /// NOTE: Attributes like "fill" or "stroke" are ignored,
+  /// which means only shape's outline will be used.
+  /// 
   /// Throws [XmlParserException] if XML parsing exception occurs.
   /// Throws [SvgParserException] on any problem related to SVG parsing.
-  factory Svg.parse(String name, String xmlString, {bool parseShapes = false}) {
+  factory Svg.parse(String name, String xmlString, {bool ignoreShapes = true}) {
     final xml = XmlDocument.parse(xmlString);
     final root = xml.rootElement;
 
@@ -45,7 +49,7 @@ class Svg extends SvgElement {
 
     final svg = Svg(name, viewBox, [], root);
 
-    final elementList = root.parseSvgElements(svg, parseShapes);
+    final elementList = root.parseSvgElements(svg, ignoreShapes);
     svg.elementList.addAll(elementList);
 
     return svg;

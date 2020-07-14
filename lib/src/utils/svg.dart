@@ -16,10 +16,10 @@ extension XmlElementExt on XmlElement {
     return num.parse(attr);
   }
 
-  List<SvgElement> parseSvgElements(SvgElement parent, bool parseShapes) {
+  List<SvgElement> parseSvgElements(SvgElement parent, bool ignoreShapes) {
     var elements = children
       .whereType<XmlElement>()
-      .map((e) => SvgElement.fromXmlElement(parent, e, parseShapes))
+      .map((e) => SvgElement.fromXmlElement(parent, e, ignoreShapes))
       // Ignoring unknown elements
       .where((e) => e != null)
       // Expanding groups
@@ -33,7 +33,7 @@ extension XmlElementExt on XmlElement {
         return g.elementList;
       });
 
-    if (parseShapes) {
+    if (!ignoreShapes) {
       // Converting shapes into paths
       elements = elements.map((e) => e is PathConvertible ? (e as PathConvertible).getPath() : e);
     }

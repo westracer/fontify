@@ -12,13 +12,13 @@ abstract class SvgElement {
   factory SvgElement.fromXmlElement(
     SvgElement parent,
     XmlElement element,
-    bool parseShapes
+    bool ignoreShapes
   ) {
     switch (element.name.local) {
       case 'path':
         return PathElement.fromXmlElement(parent, element);
       case 'g':
-        return GroupElement.fromXmlElement(parent, element, parseShapes);
+        return GroupElement.fromXmlElement(parent, element, ignoreShapes);
       case 'rect':
         return RectElement.fromXmlElement(parent, element);
       case 'circle':
@@ -69,7 +69,7 @@ class GroupElement extends SvgElement {
   factory GroupElement.fromXmlElement(
     SvgElement parent,
     XmlElement element,
-    bool parseShapes,
+    bool ignoreShapes,
   ) {
     final g = GroupElement(
       [],
@@ -77,7 +77,7 @@ class GroupElement extends SvgElement {
       element,
     );
 
-    final children = element.parseSvgElements(g, parseShapes);
+    final children = element.parseSvgElements(g, ignoreShapes);
     g.elementList.addAll(children);
 
     return g;
