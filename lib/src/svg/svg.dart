@@ -6,8 +6,13 @@ import '../utils/exception.dart';
 import '../utils/svg.dart';
 import 'element.dart';
 
-class Svg {
-  Svg(this.name, this.viewBox, this.elementList);
+class Svg extends SvgElement {
+  Svg(
+    this.name,
+    this.viewBox,
+    this.elementList,
+    XmlElement xmlElement,
+  ) : super(null, xmlElement);
 
   /// Parses SVG.
   /// 
@@ -38,7 +43,12 @@ class Svg {
 
     final viewBox = math.Rectangle(fvb[0], fvb[1], fvb[2], fvb[3]);
 
-    return Svg(name, viewBox, root.parseSvgElements(parseShapes));
+    final svg = Svg(name, viewBox, [], root);
+
+    final elementList = root.parseSvgElements(svg, parseShapes);
+    svg.elementList.addAll(elementList);
+
+    return svg;
   }
 
   final String name;

@@ -15,4 +15,8 @@ class EnumClass<K, V> {
   V getValueForKey(K key) {
     return _map[key];
   }
+
+  Iterable<K> get keys => _map.keys;
+
+  Iterable<V> get values => _map.values;
 }

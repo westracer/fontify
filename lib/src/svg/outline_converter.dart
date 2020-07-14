@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:path_parsing/path_parsing.dart';
+import 'package:vector_math/vector_math.dart';
 
 import '../common/outline.dart';
 import 'path.dart';
@@ -24,12 +25,23 @@ class PathToOutlineConverter extends PathProxy {
 
     // Y coordinates have to be flipped
     final bottom = svg.viewBox.top + svg.viewBox.height;
-    final reflectedPoints = _points.map(
+    var points = _points.map(
       (p) => math.Point<num>(p.x, bottom - p.y)
-    ).toList();
+    );
+
+    // Applying transform
+    final transform = path.getResultTransformMatrix();
+    if (transform != null) {
+      points = points.map((e) {
+        final v = Vector3(e.x.toDouble(), e.y.toDouble(), 1)
+          ..applyMatrix3(transform);
+
+        return math.Point(v.x, v.y);
+      });
+    }
 
     final outline = Outline(
-      reflectedPoints, [..._isOnCurve], false, false, fillRule
+      points.toList(), [..._isOnCurve], false, false, fillRule
     );
     _outlines.add(outline);
 
@@ -61,7 +73,6 @@ class PathToOutlineConverter extends PathProxy {
     _isOnCurve.addAll([false, false, true]);
   }
 
-  // TODO: apply transform
   /// Converts SVG <path> to a list of outlines.
   List<Outline> convert() {
     writeSvgPathDataToPath(path.data, this);

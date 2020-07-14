@@ -1,7 +1,9 @@
+import 'package:vector_math/vector_math.dart';
 import 'package:xml/xml.dart';
 
 import '../svg/element.dart';
 import '../svg/shapes.dart';
+import '../svg/transform.dart';
 
 extension XmlElementExt on XmlElement {
   num getScalarAttribute(String name, {String namespace, bool zeroIfAbsent = true}) {
@@ -14,14 +16,22 @@ extension XmlElementExt on XmlElement {
     return num.parse(attr);
   }
 
-  List<SvgElement> parseSvgElements(bool parseShapes) {
+  List<SvgElement> parseSvgElements(SvgElement parent, bool parseShapes) {
     var elements = children
       .whereType<XmlElement>()
-      .map((e) => SvgElement.fromXmlElement(e, parseShapes))
+      .map((e) => SvgElement.fromXmlElement(parent, e, parseShapes))
       // Ignoring unknown elements
       .where((e) => e != null)
       // Expanding groups
-      .expand((e) => e is GroupElement ? e.elementList : [e]);
+      .expand((e) {
+        if (e is! GroupElement) {
+          return [e];
+        }
+
+        final g = e as GroupElement..applyTransformOnChildren();
+
+        return g.elementList;
+      });
 
     if (parseShapes) {
       // Converting shapes into paths
@@ -29,5 +39,10 @@ extension XmlElementExt on XmlElement {
     }
 
     return elements.toList();
+  }
+  
+  Matrix3 parseTransformMatrix() {
+    final transformList = Transform.parse(getAttribute('transform'));
+    return generateTransformMatrix(transformList);
   }
 }
