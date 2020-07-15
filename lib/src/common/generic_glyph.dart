@@ -32,9 +32,9 @@ class GenericGlyphMetrics {
 /// Used as an intermediate storage between different types of glyphs
 /// (including OpenType's CharString, TrueType outlines).
 class GenericGlyph {
-  GenericGlyph(this.outlines);
+  GenericGlyph(this.outlines, this.bounds);
 
-  GenericGlyph.empty() : outlines = [];
+  GenericGlyph.empty() : outlines = [], bounds = const math.Rectangle(0,0,0,0);
 
   factory GenericGlyph.fromSimpleTrueTypeGlyph(SimpleGlyph glyph) {
     final isOnCurveList = glyph.flags.map((e) => e.onCurvePoint).toList();
@@ -51,7 +51,14 @@ class GenericGlyph {
         )
     ];
 
-    return GenericGlyph(outlines);
+    final bounds = math.Rectangle(
+      glyph.header.xMin,
+      glyph.header.yMin,
+      glyph.header.xMax - glyph.header.xMin,
+      glyph.header.yMax - glyph.header.yMin,
+    );
+
+    return GenericGlyph(outlines, bounds);
   }
 
   factory GenericGlyph.fromSvg(Svg svg) {
@@ -62,15 +69,16 @@ class GenericGlyph {
         ...PathToOutlineConverter(svg, p).convert()
     ];
 
-    return GenericGlyph(outlines);
+    return GenericGlyph(outlines, svg.viewBox);
   }
 
   final List<Outline> outlines;
+  final math.Rectangle bounds;
 
   /// Deep copy of a glyph and its outlines
   GenericGlyph copy() {
     final outlines = this.outlines.map((e) => e.copy()).toList();
-    return GenericGlyph(outlines);
+    return GenericGlyph(outlines, bounds);
   }
 
   List<bool> _getIsOnCurveList() {
@@ -185,10 +193,25 @@ class GenericGlyph {
     );
   }
 
-  GenericGlyph resize(int unitsPerEm, int ascender, int descender) {
+  /// Resizes according to ascender/descender or a font height.
+  GenericGlyph resize({int ascender, int descender, int fontHeight}) {
+    assert(
+      (ascender != null && descender != null) || fontHeight != null,
+      'Wrong parameters for resizing'
+    );
+
     final metrics = this.metrics;
-    final longestSide = math.max(metrics.height, metrics.width);
-    final sideRatio = (ascender + descender) / longestSide;
+
+    int longestSide;
+    double sideRatio;
+
+    if (fontHeight == null) {
+      longestSide = math.max(metrics.height, metrics.width);
+      sideRatio = (ascender + descender) / longestSide;
+    } else {
+      longestSide = bounds.height.toInt();
+      sideRatio = fontHeight / longestSide;
+    }
 
     // No need to resize
     if ((sideRatio - 1).abs() < .02) {
@@ -204,10 +227,15 @@ class GenericGlyph {
       return newOutline;
     }).toList();
 
-    return GenericGlyph(newOutlines);
+    final newBounds = math.Rectangle.fromPoints(
+      bounds.bottomLeft.toDoublePoint() * sideRatio,
+      bounds.topRight.toDoublePoint() * sideRatio,
+    );
+
+    return GenericGlyph(newOutlines, newBounds);
   }
 
-  GenericGlyph center(int unitsPerEm, int ascender, int descender) {
+  GenericGlyph center(int ascender, int descender) {
     final metrics = this.metrics;
     
     final offsetX = -metrics.xMin;
@@ -222,7 +250,14 @@ class GenericGlyph {
       return newOutline;
     }).toList();
 
-    return GenericGlyph(newOutlines);
+    final newBounds = math.Rectangle(
+      bounds.left + offsetX,
+      bounds.bottom + offsetY,
+      bounds.width,
+      bounds.height,
+    );
+
+    return GenericGlyph(newOutlines, newBounds);
   }
 
   GenericGlyphMetrics get metrics {

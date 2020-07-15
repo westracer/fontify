@@ -52,5 +52,5 @@ GenericGlyph _generateNotdefGlyph(int ascender) {
     Outline([innerRect.bottomLeft, innerRect.topLeft, innerRect.topRight, innerRect.bottomRight], List.filled(4, true), false, true, FillRule.nonzero),
   ];
 
-  return GenericGlyph(outlines);
+  return GenericGlyph(outlines, outerRect);
 }

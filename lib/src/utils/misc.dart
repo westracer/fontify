@@ -40,6 +40,9 @@ extension MockableDateTime on DateTime {
 extension PointExt<T extends num> on math.Point<T> {
   math.Point<int> toIntPoint() => math.Point<int>(x.toInt(), y.toInt());
 
+  math.Point<double> toDoublePoint() =>
+    math.Point<double>(x.toDouble(), y.toDouble());
+
   math.Point<num> getReflectionOf(math.Point<T> point) {
     return math.Point<num>(
       2 * x - point.x,

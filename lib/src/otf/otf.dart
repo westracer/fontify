@@ -37,9 +37,12 @@ class OpenTypeFont implements BinaryCodable {
   ///   If null, glyph names are omitted (PostScriptV3 table is generated).
   /// * [description] is a font description for naming table.
   /// * [revision] is a font revision. Defaults to 1.0.
-  /// * [achVendID] is a vendor ID in OS/2 table. Default two 4 spaces.
+  /// * [achVendID] is a vendor ID in OS/2 table. Defaults to 4 spaces.
   /// * If [useCFF2] is set to false, a font with TrueType outlines (TTF) is generated.
   /// Otherwise, OpenType outlines in CFF2 table format are generated.
+  /// Defaults to true.
+  /// * If [normalize] is set to false,
+  /// glyphs won't be resized and centered to fit in coordinates grid (unitsPerEm).
   /// Defaults to true.
   factory OpenTypeFont.createFromGlyphs({
     @required List<GenericGlyph> glyphList, 
@@ -48,7 +51,8 @@ class OpenTypeFont implements BinaryCodable {
     String description,
     Revision revision,
     String achVendID,
-    bool useCFF2 = true,
+    bool useCFF2,
+    bool normalize,
     // NOTE: might pass a list of char codes as well - not needed now.
   }) {
     if (glyphNameList != null && glyphNameList.length != glyphList.length) {
@@ -59,6 +63,8 @@ class OpenTypeFont implements BinaryCodable {
 
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
+    useCFF2 ??= true;
+    normalize ??= true;
 
     // A power of two is recommended only for TrueType outlines
     final unitsPerEm = useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
@@ -66,27 +72,33 @@ class OpenTypeFont implements BinaryCodable {
     final ascender = unitsPerEm - kDefaultBaselineExtension;
     const descender = -kDefaultBaselineExtension;
 
+    final resizedGlyphList = _resizeAndCenter(
+      glyphList,
+      ascender: normalize ? ascender : null,
+      descender: normalize ? descender : null,
+      fontHeight: normalize ? null : unitsPerEm,
+    );
+
     final fullGlyphList = [
       ...generateDefaultGlyphList(ascender),
-      ...glyphList,
+      ...resizedGlyphList,
     ];
 
-    final resizedGlyphList = _resizeAndCenter(fullGlyphList, unitsPerEm, ascender, descender);
-    final glyphMetricsList = resizedGlyphList.map((g) => g.metrics).toList();
+    final glyphMetricsList = fullGlyphList.map((g) => g.metrics).toList();
 
-    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(resizedGlyphList);
+    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
     final head = HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
     final loca = useCFF2 ? null : IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
     final hhea = HorizontalHeaderTable.create(glyphMetricsList, hmtx, ascender, descender);
     final post = PostScriptTable.create(glyphNameList);
     final name = NamingTable.create(fontName, description, revision);
-    final maxp = MaximumProfileTable.create(resizedGlyphList.length, glyf);
+    final maxp = MaximumProfileTable.create(fullGlyphList.length, glyf);
     final cmap = CharacterToGlyphTable.create(glyphList.length);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
-    final cff2 = useCFF2 ? CFF2Table.create(resizedGlyphList) : null;
+    final cff2 = useCFF2 ? CFF2Table.create(fullGlyphList) : null;
 
     final tables = {
       if (!useCFF2) 
@@ -182,15 +194,22 @@ class OpenTypeFont implements BinaryCodable {
   int get size => kOffsetTableLength + entryListSize + tableListSize;
 
   static List<GenericGlyph> _resizeAndCenter(
-    List<GenericGlyph> glyphList,
-    int unitsPerEm,
-    int ascender,
-    int descender,
-  ) {
+    List<GenericGlyph> glyphList, {
+      int ascender,
+      int descender,
+      int fontHeight,
+  }) {
     return glyphList.map(
-      (g) => g
-        .resize(unitsPerEm, ascender, descender)
-        .center(unitsPerEm, ascender, descender)
+      (g) {
+        if (fontHeight != null) {
+          // Not normalizing glyphs, just resizing them according to unitsPerEm
+          return g.resize(fontHeight: fontHeight);
+        }
+
+        return g
+          .resize(ascender: ascender, descender: descender)
+          .center(ascender, descender);
+      }
     ).toList();
   }
 }
