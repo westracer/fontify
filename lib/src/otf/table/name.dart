@@ -258,6 +258,8 @@ abstract class NamingTable extends FontTable {
         return null;
     }
   }
+
+  String get familyName;
 }
 
 class NamingTableFormat0 extends NamingTable {
@@ -360,5 +362,17 @@ class NamingTableFormat0 extends NamingTable {
         byteData.setUint8(charOffset++, charCode);
       }
     }
+  }
+
+  @override
+  String get familyName {
+    final nameID = _kNameIDmap.getValueForKey(_NameID.fontFamily);
+    final familyIndex = header.nameRecordList.indexWhere((e) => e.nameID == nameID);
+
+    if (familyIndex == -1) {
+      return null;
+    }
+
+    return stringList[familyIndex];
   }
 }

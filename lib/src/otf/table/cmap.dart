@@ -499,6 +499,7 @@ class CharacterToGlyphTable extends FontTable {
     TableRecordEntry entry,
     this.header,
     this.data,
+    this.generatedCharCodeList,
   ) : super.fromTableRecordEntry(entry);
 
   factory CharacterToGlyphTable.fromByteData(
@@ -511,11 +512,12 @@ class CharacterToGlyphTable extends FontTable {
       (i) => CmapData.fromByteData(byteData, entry.offset + header.encodingRecords[i].offset)
     );
 
-    return CharacterToGlyphTable(entry, header, data);
+    return CharacterToGlyphTable(entry, header, data, null);
   }
 
   factory CharacterToGlyphTable.create(int numOfGlyphs) {
-    final charCodeList = [...kDefaultGlyphCharCode, ..._generateCharCodes(numOfGlyphs)];
+    final generatedCharCodeList = _generateCharCodes(numOfGlyphs);
+    final charCodeList = [...kDefaultGlyphCharCode, ...generatedCharCodeList];
 
     final segmentList = _generateSegments(charCodeList);
     final segmentListFormat4 = [
@@ -547,12 +549,14 @@ class CharacterToGlyphTable extends FontTable {
     return CharacterToGlyphTable(
       null,
       header,
-      subtables
+      subtables,
+      generatedCharCodeList,
     );
   }
 
   final CharacterToGlyphTableHeader header;
   final List<CmapData> data;
+  final List<int> generatedCharCodeList;
   
   static List<int> _generateCharCodes(int numOfGlyphs) =>
     List.generate(

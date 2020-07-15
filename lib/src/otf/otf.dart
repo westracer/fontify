@@ -142,6 +142,8 @@ class OpenTypeFont implements BinaryCodable {
 
   bool get isOpenType => offsetTable.isOpenType;
 
+  String get familyName => name.familyName;
+
   @override
   void encodeToBinary(ByteData byteData) {
     int currentTableOffset = kOffsetTableLength + entryListSize;
