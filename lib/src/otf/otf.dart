@@ -61,6 +61,10 @@ class OpenTypeFont implements BinaryCodable {
       );
     }
 
+    if (fontName?.isEmpty ?? false) {
+      fontName = null;
+    }
+
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
     fontName ??= kDefaultFontFamily;
