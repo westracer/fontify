@@ -31,8 +31,8 @@ class OpenTypeFont implements BinaryCodable {
 
   /// Generates new OpenType font.
   /// 
-  /// * [fontName] is a font name. Required.
   /// * [glyphList] is a list of generic glyphs. Required. 
+  /// * [fontName] is a font name.
   /// * [glyphNameList] should contain a name for each glyph. 
   ///   If null, glyph names are omitted (PostScriptV3 table is generated).
   /// * [description] is a font description for naming table.
@@ -46,7 +46,7 @@ class OpenTypeFont implements BinaryCodable {
   /// Defaults to true.
   factory OpenTypeFont.createFromGlyphs({
     @required List<GenericGlyph> glyphList, 
-    @required String fontName,
+    String fontName,
     List<String> glyphNameList,
     String description,
     Revision revision,
@@ -63,6 +63,7 @@ class OpenTypeFont implements BinaryCodable {
 
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
+    fontName ??= kDefaultFontFamily;
     useCFF2 ??= true;
     normalize ??= true;
 

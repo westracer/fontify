@@ -6,6 +6,7 @@ import '../utils/misc.dart';
 import '../utils/otf.dart';
 
 const kDefaultAchVendID = '    ';
+const kDefaultFontFamily = 'Fontify Icons';
 const kDefaultTrueTypeUnitsPerEm = 1024; // A power of two is recommended
 const kDefaultOpenTypeUnitsPerEm = 1000;
 const kDefaultBaselineExtension = 150;
