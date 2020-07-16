@@ -144,6 +144,8 @@ class OpenTypeFont implements BinaryCodable {
 
   String get familyName => name.familyName;
 
+  List<int> get generatedCharCodeList => cmap.generatedCharCodeList;
+
   @override
   void encodeToBinary(ByteData byteData) {
     int currentTableOffset = kOffsetTableLength + entryListSize;
