@@ -11,8 +11,10 @@ const _kDefaultClassName = 'FontifyIcons';
 /// Removes any characters that are not valid for variable name.
 /// 
 /// Returns a new string.
-String _getVarName(String string) =>
-  string.replaceAll(RegExp(r'[^a-zA-Z0-9_$]'), '');
+String _getVarName(String string) {
+  final replaced = string.replaceAll(RegExp(r'[^a-zA-Z0-9_$]'), '');
+  return RegExp(r'^[a-zA-Z$].*').firstMatch(replaced)?.group(0) ?? '';
+}
 
 // A helper for generating Flutter-compatible class with IconData objects for each icon.
 class FlutterClassGenerator {
@@ -39,20 +41,37 @@ class FlutterClassGenerator {
   final Map<int, String> _iconVarNames;
 
   static Map<int, String> _generateVariableNames(Map<int, String> iconOriginalNames) {
-    final iconNameCount = <String, int>{};
+    final iconNameSet = <String>{};
 
     return iconOriginalNames.map((charCode, iconName) {
-      final baseName = _getVarName(p.basenameWithoutExtension(iconName));
-      String variableName = baseName.isNotEmpty ? baseName.camelCase : _kUnnamedIconName;
+      final baseName = _getVarName(p.basenameWithoutExtension(iconName)).snakeCase;
+      final usingDefaultName = baseName.isEmpty;
 
-      final variableNameCount = iconNameCount[variableName];
+      String variableName = usingDefaultName ? _kUnnamedIconName : baseName;
       
-      if (variableNameCount != null) {
-        iconNameCount[variableName]++;
-        variableName += '_${variableNameCount + 1}';
-      } else {
-        iconNameCount[variableName] = 1;
+      // Handling same names by adding numeration to them
+      if (iconNameSet.contains(variableName)) {
+        // If name already contains numeration, then splitting it
+        final countMatch = RegExp(r'^(.*)_([0-9]+)$').firstMatch(variableName);
+
+        int variableNameCount = 1;
+        String variableWithoutCount = variableName;
+
+        if (countMatch != null) {
+          variableNameCount = int.parse(countMatch.group(2));
+          variableWithoutCount = countMatch.group(1);
+        }
+
+        String variableNameWithCount;
+
+        do {
+          variableNameWithCount = '${variableWithoutCount}_${++variableNameCount}';
+        } while (iconNameSet.contains(variableNameWithCount));
+
+        variableName = variableNameWithCount;
       }
+
+      iconNameSet.add(variableName);
 
       return MapEntry(charCode, variableName);
     });
