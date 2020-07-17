@@ -2,10 +2,12 @@ import 'package:recase/recase.dart';
 import 'package:path/path.dart' as p;
 
 import '../common/constant.dart';
+import '../otf/defaults.dart';
 
 const _kUnnamedIconName = 'unnamed';
 const _kDefaultIndent = 2;
 const _kDefaultClassName = 'FontifyIcons';
+const _kDefaultFontFileName = 'fontify_icons.otf';
 
 /// Removes any characters that are not valid for variable name.
 /// 
@@ -20,15 +22,16 @@ class FlutterClassGenerator {
   /// * [iconMap] contains charcode to file name mapping.
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
   FlutterClassGenerator(
-    this._fontFileName,
     Map<int, String> iconMap, {
       String className,
       String familyName,
+      String fontFileName,
       int indent,
   }) 
   : _indent = ' ' * (indent ?? _kDefaultIndent),
     _className = _getVarName(className ?? _kDefaultClassName),
-    _familyName = familyName,
+    _familyName = familyName ?? kDefaultFontFamily,
+    _fontFileName = fontFileName ?? _kDefaultFontFileName,
     _iconOriginalNames = iconMap,
     _iconVarNames = _generateVariableNames(iconMap);
 

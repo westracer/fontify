@@ -83,11 +83,11 @@ void _run(CliArguments parsedArgs) {
     
     final fontFileName = p.basename(parsedArgs.fontFile.path);
     final generator = FlutterClassGenerator(
-      fontFileName,
       iconMap,
       className: parsedArgs.className,
-      familyName: font.familyName,
       indent: parsedArgs.indent,
+      fontFileName: fontFileName,
+      familyName: font.familyName,
     );
 
     final classString = generator.generate();
