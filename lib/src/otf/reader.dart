@@ -1,4 +1,3 @@
-import 'dart:io'; // TODO: remove dart:io imports for dart2js compatibility
 import 'dart:typed_data';
 
 import '../utils/exception.dart';
@@ -8,11 +7,8 @@ import 'debugger.dart';
 import 'otf.dart';
 import 'table/all.dart';
 
-/// A helper for reading an OpenType font from a binary data
+/// A helper for reading an OpenType font from a binary data.
 class OTFReader {
-  OTFReader.fromFile(File file) 
-    : _byteData = ByteData.sublistView(file.readAsBytesSync());
-
   OTFReader.fromByteData(this._byteData);
 
   final ByteData _byteData;

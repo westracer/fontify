@@ -4,8 +4,8 @@ import 'package:args/args.dart';
 import 'package:fontify/src/cli/arguments.dart';
 import 'package:fontify/src/cli/options.dart';
 import 'package:fontify/src/common/generic_glyph.dart';
+import 'package:fontify/src/otf/io.dart';
 import 'package:fontify/src/otf/otf.dart';
-import 'package:fontify/src/otf/writer.dart';
 import 'package:fontify/src/svg/svg.dart';
 import 'package:fontify/src/utils/flutter_class_gen.dart';
 import 'package:fontify/src/utils/logger.dart';
@@ -70,7 +70,7 @@ void _run(CliArguments parsedArgs) {
     useCFF2: true,
   );
   
-  OTFWriter.fromFile(parsedArgs.fontFile).write(font);
+  writeToFile(parsedArgs.fontFile, font);
 
   if (parsedArgs.classFile == null) {
     logger.v('No output path for Flutter class was specified.');

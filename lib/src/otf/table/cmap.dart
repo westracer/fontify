@@ -556,7 +556,7 @@ class CharacterToGlyphTable extends FontTable {
 
   final CharacterToGlyphTableHeader header;
   final List<CmapData> data;
-  final List<int> generatedCharCodeList; // TODO: I don't like it here, should to move it out
+  final List<int> generatedCharCodeList; // TODO: I don't like it here, should move it out
   
   static List<int> _generateCharCodes(int numOfGlyphs) =>
     List.generate(

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fontify/src/common/generic_glyph.dart';
+import 'package:fontify/src/otf/io.dart';
 import 'package:fontify/src/otf/reader.dart';
 import 'package:fontify/src/otf/table/all.dart';
 import 'package:fontify/src/otf/table/hhea.dart';
@@ -19,7 +20,7 @@ void main() {
 
   group('Reader', () {
     setUpAll(() {
-      font = OTFReader.fromFile(File(_kTestFontAssetPath)).read();
+      font = readFromFile(File(_kTestFontAssetPath));
     });
 
     test('Offset table', () {
@@ -406,7 +407,7 @@ void main() {
 
   group('Generic Glyph', () {
     setUpAll(() {
-      font = OTFReader.fromFile(File(_kTestFontAssetPath)).read();
+      font = readFromFile(File(_kTestFontAssetPath));
     });
     
     test('Conversion from TrueType and back', () {
