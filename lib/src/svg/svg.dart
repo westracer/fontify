@@ -22,7 +22,9 @@ class Svg extends SvgElement {
   /// 
   /// Throws [XmlParserException] if XML parsing exception occurs.
   /// Throws [SvgParserException] on any problem related to SVG parsing.
-  factory Svg.parse(String name, String xmlString, {bool ignoreShapes = true}) {
+  factory Svg.parse(String name, String xmlString, {bool ignoreShapes}) {
+    ignoreShapes ??= true;
+
     final xml = XmlDocument.parse(xmlString);
     final root = xml.rootElement;
 
