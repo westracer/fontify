@@ -11,6 +11,7 @@ class CliArguments {
     this.className,
     this.indent,
     this.fontName,
+    this.recursive,
     this.ignoreShapes,
     this.normalize,
     this.verbose
@@ -22,6 +23,7 @@ class CliArguments {
   final String className;
   final int indent;
   final String fontName;
+  final bool recursive;
   final bool ignoreShapes;
   final bool normalize;
   final bool verbose;
@@ -80,8 +82,9 @@ CliArguments parseArguments(
 
   final className = argResults['class-name'] as String;
   final fontName = argResults['font-name'] as String;
-  final normalize = argResults['normalize'] as bool;
+  final recursive = argResults['recursive'] as bool;
   final ignoreShapes = argResults['ignore-shapes'] as bool;
+  final normalize = argResults['normalize'] as bool;
   final verbose = argResults['verbose'] as bool;
 
   return CliArguments(
@@ -91,6 +94,7 @@ CliArguments parseArguments(
     className,
     indent,
     fontName,
+    recursive,
     ignoreShapes,
     normalize,
     verbose,

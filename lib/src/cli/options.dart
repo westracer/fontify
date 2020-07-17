@@ -41,6 +41,13 @@ void defineOptions(ArgParser argParser) {
     )
     ..addSeparator('Other options:')
     ..addFlag(
+      'recursive',
+      abbr: 'r',
+      help: 'Recursively look for .svg files.',
+      defaultsTo: false,
+      negatable: false,
+    )
+    ..addFlag(
       'verbose',
       abbr: 'v',
       help: 'Display every logging message.',

@@ -34,7 +34,7 @@ void _run(CliArguments parsedArgs) {
   }
 
   final svgFileList = parsedArgs.svgDir
-    .listSync()
+    .listSync(recursive: parsedArgs.recursive)
     .where((e) => p.extension(e.path).toLowerCase() == '.svg')
     .toList();
   
