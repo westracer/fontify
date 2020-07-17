@@ -20,7 +20,7 @@ void main() {
 
   group('Reader', () {
     setUpAll(() {
-      font = readFromFile(File(_kTestFontAssetPath));
+      font = readFromFile(_kTestFontAssetPath);
     });
 
     test('Offset table', () {
@@ -407,7 +407,7 @@ void main() {
 
   group('Generic Glyph', () {
     setUpAll(() {
-      font = readFromFile(File(_kTestFontAssetPath));
+      font = readFromFile(_kTestFontAssetPath);
     });
     
     test('Conversion from TrueType and back', () {

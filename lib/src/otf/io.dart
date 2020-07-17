@@ -9,11 +9,12 @@ import 'reader.dart';
 import 'writer.dart';
 
 /// Reads OpenType font from a file.
-OpenTypeFont readFromFile(File file) =>
-  OTFReader.fromByteData(ByteData.sublistView(file.readAsBytesSync())).read();
+OpenTypeFont readFromFile(String path) =>
+  OTFReader.fromByteData(ByteData.sublistView(File(path).readAsBytesSync())).read();
 
 /// Writes OpenType font to a file.
-void writeToFile(File file, OpenTypeFont font) {
+void writeToFile(String path, OpenTypeFont font) {
+  final file = File(path);
   final byteData = OTFWriter().write(font);
   final extension = p.extension(file.path).toLowerCase();
 

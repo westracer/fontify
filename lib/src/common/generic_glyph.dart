@@ -13,6 +13,7 @@ import '../utils/misc.dart';
 import '../utils/otf.dart';
 import 'outline.dart';
 
+/// Metrics for a generic glyph.
 class GenericGlyphMetrics {
   GenericGlyphMetrics(this.xMin, this.xMax, this.yMin, this.yMax);
 

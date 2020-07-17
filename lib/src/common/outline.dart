@@ -11,7 +11,7 @@ import '../utils/misc.dart';
 /// * SVG can be both
 enum FillRule {nonzero, evenodd}
 
-/// A helper class for working with outlines (including transforming).
+/// A helper for working with outlines (including transforming).
 /// 
 /// TODO: It's very basic class for now used for generic glyph description. Replace it with a proper Path class (like java.awt.geom.Path2D or dart:ui's Path)
 class Outline {

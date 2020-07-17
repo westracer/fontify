@@ -15,7 +15,7 @@ String _getVarName(String string) {
   return RegExp(r'^[a-zA-Z$].*').firstMatch(replaced)?.group(0) ?? '';
 }
 
-// A helper for generating Flutter-compatible class with IconData objects for each icon.
+/// A helper for generating Flutter-compatible class with IconData objects for each icon.
 class FlutterClassGenerator {
   /// * [iconMap] contains charcode to file name mapping.
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
@@ -91,6 +91,7 @@ class FlutterClassGenerator {
     ];
   }
 
+  /// Generates content for a class' file.
   String generate() {
     final classContent = [
       '$_className._();',

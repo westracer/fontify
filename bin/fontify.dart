@@ -70,7 +70,7 @@ void _run(CliArguments parsedArgs) {
     useCFF2: true,
   );
   
-  writeToFile(parsedArgs.fontFile, font);
+  writeToFile(parsedArgs.fontFile.path, font);
 
   if (parsedArgs.classFile == null) {
     logger.v('No output path for Flutter class was specified.');
