@@ -19,3 +19,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Contains other open-source works:
+
+File Copyrights
+===============
+test/assets/test_cff2_font.otf
+    What: Adobe Variable Font Prototype
+    Source URL: https://github.com/adobe-fonts/adobe-variable-font-prototype
+    Copyright: Adobe Systems Incorporated
+    License: SIL Open Font License, Version 1.1
+    License URL: https://github.com/adobe-fonts/adobe-variable-font-prototype/blob/master/LICENSE.md
+
+===============
