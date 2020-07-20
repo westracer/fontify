@@ -1,5 +1,7 @@
 # Fontify
 
+[![pub package](https://img.shields.io/pub/v/fontify.svg)](https://pub.dartlang.org/packages/fontify)
+
 The Fontify package provides an easy way to convert SVG icons to OpenType font
 and generate Flutter-compatible class that contains identifiers for the icons 
 (just like [CupertinoIcons][] or [Icons][] classes).
