@@ -12,8 +12,9 @@ import 'package:fontify/src/utils/misc.dart';
 import 'package:fontify/src/utils/otf.dart';
 import 'package:test/test.dart';
 
-const _kTestFontAssetPath = './test_assets/test_font.ttf';
-const _kTestCFF2fontAssetPath = './test_assets/test_cff2_font.otf';
+const _kTestAssetsDir = './test/assets';
+const _kTestFontAssetPath = '$_kTestAssetsDir/test_font.ttf';
+const _kTestCFF2fontAssetPath = '$_kTestAssetsDir/test_cff2_font.otf';
 
 void main() {
   OpenTypeFont font;
