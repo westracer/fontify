@@ -96,7 +96,7 @@ The example of API usage is located in [example folder][].
 - Generated font is using PostScript Table (post) of version 3.0, i.e., it doesn't contain glyph names.
 - Supported SVG elements: path, g, circle, rect, polyline, polygon, line.
 - SVG transforms are applied to paths according to specs.
-- SVG <g> element's children are expanded to the root with transformations applied.
+- SVG `<g>` element's children are expanded to the root with transformations applied.
 Anything else related to the group is ignored and group referencing is not supported.
 - Consider using [Non-zero fill rule][].
 - When `ignoreShapes` is set to false,
