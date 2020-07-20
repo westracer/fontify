@@ -3,11 +3,8 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:fontify/src/cli/arguments.dart';
 import 'package:fontify/src/cli/options.dart';
-import 'package:fontify/src/common/generic_glyph.dart';
+import 'package:fontify/src/common/api.dart';
 import 'package:fontify/src/otf/io.dart';
-import 'package:fontify/src/otf/otf.dart';
-import 'package:fontify/src/svg/svg.dart';
-import 'package:fontify/src/utils/flutter_class_gen.dart';
 import 'package:fontify/src/utils/logger.dart';
 import 'package:path/path.dart' as p;
 
@@ -37,54 +34,37 @@ void _run(CliArguments parsedArgs) {
     .listSync(recursive: parsedArgs.recursive)
     .where((e) => p.extension(e.path).toLowerCase() == '.svg')
     .toList();
-  
-  final svgList = svgFileList
-    .map((e) {
-      final baseName = p.basenameWithoutExtension(e.path);
-      final data = File(e.path).readAsStringSync();
-      
-      return Svg.parse(baseName, data, ignoreShapes: parsedArgs.ignoreShapes);
-    })
-    .toList();
 
-  if (!parsedArgs.normalize) {
-    for (int i = 1; i < svgList.length; i++) {
-      if (svgList[i - 1].viewBox.height != svgList[i].viewBox.height) {
-        logger.logOnce(
-          Level.warning,
-          'Some SVG files contain different view box height, '
-          'while normalization option is disabled. '
-          'This is not recommended.'
-        );
-        break;
-      }
-    }
-  }
+  final svgMap = {
+    for (final f in svgFileList)
+      p.basenameWithoutExtension(f.path): File(f.path).readAsStringSync(),
+  };
 
-  final glyphList = svgList.map((e) => GenericGlyph.fromSvg(e)).toList();
-
-  final font = OpenTypeFont.createFromGlyphs(
-    glyphList: glyphList,
-    fontName: parsedArgs.fontName,
+  final otfResult = svgToOtf(
+    svgMap: svgMap,
+    ignoreShapes: parsedArgs.ignoreShapes,
     normalize: parsedArgs.normalize,
-    useCFF2: true,
+    fontName: parsedArgs.fontName,
   );
   
-  writeToFile(parsedArgs.fontFile.path, font);
+  writeToFile(parsedArgs.fontFile.path, otfResult.font);
 
   if (parsedArgs.classFile == null) {
-    logger.v('No output path for Flutter class was specified.');
-  } else {    
+    logger.v(
+      'No output path for Flutter class was specified - '
+      'skipping class generation.'
+    );
+  } else {
     final fontFileName = p.basename(parsedArgs.fontFile.path);
-    final generator = FlutterClassGenerator(
-      glyphList,
+
+    final classString = generateFlutterClass(
+      glyphList: otfResult.glyphList,
       className: parsedArgs.className,
       indent: parsedArgs.indent,
       fontFileName: fontFileName,
-      familyName: font.familyName,
+      familyName: otfResult.font.familyName,
     );
 
-    final classString = generator.generate();
     parsedArgs.classFile.writeAsStringSync(classString);
   }
 

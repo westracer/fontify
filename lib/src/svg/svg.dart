@@ -17,6 +17,7 @@ class Svg extends SvgElement {
   /// Parses SVG.
   /// 
   /// If [ignoreShapes] is set to false, shapes (circle, rect, etc.) are converted into paths.
+  /// Defaults to true.
   /// NOTE: Attributes like "fill" or "stroke" are ignored,
   /// which means only shape's outline will be used.
   /// 

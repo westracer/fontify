@@ -31,6 +31,8 @@ class OpenTypeFont implements BinaryCodable {
 
   /// Generates new OpenType font.
   /// 
+  /// Mutates every glyph's metadata, so that it contains newly generated charcode.
+  /// 
   /// * [glyphList] is a list of generic glyphs. Required. 
   /// * [fontName] is a font name.
   ///   If null, glyph names are omitted (PostScriptV3 table is generated).
