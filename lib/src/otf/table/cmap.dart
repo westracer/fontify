@@ -1,11 +1,10 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import '../../common.dart';
 import '../../common/codable/binary.dart';
-import '../../utils/misc.dart';
 import '../../utils/otf.dart';
 import '../debugger.dart';
-import '../defaults.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
@@ -499,7 +498,6 @@ class CharacterToGlyphTable extends FontTable {
     TableRecordEntry entry,
     this.header,
     this.data,
-    this.generatedCharCodeList,
   ) : super.fromTableRecordEntry(entry);
 
   factory CharacterToGlyphTable.fromByteData(
@@ -512,12 +510,12 @@ class CharacterToGlyphTable extends FontTable {
       (i) => CmapData.fromByteData(byteData, entry.offset + header.encodingRecords[i].offset)
     );
 
-    return CharacterToGlyphTable(entry, header, data, null);
+    return CharacterToGlyphTable(entry, header, data);
   }
 
-  factory CharacterToGlyphTable.create(int numOfGlyphs) {
-    final generatedCharCodeList = _generateCharCodes(numOfGlyphs);
-    final charCodeList = [...kDefaultGlyphCharCode, ...generatedCharCodeList];
+  factory CharacterToGlyphTable.create(List<GenericGlyph> fullGlyphList) {
+    final charCodeList = fullGlyphList.map((e) => e.metadata.charCode).toList()
+      ..removeAt(0); // removing .notdef
 
     final segmentList = _generateSegments(charCodeList);
     final segmentListFormat4 = [
@@ -550,19 +548,11 @@ class CharacterToGlyphTable extends FontTable {
       null,
       header,
       subtables,
-      generatedCharCodeList,
     );
   }
 
   final CharacterToGlyphTableHeader header;
   final List<CmapData> data;
-  final List<int> generatedCharCodeList; // TODO: I don't like it here, should move it out
-  
-  static List<int> _generateCharCodes(int numOfGlyphs) =>
-    List.generate(
-      numOfGlyphs,
-      (i) => kUnicodePrivateUseAreaStart + i
-    );
 
   static List<_Segment> _generateSegments(List<int> charCodeList) {
     int startCharCode = -1, prevCharCode = -1, startGlyphId = -1;

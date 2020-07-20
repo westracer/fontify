@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
+import '../../common/generic_glyph.dart';
 import '../../utils/otf.dart';
 import '../../utils/pascal_string.dart';
 import '../debugger.dart';
@@ -251,8 +252,14 @@ class PostScriptTable extends FontTable {
     );
   }
 
-  factory PostScriptTable.create(List<String> glyphNameList) {
-    final data = glyphNameList != null 
+  /// Creates post table.
+  /// 
+  /// [glyphList] contains non-default characters.
+  /// If [usePostV2] is true, version 2 table is generated.
+  factory PostScriptTable.create(List<GenericGlyph> glyphList, bool usePostV2) {
+    final glyphNameList = glyphList.map((e) => e.metadata.name ?? '').toList();
+    
+    final data = usePostV2 
       ? PostScriptVersion20.create(glyphNameList) 
       : PostScriptVersion30();
 

@@ -326,12 +326,16 @@ void main() {
 
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
       final glyphList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
+
+      for (int i = 0; i < glyphList.length; i++) {
+        glyphList[i].metadata.name = glyphNameList[i];
+      }
       
       recreatedFont = OpenTypeFont.createFromGlyphs(
         glyphList: glyphList,
-        glyphNameList: glyphNameList,
         fontName: 'TestFont',
         useCFF2: false,
+        usePostV2: true,
       );
 
       recreatedByteData = ByteData(recreatedFont.size);

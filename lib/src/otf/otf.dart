@@ -5,7 +5,7 @@ import 'package:meta/meta.dart';
 import '../common/calculatable_offsets.dart';
 import '../common/codable/binary.dart';
 import '../common/generic_glyph.dart';
-import '../utils/exception.dart';
+import '../utils/misc.dart';
 import '../utils/otf.dart';
 
 import 'defaults.dart';
@@ -33,34 +33,30 @@ class OpenTypeFont implements BinaryCodable {
   /// 
   /// * [glyphList] is a list of generic glyphs. Required. 
   /// * [fontName] is a font name.
-  /// * [glyphNameList] should contain a name for each glyph. 
   ///   If null, glyph names are omitted (PostScriptV3 table is generated).
   /// * [description] is a font description for naming table.
   /// * [revision] is a font revision. Defaults to 1.0.
   /// * [achVendID] is a vendor ID in OS/2 table. Defaults to 4 spaces.
-  /// * If [useCFF2] is set to false, a font with TrueType outlines (TTF) is generated.
-  /// Otherwise, OpenType outlines in CFF2 table format are generated.
+  /// * If [useCFF2] is set to true, OpenType outlines in CFF2 table format are generated.
+  /// Otherwise, a font with TrueType outlines (TTF) is generated.
   /// Defaults to true.
-  /// * If [normalize] is set to false,
-  /// glyphs won't be resized and centered to fit in coordinates grid (unitsPerEm).
+  /// * If [usePostV2] is set to true, post table of version 2 is generated
+  /// (containing a name for each glyph).
+  /// Otherwise, version 3 table (without glyph names) is generated.
+  /// Defaults to false.
+  /// * If [normalize] is set to true,
+  /// glyphs are resized and centered to fit in coordinates grid (unitsPerEm).
   /// Defaults to true.
   factory OpenTypeFont.createFromGlyphs({
     @required List<GenericGlyph> glyphList, 
     String fontName,
-    List<String> glyphNameList,
     String description,
     Revision revision,
     String achVendID,
     bool useCFF2,
+    bool usePostV2,
     bool normalize,
-    // NOTE: might pass a list of char codes as well - not needed now.
   }) {
-    if (glyphNameList != null && glyphNameList.length != glyphList.length) {
-      throw TableDataFormatException(
-        'Lengths of glyph list and glyph name list must be same'
-      );
-    }
-
     if (fontName?.isEmpty ?? false) {
       fontName = null;
     }
@@ -70,6 +66,9 @@ class OpenTypeFont implements BinaryCodable {
     fontName ??= kDefaultFontFamily;
     useCFF2 ??= true;
     normalize ??= true;
+    usePostV2 ??= false;
+
+    _generateCharCodes(glyphList);
 
     // A power of two is recommended only for TrueType outlines
     final unitsPerEm = useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
@@ -96,10 +95,10 @@ class OpenTypeFont implements BinaryCodable {
     final loca = useCFF2 ? null : IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
     final hhea = HorizontalHeaderTable.create(glyphMetricsList, hmtx, ascender, descender);
-    final post = PostScriptTable.create(glyphNameList);
+    final post = PostScriptTable.create(resizedGlyphList, usePostV2);
     final name = NamingTable.create(fontName, description, revision);
     final maxp = MaximumProfileTable.create(fullGlyphList.length, glyf);
-    final cmap = CharacterToGlyphTable.create(glyphList.length);
+    final cmap = CharacterToGlyphTable.create(fullGlyphList);
     final gsub = GlyphSubstitutionTable.create();
     final os2  = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
@@ -148,8 +147,6 @@ class OpenTypeFont implements BinaryCodable {
   bool get isOpenType => offsetTable.isOpenType;
 
   String get familyName => name.familyName;
-
-  List<int> get generatedCharCodeList => cmap.generatedCharCodeList;
 
   @override
   void encodeToBinary(ByteData byteData) {
@@ -220,5 +217,11 @@ class OpenTypeFont implements BinaryCodable {
           .center(ascender, descender);
       }
     ).toList();
+  }
+
+  static void _generateCharCodes(List<GenericGlyph> glyphList) {
+    for (int i = 0; i < glyphList.length; i++) {
+      glyphList[i].metadata.charCode = kUnicodePrivateUseAreaStart + i;
+    }
   }
 }

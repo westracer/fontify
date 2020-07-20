@@ -12,21 +12,22 @@ const kDefaultOpenTypeUnitsPerEm = 1000;
 const kDefaultBaselineExtension = 150;
 const kDefaultFontRevision = Revision(1, 0);
 
-const kDefaultGlyphCharCode = <int>[
-  // .notdef doesn't have charcode
-  kUnicodeSpaceCharCode
-];
-
+// Default glyph indicies for post table.
 const kDefaultGlyphIndex = <int>[
   0, // .notdef
   3, // space
 ];
 
 /// Generates list of default glyphs (.notdef 'rectangle' and empty space)
-List<GenericGlyph> generateDefaultGlyphList(int ascender) => [
-  _generateNotdefGlyph(ascender),
-  GenericGlyph.empty(),
-];
+List<GenericGlyph> generateDefaultGlyphList(int ascender) {
+  final notdef = _generateNotdefGlyph(ascender);
+  final space = GenericGlyph.empty();
+
+  // .notdef doesn't have charcode
+  space.metadata.charCode = kUnicodeSpaceCharCode;
+
+  return [notdef, space];
+}
 
 GenericGlyph _generateNotdefGlyph(int ascender) {
   const kRelativeWidth = .7;

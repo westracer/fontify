@@ -7,6 +7,7 @@ void main() {
   const fontFileName = 'fontify_icons.otf';
   const classFileName = 'fontify_icons.dart';
 
+  // TODO: Encapsulate to function
   // Parsing SVG icon
   final svg = Svg.parse(svgFileName, '<svg viewBox="0 0 0 0"></svg>');
 
@@ -22,13 +23,14 @@ void main() {
   writeToFile(fontFileName, font);
 
   // Generating Flutter class
-  final iconMap = {
-    font.generatedCharCodeList.first: svgFileName,
-  };
+  // TODO:
+  // final iconMap = {
+  //   font.generatedCharCodeList.first: svgFileName,
+  // };
 
-  final classGenerator = FlutterClassGenerator(iconMap);
-  final classFileContent = classGenerator.generate();
+  // final classGenerator = FlutterClassGenerator(iconMap);
+  // final classFileContent = classGenerator.generate();
 
   // Writing Flutter class content
-  File(classFileName).writeAsStringSync(classFileContent);
+  // File(classFileName).writeAsStringSync(classFileContent);
 }

@@ -13,6 +13,19 @@ import '../utils/misc.dart';
 import '../utils/otf.dart';
 import 'outline.dart';
 
+/// Metadata for a generic glyph.
+class GenericGlyphMetadata {
+  GenericGlyphMetadata({this.charCode, this.name});
+
+  int charCode;
+  String name;
+
+  /// Deep copy
+  GenericGlyphMetadata copy() {
+    return GenericGlyphMetadata(charCode: charCode, name: name);
+  }
+}
+
 /// Metrics for a generic glyph.
 class GenericGlyphMetrics {
   GenericGlyphMetrics(this.xMin, this.xMax, this.yMin, this.yMax);
@@ -33,9 +46,17 @@ class GenericGlyphMetrics {
 /// Used as an intermediate storage between different types of glyphs
 /// (including OpenType's CharString, TrueType outlines).
 class GenericGlyph {
-  GenericGlyph(this.outlines, this.bounds);
+  GenericGlyph(
+    this.outlines,
+    this.bounds,
+    [GenericGlyphMetadata metadata]
+  )
+  : metadata = metadata ?? GenericGlyphMetadata();
 
-  GenericGlyph.empty() : outlines = [], bounds = const math.Rectangle(0,0,0,0);
+  GenericGlyph.empty()
+  : outlines = [],
+    bounds = const math.Rectangle(0, 0, 0, 0),
+    metadata = GenericGlyphMetadata();
 
   factory GenericGlyph.fromSimpleTrueTypeGlyph(SimpleGlyph glyph) {
     final isOnCurveList = glyph.flags.map((e) => e.onCurvePoint).toList();
@@ -70,16 +91,21 @@ class GenericGlyph {
         ...PathToOutlineConverter(svg, p).convert()
     ];
 
-    return GenericGlyph(outlines, svg.viewBox);
+    final metadata = GenericGlyphMetadata(
+      name: svg.name,
+    );
+
+    return GenericGlyph(outlines, svg.viewBox, metadata);
   }
 
   final List<Outline> outlines;
   final math.Rectangle bounds;
+  final GenericGlyphMetadata metadata;
 
   /// Deep copy of a glyph and its outlines
   GenericGlyph copy() {
     final outlines = this.outlines.map((e) => e.copy()).toList();
-    return GenericGlyph(outlines, bounds);
+    return GenericGlyph(outlines, bounds, metadata.copy());
   }
 
   List<bool> _getIsOnCurveList() {
@@ -233,7 +259,7 @@ class GenericGlyph {
       bounds.topRight.toDoublePoint() * sideRatio,
     );
 
-    return GenericGlyph(newOutlines, newBounds);
+    return GenericGlyph(newOutlines, newBounds, metadata);
   }
 
   GenericGlyph center(int ascender, int descender) {
@@ -258,7 +284,7 @@ class GenericGlyph {
       bounds.height,
     );
 
-    return GenericGlyph(newOutlines, newBounds);
+    return GenericGlyph(newOutlines, newBounds, metadata);
   }
 
   GenericGlyphMetrics get metrics {
