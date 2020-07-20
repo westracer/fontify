@@ -74,16 +74,10 @@ void _run(CliArguments parsedArgs) {
 
   if (parsedArgs.classFile == null) {
     logger.v('No output path for Flutter class was specified.');
-  } else {
-    final charCodeList = font.generatedCharCodeList;
-    final iconMap = {
-      for (int i = 0; i < svgFileList.length; i++)
-        charCodeList[i]: p.basename(svgFileList[i].path)
-    };
-    
+  } else {    
     final fontFileName = p.basename(parsedArgs.fontFile.path);
     final generator = FlutterClassGenerator(
-      iconMap,
+      glyphList,
       className: parsedArgs.className,
       indent: parsedArgs.indent,
       fontFileName: fontFileName,

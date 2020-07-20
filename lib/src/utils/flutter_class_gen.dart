@@ -2,6 +2,7 @@ import 'package:recase/recase.dart';
 import 'package:path/path.dart' as p;
 
 import '../common/constant.dart';
+import '../common/generic_glyph.dart';
 import '../otf/defaults.dart';
 
 const _kUnnamedIconName = 'unnamed';
@@ -19,10 +20,13 @@ String _getVarName(String string) {
 
 /// A helper for generating Flutter-compatible class with IconData objects for each icon.
 class FlutterClassGenerator {
-  /// * [iconMap] contains charcode to file name mapping.
+  /// * [glyphList] is a list of non-default glyphs.
+  /// * [className] is generated class' name (preferably, in PascalCase).
+  /// * [familyName] is font's family name to use in IconData.
+  /// * [fontFileName] is font file's name. Used in generated docs for class.
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
   FlutterClassGenerator(
-    Map<int, String> iconMap, {
+    this.glyphList, {
       String className,
       String familyName,
       String fontFileName,
@@ -32,21 +36,20 @@ class FlutterClassGenerator {
     _className = _getVarName(className ?? _kDefaultClassName),
     _familyName = familyName ?? kDefaultFontFamily,
     _fontFileName = fontFileName ?? _kDefaultFontFileName,
-    _iconOriginalNames = iconMap,
-    _iconVarNames = _generateVariableNames(iconMap);
+    _iconVarNames = _generateVariableNames(glyphList);
 
+  final List<GenericGlyph> glyphList;
   final String _fontFileName;
   final String _className;
   final String _familyName;
   final String _indent;
-  final Map<int, String> _iconOriginalNames;
-  final Map<int, String> _iconVarNames;
+  final List<String> _iconVarNames;
 
-  static Map<int, String> _generateVariableNames(Map<int, String> iconOriginalNames) {
+  static List<String> _generateVariableNames(List<GenericGlyph> glyphList) {
     final iconNameSet = <String>{};
 
-    return iconOriginalNames.map((charCode, iconName) {
-      final baseName = _getVarName(p.basenameWithoutExtension(iconName)).snakeCase;
+    return glyphList.map((g) {
+      final baseName = _getVarName(p.basenameWithoutExtension(g.metadata.name)).snakeCase;
       final usingDefaultName = baseName.isEmpty;
 
       String variableName = usingDefaultName ? _kUnnamedIconName : baseName;
@@ -75,17 +78,20 @@ class FlutterClassGenerator {
 
       iconNameSet.add(variableName);
 
-      return MapEntry(charCode, variableName);
-    });
+      return variableName;
+    }).toList();
   }
 
   String get _fontFamilyConst => "static const _kFontFamily = '$_familyName';";
 
   List<String> _generateIconConst(int index) {
-    final charCode = _iconVarNames.keys.elementAt(index);
+    final glyphMeta = glyphList[index].metadata;
+
+    final charCode = glyphMeta.charCode;
+    final iconName = glyphMeta.name;
+
+    final varName = _iconVarNames[index];
     final hexCode = charCode.toRadixString(16);
-    final varName = _iconVarNames[charCode];
-    final iconName = _iconOriginalNames[charCode];
 
     return [
       '',
@@ -100,7 +106,7 @@ class FlutterClassGenerator {
       '$_className._();',
       '',
       _fontFamilyConst,
-      for (int i = 0; i < _iconVarNames.length; i++)
+      for (int i = 0; i < glyphList.length; i++)
         ..._generateIconConst(i),
     ];
 
