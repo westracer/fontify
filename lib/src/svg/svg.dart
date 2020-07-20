@@ -6,6 +6,7 @@ import '../utils/exception.dart';
 import '../utils/svg.dart';
 import 'element.dart';
 
+/// SVG root element.
 class Svg extends SvgElement {
   Svg(
     this.name,

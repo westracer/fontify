@@ -1,7 +1,8 @@
 name: fontify
-version: 0.0.1-dev
+version: 0.0.1
 description: >-
-  TTF font generator from SVG images
+  Converts SVG icons to OTF font and generates Flutter-compatible class.
+  Provides an API and a CLI tool.
 homepage: https://github.com/westracer/fontify
 
 environment:

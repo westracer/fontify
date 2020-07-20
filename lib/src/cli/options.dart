@@ -6,7 +6,7 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       'output-class-file',
       abbr: 'o',
-      help: 'Output path for Flutter-compatible class that contains identifiers for the icons. Example: lib/icons.dart',
+      help: 'Output path for Flutter-compatible class that contains identifiers for the icons.',
       valueHelp: 'path',
     )
     ..addOption(
@@ -19,14 +19,14 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       'class-name',
       abbr: 'c',
-      help: 'Class name.',
+      help: 'Name for a generated class.',
       valueHelp: 'name',
     )
     ..addSeparator('Font options:')
     ..addOption(
       'font-name',
       abbr: 'f',
-      help: 'Font name.',
+      help: 'Name for a generated font.',
       valueHelp: 'name',
     )
     ..addFlag(
