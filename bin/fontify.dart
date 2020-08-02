@@ -38,10 +38,28 @@ void _run(CliArguments parsedArgs) {
     logger.setFilterLevel(Level.verbose);
   }
 
+  if (parsedArgs.classFile?.existsSync() ?? false) {
+    logger.v(
+      'Output file for a Flutter class already exists (${parsedArgs.classFile.path}) - '
+      'overwriting it'
+    );
+  }
+
+  if (parsedArgs.fontFile?.existsSync() ?? false) {
+    logger.v(
+      'Output file for a font file already exists (${parsedArgs.classFile.path}) - '
+      'overwriting it'
+    );
+  }
+
   final svgFileList = parsedArgs.svgDir
     .listSync(recursive: parsedArgs.recursive)
     .where((e) => p.extension(e.path).toLowerCase() == '.svg')
     .toList();
+
+  if (svgFileList.isEmpty) {
+    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path})");
+  }
 
   final svgMap = {
     for (final f in svgFileList)
