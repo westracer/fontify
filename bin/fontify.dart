@@ -13,7 +13,15 @@ final _argParser = ArgParser(allowTrailingOptions: true);
 void main(List<String> args) {
   defineOptions(_argParser);
   
-  final parsedArgs = parseArguments(_argParser, args, _usageError, _printHelp);
+  CliArguments parsedArgs;
+
+  try {
+    parsedArgs = parseArguments(_argParser, args);
+  } on CliArgumentException catch (e) {
+    _usageError(e.message);
+  } on CliHelpException {
+    _printHelp();
+  }
 
   try {
     _run(parsedArgs);

@@ -31,26 +31,24 @@ class CliArguments {
 
 /// Parses argument list.
 /// 
+/// Throws [CliArgumentException], if there is an error in arg parsing.
+/// Throws [CliHelpException], if 'help' option is present.
+/// 
 /// Returns an instance of [CliArguments] containing all parsed data.
-CliArguments parseArguments(
-  ArgParser argParser,
-  List<String> args,
-  void Function(String) errorCallback,
-  void Function() helpCallback,
-) {
+CliArguments parseArguments(ArgParser argParser, List<String> args) {
   ArgResults argResults;
   try {
     argResults = argParser.parse(args);
   } on FormatException catch (err) {
-    errorCallback(err.message);
+    throw CliArgumentException(err.message);
   }
 
   if (argResults['help'] as bool) {
-    helpCallback();
+    throw CliHelpException();
   }
 
   if (argResults.rest.length < 2) {
-    errorCallback(
+    throw CliArgumentException(
       'Too few positional arguments: '
       '2 required, ${argResults.rest.length} given.'
     );
@@ -59,7 +57,7 @@ CliArguments parseArguments(
   final svgDir = Directory(argResults.rest[0]);
 
   if (svgDir.statSync().type != FileSystemEntityType.directory) {
-    errorCallback("<input-svg-dir> is not a directory or the directory doesn't exist.");
+    throw CliArgumentException("<input-svg-dir> is not a directory or the directory doesn't exist.");
   }
 
   final fontFile = File(argResults.rest[1]);
@@ -77,7 +75,7 @@ CliArguments parseArguments(
       }
     }
   } on FormatException catch (_) {
-    errorCallback('--indent must be a non-negative integer, was "$indentArg".');
+    throw CliArgumentException('--indent must be a non-negative integer, was "$indentArg".');
   }
 
   final className = argResults['class-name'] as String;
@@ -100,3 +98,14 @@ CliArguments parseArguments(
     verbose,
   );
 }
+
+class CliArgumentException implements Exception {
+  CliArgumentException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
+class CliHelpException implements Exception {}
