@@ -15,19 +15,19 @@ const _kArgAllowedTypes = <CliArgument, List<Type>>{
   CliArgument.svgDir: [String],
   CliArgument.fontFile: [String],
 
-  CliArgument.classFile: [Null, String],
-  CliArgument.className: [Null, String],
-  CliArgument.indent: [Null, String, int],
+  CliArgument.classFile: [String],
+  CliArgument.className: [String],
+  CliArgument.indent: [String, int],
 
-  CliArgument.fontName: [Null, String],
-  CliArgument.normalize: [Null, bool],
-  CliArgument.ignoreShapes: [Null, bool],
+  CliArgument.fontName: [String],
+  CliArgument.normalize: [bool],
+  CliArgument.ignoreShapes: [bool],
 
-  CliArgument.recursive: [Null, bool],
-  CliArgument.verbose: [Null, bool],
+  CliArgument.recursive: [bool],
+  CliArgument.verbose: [bool],
   
-  CliArgument.help: [Null, bool],
-  CliArgument.configFile: [Null, String],
+  CliArgument.help: [bool],
+  CliArgument.configFile: [String],
 };
 
 const kDefaultVerbose = false;
@@ -113,7 +113,7 @@ class CliArguments {
       final argType = rawArgMap[arg].runtimeType;
       final allowedTypes = e.value;
 
-      if (!allowedTypes.contains(argType)) {
+      if (argType != Null && !allowedTypes.contains(argType)) {
         throw CliArgumentException(
           "'${argumentNames[arg]}' argument\'s type "
           'must be one of following: $allowedTypes, '
@@ -155,6 +155,14 @@ class CliArguments {
   /// 
   /// Throws [CliArgumentException], if argument is not valid.
   void validate() {
+    if (svgDir == null) {
+      throw CliArgumentException('The input directory is not specified.');
+    }
+
+    if (fontFile == null) {
+      throw CliArgumentException('The output font file is not specified.');
+    }
+
     if (svgDir.statSync().type != FileSystemEntityType.directory) {
       throw CliArgumentException("The input directory is not a directory or it doesn't exist.");
     }

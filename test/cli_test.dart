@@ -148,6 +148,26 @@ void main() {
       expect(parsedArgs.verbose, isFalse);
       expect(parsedArgs.configFile, isNull);
     });
+
+    test('No arguments and config', () {
+      const args = [
+        '--config-file=test/assets/test_config.yaml',
+      ];
+
+      final parsedArgs = parseArgsAndConfig(_argParser, args)..validate();
+      
+      expect(parsedArgs.svgDir.path, './');
+      expect(parsedArgs.fontFile.path, 'generated_font.otf');
+      expect(parsedArgs.classFile.path, 'lib/test_font.dart');
+      expect(parsedArgs.indent, 4);
+      expect(parsedArgs.className, 'MyIcons');
+      expect(parsedArgs.fontName, 'My Icons');
+      expect(parsedArgs.normalize, isFalse);
+      expect(parsedArgs.ignoreShapes, isFalse);
+      expect(parsedArgs.recursive, isFalse);
+      expect(parsedArgs.verbose, isFalse);
+      expect(parsedArgs.configFile, isNull);
+    });
   });
 
   group('Config', () {
