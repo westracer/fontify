@@ -88,7 +88,7 @@ void main() {
       expect(parsedArgs.ignoreShapes, isTrue);
       expect(parsedArgs.recursive, isFalse);
       expect(parsedArgs.verbose, isFalse);
-      expect(p.basename(parsedArgs.configFile.path), 'pubspec.yaml');
+      expect(parsedArgs.configFile, isNull);
     });
 
     test('Help', () {

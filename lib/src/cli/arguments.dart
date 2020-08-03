@@ -8,7 +8,7 @@ import '../utils/enum_class.dart';
 import '../utils/logger.dart';
 import 'formatter.dart';
 
-const _kDefaultConfigPath = 'pubspec.yaml';
+const _kDefaultConfigPathList = ['pubspec.yaml', 'fontify.yaml'];
 const _kPositionalArguments = [CliArgument.svgDir, CliArgument.fontFile];
 
 const kDefaultVerbose = false;
@@ -165,8 +165,6 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
       _kPositionalArguments[i]: argResults.rest[i],
   };
 
-  rawArgMap[CliArgument.configFile] ??= _kDefaultConfigPath;
-
   return CliArguments.fromMap(rawArgMap);
 }
 
@@ -207,12 +205,18 @@ CliArguments parseConfig(String config) {
 CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
   CliArguments parsedArgs = parseArguments(argParser, args);
 
-  if (parsedArgs.configFile.existsSync()) {
-    final parsedConfig = parseConfig(parsedArgs.configFile.readAsStringSync());
+  final defaultConfigList = _kDefaultConfigPathList.map((e) => File(e));
+  final configList = [parsedArgs.configFile, ...defaultConfigList];
 
-    if (parsedConfig != null) {
-      logger.i('Using config ${parsedArgs.configFile.path}');
-      parsedArgs = parsedConfig;
+  for (final configFile in configList) {
+    if (configFile?.existsSync() ?? false) {
+      final parsedConfig = parseConfig(configFile.readAsStringSync());
+
+      if (parsedConfig != null) {
+        logger.i('Using config ${configFile.path}');
+        parsedArgs = parsedConfig;
+        break;
+      }
     }
   }
 
