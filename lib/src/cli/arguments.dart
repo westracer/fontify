@@ -11,6 +11,25 @@ import 'formatter.dart';
 const _kDefaultConfigPathList = ['pubspec.yaml', 'fontify.yaml'];
 const _kPositionalArguments = [CliArgument.svgDir, CliArgument.fontFile];
 
+const _kArgAllowedTypes = <CliArgument, List<Type>>{
+  CliArgument.svgDir: [String],
+  CliArgument.fontFile: [String],
+
+  CliArgument.classFile: [Null, String],
+  CliArgument.className: [Null, String],
+  CliArgument.indent: [Null, String, int],
+
+  CliArgument.fontName: [Null, String],
+  CliArgument.normalize: [Null, bool],
+  CliArgument.ignoreShapes: [Null, bool],
+
+  CliArgument.recursive: [Null, bool],
+  CliArgument.verbose: [Null, bool],
+  
+  CliArgument.help: [Null, bool],
+  CliArgument.configFile: [Null, String],
+};
+
 const kDefaultVerbose = false;
 const kDefaultRecursive = false;
 
@@ -85,6 +104,21 @@ class CliArguments {
   /// 
   /// Throws [CliArgumentException], if there is an error in arg parsing.
   factory CliArguments.fromMap(Map<CliArgument, Object> rawArgMap) {
+    // Validating types
+    for (final e in _kArgAllowedTypes.entries) {
+      final arg = e.key;
+      final argType = rawArgMap[arg].runtimeType;
+      final allowedTypes = e.value;
+
+      if (!allowedTypes.contains(argType)) {
+        throw CliArgumentException(
+          '${argumentNames[arg]} argument\'s type '
+          'must be one of following: $allowedTypes'
+          ', instead got $argType.'
+        );
+      }
+    }
+
     final map = formatArguments(rawArgMap);
     
     return CliArguments(
@@ -118,16 +152,8 @@ class CliArguments {
   /// 
   /// Throws [CliArgumentException], if argument is not valid.
   void validate() {
-    if (svgDir == null) {
-      throw CliArgumentException('The input directory is not specified.');
-    }
-
     if (svgDir.statSync().type != FileSystemEntityType.directory) {
       throw CliArgumentException("The input directory is not a directory or it doesn't exist.");
-    }
-
-    if (fontFile == null) {
-      throw CliArgumentException('The output font file is not specified.');
     }
 
     if (indent != null && indent < 0) {

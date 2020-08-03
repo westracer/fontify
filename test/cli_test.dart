@@ -1,7 +1,6 @@
 import 'package:args/args.dart';
 import 'package:fontify/src/cli/arguments.dart';
 import 'package:fontify/src/cli/options.dart';
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 
 void main() {
@@ -254,6 +253,51 @@ fontify:
       expect(parsedArgs.ignoreShapes, isNull);
       expect(parsedArgs.recursive, isNull);
       expect(parsedArgs.verbose, isNull);
+    });
+
+    test('Type validation', () {
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  output_class_file: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  class_name: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  font_name: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  normalize: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  ignore_shapes: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  recursive: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  verbose: 1
+      ''');
     });
   });
 }

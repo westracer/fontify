@@ -29,7 +29,7 @@ int _indent(Object arg) {
     throw CliArgumentException('indent must be integer, was "$arg".');
   }
 
-  if (arg is double) {
+  if (arg is! String) {
     throwException();
   }
 
