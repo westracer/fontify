@@ -7,6 +7,7 @@ import 'package:fontify/src/common/api.dart';
 import 'package:fontify/src/otf/io.dart';
 import 'package:fontify/src/utils/logger.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 final _argParser = ArgParser(allowTrailingOptions: true);
 
@@ -21,6 +22,9 @@ void main(List<String> args) {
     _usageError(e.message);
   } on CliHelpException {
     _printHelp();
+  } on YamlException catch (e) {
+    logger.e(e.toString());
+    exit(66);
   }
 
   try {
