@@ -45,7 +45,7 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.configFile],
       abbr: 'z',
-      help: 'Path to Fontify yaml config file. If not provided, pubspec.yaml is used. Config is optional.',
+      help: 'Path to Fontify yaml configuration file. pubspec.yaml and fontify.yaml files are used by default.',
       valueHelp: 'path',
     )
     ..addFlag(
