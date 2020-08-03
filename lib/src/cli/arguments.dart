@@ -232,7 +232,7 @@ CliArguments parseConfig(String config) {
 /// Throws [CliHelpException], if 'help' option is present.
 /// Throws [CliArgumentException], if there is an error in arg parsing.
 CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
-  CliArguments parsedArgs = parseArguments(argParser, args);
+  var parsedArgs = parseArguments(argParser, args);
 
   final defaultConfigList = _kDefaultConfigPathList.map((e) => File(e));
   final configList = [parsedArgs.configFile, ...defaultConfigList];
