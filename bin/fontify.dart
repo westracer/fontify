@@ -16,7 +16,7 @@ void main(List<String> args) {
   CliArguments parsedArgs;
 
   try {
-    parsedArgs = parseArguments(_argParser, args);
+    parsedArgs = parseArgsAndConfig(_argParser, args);
   } on CliArgumentException catch (e) {
     _usageError(e.message);
   } on CliHelpException {
@@ -34,7 +34,10 @@ void main(List<String> args) {
 void _run(CliArguments parsedArgs) {
   final stopwatch = Stopwatch()..start();
 
-  if (parsedArgs.verbose) {
+  final isRecursive = parsedArgs.recursive ?? kDefaultRecursive;
+  final isVerbose = parsedArgs.verbose ?? kDefaultVerbose;
+
+  if (isVerbose) {
     logger.setFilterLevel(Level.verbose);
   }
 
@@ -47,18 +50,18 @@ void _run(CliArguments parsedArgs) {
 
   if (parsedArgs.fontFile?.existsSync() ?? false) {
     logger.v(
-      'Output file for a font file already exists (${parsedArgs.classFile.path}) - '
+      'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
       'overwriting it'
     );
   }
 
   final svgFileList = parsedArgs.svgDir
-    .listSync(recursive: parsedArgs.recursive)
+    .listSync(recursive: isRecursive)
     .where((e) => p.extension(e.path).toLowerCase() == '.svg')
     .toList();
 
   if (svgFileList.isEmpty) {
-    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path})");
+    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
   }
 
   final svgMap = {

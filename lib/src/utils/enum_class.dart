@@ -19,4 +19,10 @@ class EnumClass<K, V> {
   Iterable<K> get keys => _map.keys;
 
   Iterable<V> get values => _map.values;
+
+  Iterable<MapEntry<K, V>> get entries => _map.entries;
+
+  Map<K, V> get map => _map;
+
+  V operator[](K key) => _map[key];
 }
