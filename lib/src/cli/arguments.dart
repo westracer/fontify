@@ -112,15 +112,15 @@ class CliArguments {
 
       if (!allowedTypes.contains(argType)) {
         throw CliArgumentException(
-          '${argumentNames[arg]} argument\'s type '
-          'must be one of following: $allowedTypes'
-          ', instead got $argType.'
+          "'${argumentNames[arg]}' argument\'s type "
+          'must be one of following: $allowedTypes, '
+          "instead got '$argType'."
         );
       }
     }
 
     final map = formatArguments(rawArgMap);
-    
+
     return CliArguments(
       map[CliArgument.svgDir] as Directory,
       map[CliArgument.fontFile] as File,
