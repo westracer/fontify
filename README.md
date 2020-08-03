@@ -55,6 +55,9 @@ Disables SVG shape-to-path conversion (circle, rect, etc.).
 (defaults to on)
 
 Other options:
+- `-z` or `--config-file=<path>`
+Path to Fontify yaml configuration file.
+pubspec.yaml and fontify.yaml files are used by default.
 - `-r` or `--recursive`
 Recursively look for .svg files.
 - `-v` or `--verbose`
@@ -79,6 +82,31 @@ flutter:
       fonts:
         - asset: fonts/my_icons_font.otf
 ```
+
+# CLI tool config file
+
+Fontify's configuration can also be placed in yaml file.
+Add _fontify_ section to either `pubspec.yaml` or `fontify.yaml` file:
+
+```yaml
+fontify:
+  input_svg_dir: "assets/svg/"
+  output_font_file: "fonts/my_icons_font.otf"
+  
+  output_class_file: "lib/my_icons.dart"
+  class_name: "MyIcons"
+  indent: 4
+
+  font_name: "My Icons"
+  normalize: false
+  ignore_shapes: false
+
+  recursive: false
+  verbose: false
+```
+
+`input_svg_dir` and `output_font_file` keys are required.
+It's possible to specify any other config file by using `--config-file` option.
 
 # Using API
 

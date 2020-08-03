@@ -7,6 +7,7 @@ import 'package:fontify/src/common/api.dart';
 import 'package:fontify/src/otf/io.dart';
 import 'package:fontify/src/utils/logger.dart';
 import 'package:path/path.dart' as p;
+import 'package:yaml/yaml.dart';
 
 final _argParser = ArgParser(allowTrailingOptions: true);
 
@@ -16,11 +17,14 @@ void main(List<String> args) {
   CliArguments parsedArgs;
 
   try {
-    parsedArgs = parseArguments(_argParser, args);
+    parsedArgs = parseArgsAndConfig(_argParser, args);
   } on CliArgumentException catch (e) {
     _usageError(e.message);
   } on CliHelpException {
     _printHelp();
+  } on YamlException catch (e) {
+    logger.e(e.toString());
+    exit(66);
   }
 
   try {
@@ -34,7 +38,10 @@ void main(List<String> args) {
 void _run(CliArguments parsedArgs) {
   final stopwatch = Stopwatch()..start();
 
-  if (parsedArgs.verbose) {
+  final isRecursive = parsedArgs.recursive ?? kDefaultRecursive;
+  final isVerbose = parsedArgs.verbose ?? kDefaultVerbose;
+
+  if (isVerbose) {
     logger.setFilterLevel(Level.verbose);
   }
 
@@ -47,18 +54,18 @@ void _run(CliArguments parsedArgs) {
 
   if (parsedArgs.fontFile?.existsSync() ?? false) {
     logger.v(
-      'Output file for a font file already exists (${parsedArgs.classFile.path}) - '
+      'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
       'overwriting it'
     );
   }
 
   final svgFileList = parsedArgs.svgDir
-    .listSync(recursive: parsedArgs.recursive)
+    .listSync(recursive: isRecursive)
     .where((e) => p.extension(e.path).toLowerCase() == '.svg')
     .toList();
 
   if (svgFileList.isEmpty) {
-    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path})");
+    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
   }
 
   final svgMap = {
