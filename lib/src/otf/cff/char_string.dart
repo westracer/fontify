@@ -25,7 +25,7 @@ class CharStringOperand extends CFFOperand {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     if (value is double) {
       byteData
@@ -165,7 +165,7 @@ class CharStringCommand implements BinaryCodable {
 
   @override
   String toString() {
-    String operandListString = operandList.map((e) => e.toString()).join(', ');
+    var operandListString = operandList.map((e) => e.toString()).join(', ');
 
     if (operandListString.length > 10) {
       operandListString = '${operandListString.substring(0, 10)}...';
@@ -176,7 +176,7 @@ class CharStringCommand implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     for (final operand in operandList) {
       final operandSize = operand.size;
@@ -223,11 +223,11 @@ class CharStringInterpreter {
     _stack.clear();
     _commandList.clear();
 
-    int offset = 0;
+    var offset = 0;
     final end = byteData.lengthInBytes;
 
     while (offset < end) {
-      int op = byteData.getUint8(offset++);
+      var op = byteData.getUint8(offset++);
       
       if (op == 28 || op >= 32) {
         final operandByteData = byteData.sublistView(offset);
@@ -264,7 +264,7 @@ class CharStringInterpreter {
           case 6: // hlineto
           case 7: // vlineto
             final arguments = <num>[];
-            bool isX = op == 6;
+            var isX = op == 6;
 
             while (_stack.isNotEmpty) {
               if (isX) {
@@ -413,7 +413,7 @@ class CharStringInterpreter {
 
           case 30: // vhcurveto
           case 31: // hvcurveto
-            bool isX = op == 31;
+            var isX = op == 31;
             final arguments = <num>[];
             
             while (_stack.length >= 4) {

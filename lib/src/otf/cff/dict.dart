@@ -14,7 +14,7 @@ class CFFDictEntry extends BinaryCodable {
   factory CFFDictEntry.fromByteData(ByteData byteData, int startOffset) {
     final operandList = <CFFOperand>[];
 
-    int offset = startOffset;
+    var offset = startOffset;
 
     while (offset < byteData.lengthInBytes) {
       final b0 = byteData.getUint8(offset++);
@@ -47,7 +47,7 @@ class CFFDictEntry extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
     
     for (final operand in operandList) {
       final operandSize = operand.size;
@@ -81,7 +81,7 @@ class CFFDictEntry extends BinaryCodable {
 
   @override
   String toString() {
-    String operandListString = operandList.map((e) => e.toString()).join(', ');
+    var operandListString = operandList.map((e) => e.toString()).join(', ');
 
     if (operandListString.length > 10) {
       operandListString = '${operandListString.substring(0, 10)}...';
@@ -99,7 +99,7 @@ class CFFDict extends BinaryCodable {
   factory CFFDict.fromByteData(ByteData byteData) {
     final entryList = <CFFDictEntry>[];
 
-    int offset = 0;
+    var offset = 0;
 
     while (offset < byteData.lengthInBytes) {
       final entry = CFFDictEntry.fromByteData(byteData, offset);
@@ -121,7 +121,7 @@ class CFFDict extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     for (final e in entryList) {
       final entrySize = e.size;

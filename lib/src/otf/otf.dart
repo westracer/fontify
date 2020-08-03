@@ -152,7 +152,7 @@ class OpenTypeFont implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int currentTableOffset = kOffsetTableLength + entryListSize;
+    var currentTableOffset = kOffsetTableLength + entryListSize;
 
     final entryList = <TableRecordEntry>[];
 
@@ -181,7 +181,7 @@ class OpenTypeFont implements BinaryCodable {
     // The directory entry tags must be in ascending order
     entryList.sort((e1, e2) => e1.tag.compareTo(e2.tag));
 
-    for (int i = 0; i < entryList.length; i++) {
+    for (var i = 0; i < entryList.length; i++) {
       final entryOffset = kOffsetTableLength + i * kTableRecordEntryLength;
       final entryByteData = byteData.sublistView(entryOffset, kTableRecordEntryLength);
       entryList[i].encodeToBinary(entryByteData);
@@ -222,7 +222,7 @@ class OpenTypeFont implements BinaryCodable {
   }
 
   static void _generateCharCodes(List<GenericGlyph> glyphList) {
-    for (int i = 0; i < glyphList.length; i++) {
+    for (var i = 0; i < glyphList.length; i++) {
       glyphList[i].metadata.charCode = kUnicodePrivateUseAreaStart + i;
     }
   }

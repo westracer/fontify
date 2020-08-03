@@ -44,7 +44,7 @@ SvgToOtfResult svgToOtf({
   ];
 
   if (!normalize) {
-    for (int i = 1; i < svgList.length; i++) {
+    for (var i = 1; i < svgList.length; i++) {
       if (svgList[i - 1].viewBox.height != svgList[i].viewBox.height) {
         logger.logOnce(
           Level.warning,

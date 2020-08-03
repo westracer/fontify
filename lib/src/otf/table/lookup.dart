@@ -89,7 +89,7 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       ..setUint16(2, coverageOffset)
       ..setUint16(4, ligatureSetCount);
 
-    for (int i = 0; i < ligatureSetCount; i++) {
+    for (var i = 0; i < ligatureSetCount; i++) {
       byteData.setInt16(6 + 2 * i, ligatureSetOffsets[i]);
     }
 
@@ -165,7 +165,7 @@ class LookupTable implements BinaryCodable {
       ..setUint16(2, lookupFlag)
       ..setUint16(4, subTableCount);
 
-    int currentRelativeOffset = 6 + 2 * subTableCount;
+    var currentRelativeOffset = 6 + 2 * subTableCount;
     final subtableOffsetList = <int>[];
 
     for (final subtable in subtables) {
@@ -174,7 +174,7 @@ class LookupTable implements BinaryCodable {
       currentRelativeOffset += subtable.size;
     }
 
-    for (int i = 0; i < subTableCount; i++) {
+    for (var i = 0; i < subTableCount; i++) {
       byteData.setInt16(6 + 2 * i, subtableOffsetList[i]);
     }
 
@@ -225,9 +225,9 @@ class LookupListTable implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(0, lookupCount);
 
-    int tableRelativeOffset = 2 + 2 * lookupCount;
+    var tableRelativeOffset = 2 + 2 * lookupCount;
 
-    for (int i = 0; i < lookupCount; i++) {
+    for (var i = 0; i < lookupCount; i++) {
       final subtable = lookupTables[i];
       subtable.encodeToBinary(byteData.sublistView(tableRelativeOffset, subtable.size));
 

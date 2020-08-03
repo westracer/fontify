@@ -14,7 +14,7 @@ class CFFIndex extends BinaryCodable {
   CFFIndex.empty() : count = 0, offSize = null, offsetList = [];
 
   factory CFFIndex.fromByteData(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     final count = byteData.getUint32(0);
     offset += 4;
@@ -31,10 +31,10 @@ class CFFIndex extends BinaryCodable {
 
     final offsetList = <int>[];
 
-    for (int i = 0; i < count + 1; i++) {
-      int value = 0;
+    for (var i = 0; i < count + 1; i++) {
+      var value = 0;
 
-      for (int i = 0; i < offSize; i++) {
+      for (var i = 0; i < offSize; i++) {
         value <<= 8;
         value += byteData.getUint8(offset++);
       }
@@ -53,7 +53,7 @@ class CFFIndex extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     byteData.setUint32(offset, count);
     offset += 4;
@@ -64,8 +64,8 @@ class CFFIndex extends BinaryCodable {
 
     byteData.setUint8(offset++, offSize);
 
-    for (int i = 0; i < count + 1; i++) {
-      for (int j = 0; j < offSize; j++) {
+    for (var i = 0; i < count + 1; i++) {
+      for (var j = 0; j < offSize; j++) {
         final byte = (offsetList[i] >> 8 * (offSize - j - 1)) & 0xFF;
         byteData.setUint8(offset++, byte);
       }
@@ -76,7 +76,7 @@ class CFFIndex extends BinaryCodable {
 
   @override
   int get size {
-    int sizeSum = 4;
+    var sizeSum = 4;
 
     if (isEmpty) {
       return kEmptyIndexSize;
@@ -98,7 +98,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
 
     final dataList = <T>[];
 
-    for (int i = 0; i < index.count; i++) {
+    for (var i = 0; i < index.count; i++) {
       final relativeOffset = index.offsetList[i] - 1; // -1 because first offset value is always 1
       final elementLength = index.offsetList[i + 1] - index.offsetList[i];
 
@@ -211,7 +211,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
       index.encodeToBinary(byteData.sublistView(0, index.size));
     }
 
-    int offset = 0;
+    var offset = 0;
 
     final indexSize = index.size;
 
@@ -220,7 +220,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
 
     final encoder = _getEncoder();
 
-    for (int i = 0; i < index.count; i++) {
+    for (var i = 0; i < index.count; i++) {
       final element = data[i];
       final elementSize = index.offsetList[i + 1] - index.offsetList[i];
       

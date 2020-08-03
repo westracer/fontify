@@ -7,7 +7,7 @@ List<int> toUCS2byteList(String str) {
 
 String fromUCS2byteList(List<int> byteList) {
   return String.fromCharCodes([
-    for (int i = 0; i < byteList.length; i += 2)
+    for (var i = 0; i < byteList.length; i += 2)
       byteList[i] << 8 | byteList[i + 1]
   ]);
 }

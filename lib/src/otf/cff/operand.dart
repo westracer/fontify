@@ -113,7 +113,7 @@ class CFFOperand extends BinaryCodable {
       return null;
     }
     
-    String string = value.toString();
+    var string = value.toString();
     
     // Removing integer part if it's 0
     string = string.replaceFirst(RegExp(r'^0.'), '.');
@@ -129,16 +129,16 @@ class CFFOperand extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     void writeDouble() {
       final s = _doubleToNormalizedString();
 
-      bool firstHalf = true;
+      var firstHalf = true;
       int prevNibble;
 
-      for (int i = 0; i < s.length; i++) {
-        String char = s[i];
+      for (var i = 0; i < s.length; i++) {
+        var char = s[i];
 
         if (char == 'E' && s[i + 1] == '-') {
           char += '-';
@@ -167,7 +167,7 @@ class CFFOperand extends BinaryCodable {
       byteData.setUint8(offset++, 30);
       writeDouble();
     } else {
-      int intValue = value as int;
+      var intValue = value as int;
       
       if (!forceLargeInt && intValue >= -107 && intValue <= 107) {
         byteData.setUint8(offset++, intValue + 139);
@@ -205,7 +205,7 @@ class CFFOperand extends BinaryCodable {
 
     return _size = () {
       if (value is double) {
-        String valueString = _doubleToNormalizedString();
+        var valueString = _doubleToNormalizedString();
         valueString = valueString.replaceFirst('E-', 'E'); // 'E-' used as a single char
         
         return 1 + ((valueString.length + 1) / 2).ceil();

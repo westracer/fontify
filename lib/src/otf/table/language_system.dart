@@ -73,7 +73,7 @@ class LanguageSystemTable implements BinaryCodable {
       ..setUint16(2, requiredFeatureIndex)
       ..setUint16(4, featureIndexCount);
 
-    for (int i = 0; i < featureIndexCount; i++) {
+    for (var i = 0; i < featureIndexCount; i++) {
       byteData.setInt16(6 + 2 * i, featureIndices[i]);
     }
   }

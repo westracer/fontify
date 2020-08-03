@@ -116,10 +116,10 @@ class ScriptTable implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(2, langSysCount);
 
-    int recordOffset = 4;
-    int tableRelativeOffset = 4 + kLangSysRecordSize * langSysRecords.length;
+    var recordOffset = 4;
+    var tableRelativeOffset = 4 + kLangSysRecordSize * langSysRecords.length;
 
-    for (int i = 0; i < langSysRecords.length; i++) {
+    for (var i = 0; i < langSysRecords.length; i++) {
       final record = langSysRecords[i]
         ..langSysOffset = tableRelativeOffset
         ..encodeToBinary(byteData.sublistView(recordOffset, kLangSysRecordSize));
@@ -186,10 +186,10 @@ class ScriptListTable implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(0, scriptCount);
 
-    int recordOffset = 2;
-    int tableRelativeOffset = 2 + kScriptRecordSize * scriptCount;
+    var recordOffset = 2;
+    var tableRelativeOffset = 2 + kScriptRecordSize * scriptCount;
 
-    for (int i = 0; i < scriptCount; i++) {
+    for (var i = 0; i < scriptCount; i++) {
       final record = scriptRecords[i]
         ..scriptOffset = tableRelativeOffset
         ..encodeToBinary(byteData.sublistView(recordOffset, kScriptRecordSize));

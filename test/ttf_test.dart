@@ -328,7 +328,7 @@ void main() {
       final glyphNameList = (font.post.data as PostScriptVersion20).glyphNames.map((s) => s.string).toList();
       final glyphList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
 
-      for (int i = 0; i < glyphList.length; i++) {
+      for (var i = 0; i < glyphList.length; i++) {
         glyphList[i].metadata.name = glyphNameList[i];
       }
       
@@ -419,7 +419,7 @@ void main() {
       final genericList = font.glyf.glyphList.map((e) => GenericGlyph.fromSimpleTrueTypeGlyph(e)).toList();
       final simpleList = genericList.map((e) => e.toSimpleTrueTypeGlyph()).toList();
 
-      for (int i = 0; i < genericList.length; i++) {
+      for (var i = 0; i < genericList.length; i++) {
         expect(simpleList[i].pointList, font.glyf.glyphList[i].pointList);
       }
     });
@@ -445,7 +445,7 @@ void main() {
         138: 90,
       };
 
-      for (int i = 0; i < genericList.length; i++) {
+      for (var i = 0; i < genericList.length; i++) {
         final newLength = simpleList[i].pointList.length;
         final expectedLength = changedForReason[i] ?? font.glyf.glyphList[i].pointList.length;
         expect(newLength, expectedLength);

@@ -158,9 +158,9 @@ class GenericGlyph {
     final relX = absToRelCoordinates(pointList.map((e) => e.x.toInt()).toList());
     final relY = absToRelCoordinates(pointList.map((e) => e.y.toInt()).toList());
 
-    bool isContourStart = true;
+    var isContourStart = true;
 
-    for (int i = 0; i < relX.length; i++) {
+    for (var i = 0; i < relX.length; i++) {
       if (isContourStart) {
         commandList.add(CharStringCommand.moveto(relX[i], relY[i]));
         isContourStart = false;
@@ -169,7 +169,7 @@ class GenericGlyph {
 
       if (!isOnCurveList[i] && !isOnCurveList[i + 1]) {
         final points = [
-          for (int p = 0; p < 3; p++)
+          for (var p = 0; p < 3; p++)
             ...[relX[i + p], relY[i + p]]
         ];
 
@@ -205,7 +205,7 @@ class GenericGlyph {
     final yMax = absYcoordinates.fold<int>(kInt32Min, math.max);
 
     final flags = [
-      for (int i = 0; i < pointList.length; i++)
+      for (var i = 0; i < pointList.length; i++)
         SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], isOnCurveList[i])
     ];
 
@@ -294,7 +294,7 @@ class GenericGlyph {
       return GenericGlyphMetrics.empty();
     }
 
-    int xMin = kInt32Max, yMin = kInt32Max, xMax = kInt32Min, yMax = kInt32Min;
+    var xMin = kInt32Max, yMin = kInt32Max, xMax = kInt32Min, yMax = kInt32Min;
     
     for (final p in points) {
       xMin = math.min(xMin, p.x.toInt());

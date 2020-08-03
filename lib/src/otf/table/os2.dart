@@ -282,7 +282,7 @@ class OS2Table extends FontTable {
 
   @override
   int get size {
-    int size = 0;
+    var size = 0;
     
     for (final e in _kVersionDataSize.entries) {
       if (e.key > version) {
@@ -312,7 +312,7 @@ class OS2Table extends FontTable {
       return 0;
     }
     
-    int maxContext = 0;
+    var maxContext = 0;
 
     for (final lookup in gsub.lookupListTable.lookupTables) {
       for (final subtable in lookup.subtables) {
@@ -364,7 +364,7 @@ class OS2Table extends FontTable {
       ..setUint16(74, usWinAscent)
       ..setUint16(76, usWinDescent);
 
-    for (int i = 0; i < panose.length; i++) {
+    for (var i = 0; i < panose.length; i++) {
       byteData.setUint8(32 + i, panose[i]);
     }
 

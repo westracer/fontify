@@ -219,7 +219,7 @@ class NamingTableFormat0Header implements BinaryCodable {
       ..setUint16(2, count)
       ..setUint16(4, stringOffset);
 
-    int recordOffset = 6;
+    var recordOffset = 6;
 
     for (final record in nameRecordList) {
       record.encodeToBinary(byteData.sublistView(recordOffset, record.size));
@@ -308,13 +308,13 @@ class NamingTableFormat0 extends NamingTable {
     };
 
     final stringList = [
-      for (int i = 0; i < _kNameRecordTemplateList.length; i++) 
+      for (var i = 0; i < _kNameRecordTemplateList.length; i++) 
         ...stringForNameMap.values
     ];
 
     final recordList = <NameRecord>[];
 
-    int stringOffset = 0;
+    var stringOffset = 0;
 
     for (final recordTemplate in _kNameRecordTemplateList) {
       for (final entry in stringForNameMap.entries) {
@@ -350,11 +350,11 @@ class NamingTableFormat0 extends NamingTable {
 
     final storageAreaOffset = header.size;
 
-    for (int i = 0; i < header.nameRecordList.length; i++) {
+    for (var i = 0; i < header.nameRecordList.length; i++) {
       final record = header.nameRecordList[i];
       final string = stringList[i];
 
-      int charOffset = storageAreaOffset + record.offset;
+      var charOffset = storageAreaOffset + record.offset;
       final encoder = _getEncoder(record);
       final units = encoder(string);
 

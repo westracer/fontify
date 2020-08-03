@@ -28,8 +28,8 @@ class RectElement extends SvgElement implements PathConvertible {
       element.getScalarAttribute('height'),
     );
 
-    num rx = element.getScalarAttribute('rx', zeroIfAbsent: false);
-    num ry = element.getScalarAttribute('ry', zeroIfAbsent: false);
+    var rx = element.getScalarAttribute('rx', zeroIfAbsent: false);
+    var ry = element.getScalarAttribute('ry', zeroIfAbsent: false);
 
     ry ??= rx;
     rx ??= ry;

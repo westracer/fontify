@@ -38,9 +38,9 @@ bool checkBitMask(int value, int mask) =>
 int calculateTableChecksum(ByteData encodedTable) {
   final length = (encodedTable.lengthInBytes / 4).floor();
 
-  int sum = 0;
+  var sum = 0;
 
-  for (int i = 0; i < length; i++) {
+  for (var i = 0; i < length; i++) {
     sum = (sum + encodedTable.getUint32(4 * i)).toUnsigned(32);
   }
 
@@ -49,15 +49,15 @@ int calculateTableChecksum(ByteData encodedTable) {
   if (notAlignedBytesLength > 0) {
     final endBytes = [
       // Reading remaining bytes
-      for (int i = 4 * length; i < encodedTable.lengthInBytes; i++)
+      for (var i = 4 * length; i < encodedTable.lengthInBytes; i++)
         encodedTable.getUint8(i),
 
       // Filling with zeroes
-      for (int i = 0; i < 4 - notAlignedBytesLength; i++)
+      for (var i = 0; i < 4 - notAlignedBytesLength; i++)
         0,
     ];
 
-    int endValue = 0;
+    var endValue = 0;
 
     for (final byte in endBytes) {
       endValue <<= 8;
@@ -86,9 +86,9 @@ List<int> relToAbsCoordinates(List<int> relCoordinates) {
   }
 
   final absCoordinates = List.filled(relCoordinates.length, 0);
-  int currentValue = 0;
+  var currentValue = 0;
 
-  for (int i = 0; i < relCoordinates.length; i++) {
+  for (var i = 0; i < relCoordinates.length; i++) {
     currentValue += relCoordinates[i];
     absCoordinates[i] = currentValue;
   }
@@ -103,9 +103,9 @@ List<int> absToRelCoordinates(List<int> absCoordinates) {
   }
 
   final relCoordinates = List.filled(absCoordinates.length, 0);
-  int prevValue = 0;
+  var prevValue = 0;
 
-  for (int i = 0; i < absCoordinates.length; i++) {
+  for (var i = 0; i < absCoordinates.length; i++) {
     relCoordinates[i] = absCoordinates[i] - prevValue;
     prevValue = absCoordinates[i];
   }
@@ -132,7 +132,7 @@ extension OTFByteDateExt on ByteData {
   ]);
 
   void setByteList(int offset, Uint8List list) {
-    for (int i = 0; i < list.length; i++) {
+    for (var i = 0; i < list.length; i++) {
       setUint8(offset + i, list[i]);
     }
   }
@@ -142,7 +142,7 @@ extension OTFByteDateExt on ByteData {
   }
   
   void setTag(int offset, String tag) {
-    int currentOffset = offset;
+    var currentOffset = offset;
     convertStringToTag(tag).forEach((b) => setUint8(currentOffset++, b));
   }
 

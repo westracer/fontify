@@ -80,7 +80,7 @@ class FeatureTable implements BinaryCodable {
       ..setUint16(0, featureParams)
       ..setUint16(2, lookupIndexCount);
 
-    for (int i = 0; i < lookupIndexCount; i++) {
+    for (var i = 0; i < lookupIndexCount; i++) {
       byteData.setInt16(4 + 2 * i, lookupListIndices[i]);
     }
   }
@@ -134,10 +134,10 @@ class FeatureListTable implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(0, featureCount);
 
-    int recordOffset = 2;
-    int tableRelativeOffset = 2 + kFeatureRecordSize * featureCount;
+    var recordOffset = 2;
+    var tableRelativeOffset = 2 + kFeatureRecordSize * featureCount;
 
-    for (int i = 0; i < featureCount; i++) {
+    for (var i = 0; i < featureCount; i++) {
       final record = featureRecords[i]
         ..featureOffset = tableRelativeOffset
         ..encodeToBinary(byteData.sublistView(recordOffset, kFeatureRecordSize));

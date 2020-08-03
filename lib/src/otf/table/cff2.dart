@@ -70,7 +70,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     TableRecordEntry entry,
   ) {
     /// 3 entries with fixed location
-    int fixedOffset = entry.offset;
+    var fixedOffset = entry.offset;
 
     final header = CFF2TableHeader.fromByteData(byteData.sublistView(fixedOffset, _kHeaderSize));
     fixedOffset += _kHeaderSize;
@@ -115,7 +115,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     /// Local subroutines for each Private DICT
     final localSubrsDataList = <CFFIndexWithData<Uint8List>>[];
 
-    for (int i = 0; i < fontDictList.index.count; i++) {
+    for (var i = 0; i < fontDictList.index.count; i++) {
       final privateEntry = fontDictList.data[i].getEntryForOperator(op.private);
       final dictOffset = entry.offset + (privateEntry.operandList.last.value as int);
       final dictLength = privateEntry.operandList.first.value as int;
@@ -220,7 +220,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     // Generating entries with zero-values
     _generateTopDictEntries();
 
-    int offset = header.size + globalSubrsData.size + topDict.size;
+    var offset = header.size + globalSubrsData.size + topDict.size;
 
     int vstoreOffset;
     if (vstoreData != null) {
@@ -269,9 +269,9 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     final fdArrayEntry = topDict.getEntryForOperator(op.fdArray);
     final fdArrayOffset = fdArrayEntry.operandList.first.value as int;
     
-    int fontDictOffset = fdArrayOffset + fontDictList.index.size;
+    var fontDictOffset = fdArrayOffset + fontDictList.index.size;
 
-    for (int i = 0; i < fontDictList.data.length; i++) {
+    for (var i = 0; i < fontDictList.data.length; i++) {
       final fontDict = fontDictList.data[i];
       final privateDict = privateDictList[i];
       final privateEntry = fontDict.getEntryForOperator(op.private);
@@ -297,7 +297,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     header.encodeToBinary(byteData.sublistView(offset, header.size));
     offset += header.size;
@@ -324,7 +324,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     fontDictList.encodeToBinary(byteData.sublistView(offset, fontDictListSize));
     offset += fontDictListSize;
 
-    for (int i = 0; i < fontDictList.data.length; i++) {
+    for (var i = 0; i < fontDictList.data.length; i++) {
       final privateDict = privateDictList[i];
       final privateDictSize = privateDict.size;
 
@@ -366,7 +366,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     do {
       sizeChanged = false;
 
-      for (int i = 0; i < entryList.length; i++) {
+      for (var i = 0; i < entryList.length; i++) {
         final entry = entryList[i];
         final oldOperand = entry.operandList[operandIndex];
         final newOperand = CFFOperand.fromValue(offsetList[i]);
@@ -380,7 +380,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
         if (sizeDiff > 0) {
           sizeChanged = true;
 
-          for (int i = 0; i < offsetList.length; i++) {
+          for (var i = 0; i < offsetList.length; i++) {
             offsetList[i] += sizeDiff;
           }
         }

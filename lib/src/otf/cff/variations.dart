@@ -59,7 +59,7 @@ class ItemVariationData extends BinaryCodable {
       ..setUint16(2, shortDeltaCount)
       ..setUint16(4, regionIndexCount);
 
-    for (int i = 0; i < regionIndexCount; i++) {
+    for (var i = 0; i < regionIndexCount; i++) {
       byteData.setUint16(6 + 2 * i, regionIndexes[i]);
     }
   }
@@ -76,8 +76,8 @@ class VariationRegionList extends BinaryCodable {
     final regionCount = byteData.getUint16(2);
     
     final regions = [
-      for (int r = 0; r < regionCount; r++)
-        for (int a = 0; a < axisCount; a++)
+      for (var r = 0; r < regionCount; r++)
+        for (var a = 0; a < axisCount; a++)
           RegionAxisCoordinates.fromByteData(
             byteData.sublistView(
               4 + (a + r * axisCount) * _kRegionAxisCoordinatesSize,
@@ -103,8 +103,8 @@ class VariationRegionList extends BinaryCodable {
       ..setUint16(0, axisCount)
       ..setUint16(2, regionCount);
 
-      for (int r = 0; r < regionCount; r++) {
-        for (int a = 0; a < axisCount; a++) {
+      for (var r = 0; r < regionCount; r++) {
+        for (var a = 0; a < axisCount; a++) {
           final index = r * axisCount + a;
           final coords = regions[index];
           final coordsByteData = byteData.sublistView(
@@ -166,9 +166,9 @@ class ItemVariationStore extends BinaryCodable {
     variationRegionListOffset = 8 + 4 * itemVariationDataCount;
     itemVariationDataOffsets = [];
 
-    int offset = variationRegionListOffset + variationRegionListSize;
+    var offset = variationRegionListOffset + variationRegionListSize;
 
-    for (int i = 0; i < itemVariationDataCount; i++) {
+    for (var i = 0; i < itemVariationDataCount; i++) {
       final itemVariationData = itemVariationDataList[i];
       final itemSize = itemVariationData.size;
       itemVariationDataOffsets.add(offset);

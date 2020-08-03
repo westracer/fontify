@@ -68,7 +68,7 @@ class Transform {
         return _getScaleMatrix(sw, sh);
       case TransformType.rotate:
         final degrees = parameterList[0];
-        Matrix3 transform = _getRotateMatrix(degrees);
+        var transform = _getRotateMatrix(degrees);
 
         // The rotation is about the point (x, y)
         if (parameterList.length > 1) {

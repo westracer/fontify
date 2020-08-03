@@ -236,7 +236,7 @@ class CmapByteEncodingTable extends CmapData {
       ..setUint16(2, length)
       ..setUint16(4, language);
 
-    for (int i = 0; i < glyphIdArray.length; i++) {
+    for (var i = 0; i < glyphIdArray.length; i++) {
       byteData.setUint8(6 + i, glyphIdArray[i]);
     }
   }
@@ -263,7 +263,7 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
     final length = byteData.getUint16(startOffset + 2);
     final segCount = byteData.getUint16(startOffset + 6) ~/ 2;
 
-    int offset = startOffset + 14;
+    var offset = startOffset + 14;
 
     final endCode = List.generate(
       segCount, 
@@ -382,7 +382,7 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
       ..setUint16(10, entrySelector)
       ..setUint16(12, rangeShift);
 
-    int offset = 14;
+    var offset = 14;
 
     for (final code in endCode) {
       byteData.setUint16(offset, code);
@@ -484,7 +484,7 @@ class CmapSegmentedCoverageTable extends CmapData {
       ..setUint32(8, language)
       ..setUint32(12, numGroups);
 
-    int offset = 16;
+    var offset = 16;
 
     for (final group in groups) {
       group.encodeToBinary(byteData.sublistView(offset, group.size));
@@ -555,7 +555,7 @@ class CharacterToGlyphTable extends FontTable {
   final List<CmapData> data;
 
   static List<_Segment> _generateSegments(List<int> charCodeList) {
-    int startCharCode = -1, prevCharCode = -1, startGlyphId = -1;
+    var startCharCode = -1, prevCharCode = -1, startGlyphId = -1;
 
     final segmentList = <_Segment>[];
 
@@ -569,7 +569,7 @@ class CharacterToGlyphTable extends FontTable {
       );
     }
 
-    for (int glyphId = 0; glyphId < charCodeList.length; glyphId++) {
+    for (var glyphId = 0; glyphId < charCodeList.length; glyphId++) {
       final charCode = charCodeList[glyphId];
 
       if (prevCharCode + 1 != charCode && startCharCode != -1) {
@@ -598,8 +598,8 @@ class CharacterToGlyphTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int subtableIndex = 0;
-    int offset = header.size;
+    var subtableIndex = 0;
+    var offset = header.size;
 
     for (final subtable in data) {
       subtable.encodeToBinary(byteData.sublistView(offset, subtable.size));

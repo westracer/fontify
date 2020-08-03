@@ -168,7 +168,7 @@ class PostScriptVersion20 extends PostScriptData {
   factory PostScriptVersion20.create(List<String> glyphNameList) {
     final glyphNameIndex = [
       ...kDefaultGlyphIndex,
-      for (int i = 0; i < glyphNameList.length; i++)
+      for (var i = 0; i < glyphNameList.length; i++)
         _kMacStandardGlyphNames.length + i,
     ];
 
@@ -189,9 +189,9 @@ class PostScriptVersion20 extends PostScriptData {
 
   @override
   int get size {
-    int glyphNamesSize = 0, currentNameIndex = 0;
+    var glyphNamesSize = 0, currentNameIndex = 0;
 
-    for (int i = 0; i < numberOfGlyphs; i++) {
+    for (var i = 0; i < numberOfGlyphs; i++) {
       if (_isGlyphNameStandard(glyphNameIndex[i])) {
         continue;
       }
@@ -209,16 +209,16 @@ class PostScriptVersion20 extends PostScriptData {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(0, numberOfGlyphs);
     
-    int offset = 2;
+    var offset = 2;
 
     for (final glyphIndex in glyphNameIndex) {
       byteData.setUint16(offset, glyphIndex);
       offset += 2;
     }
 
-    int currentNameIndex = 0;
+    var currentNameIndex = 0;
 
-    for (int i = 0; i < numberOfGlyphs; i++) {
+    for (var i = 0; i < numberOfGlyphs; i++) {
       final glyphIndex = glyphNameIndex[i];
 
       if (_isGlyphNameStandard(glyphIndex)) {

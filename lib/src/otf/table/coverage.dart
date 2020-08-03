@@ -59,7 +59,7 @@ class CoverageTableFormat1 extends CoverageTable {
       ..setUint16(0, coverageFormat)
       ..setUint16(2, glyphCount);
 
-    for (int i = 0; i < glyphCount; i++) {
+    for (var i = 0; i < glyphCount; i++) {
       byteData.setInt16(4 + 2 * i, glyphArray[i]);
     }
   }

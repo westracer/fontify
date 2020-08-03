@@ -9,7 +9,7 @@ const int kUnicodePrivateUseAreaStart = 0xE000;
 const int kUnicodePrivateUseAreaEnd   = 0xF8FF;
 
 int combineHashCode(int hashFirst, int hashOther) {
-  int hash = 17;
+  var hash = 17;
   hash = hash * 31 + hashFirst;
   hash = hash * 31 + hashOther;
   return hash;

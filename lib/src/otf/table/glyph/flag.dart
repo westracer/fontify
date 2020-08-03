@@ -86,7 +86,7 @@ class SimpleGlyphFlag implements BinaryCodable {
   int get repeatTimes => repeat ?? 0;
 
   int get intValue {
-    int value = 0;
+    var value = 0;
 
     _valueForMaskMap.forEach((mask, flagIsSet) {
       value |= flagIsSet ? mask : 0;

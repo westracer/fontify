@@ -27,7 +27,7 @@ class PascalString implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData.setUint8(0, length);
 
-    int offset = 1;
+    var offset = 1;
 
     for (final charCode in string.codeUnits) {
       byteData.setUint8(offset++, charCode);

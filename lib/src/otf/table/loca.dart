@@ -21,7 +21,7 @@ class IndexToLocationTable extends FontTable {
     final isShort = indexToLocFormat == 0;
 
     final offsets = <int>[
-      for (int i = 0; i < numGlyphs + 1; i++)
+      for (var i = 0; i < numGlyphs + 1; i++)
         isShort 
           ? byteData.getUint16(entry.offset + 2 * i) * 2
           : byteData.getUint32(entry.offset + 4 * i)
@@ -37,7 +37,7 @@ class IndexToLocationTable extends FontTable {
     final isShort = indexToLocFormat == 0;
     final offsets = <int>[];
 
-    int offset = 0;
+    var offset = 0;
 
     for (final glyph in glyf.glyphList) {
       offsets.add(offset);
@@ -54,7 +54,7 @@ class IndexToLocationTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    for (int i = 0; i < glyphOffsets.length; i++) {
+    for (var i = 0; i < glyphOffsets.length; i++) {
       final offset = _isShort ? glyphOffsets[i] ~/ 2 : glyphOffsets[i];
 
       if (_isShort) {

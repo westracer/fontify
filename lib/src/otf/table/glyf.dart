@@ -24,7 +24,7 @@ class GlyphDataTable extends FontTable {
   ) {
     final glyphList = <SimpleGlyph>[];
 
-    for (int i = 0; i < numGlyphs; i++) {
+    for (var i = 0; i < numGlyphs; i++) {
       final headerOffset = entry.offset + locationTable.glyphOffsets[i];
       final nextHeaderOffset = entry.offset + locationTable.glyphOffsets[i + 1];
       final isEmpty = headerOffset == nextHeaderOffset;
@@ -77,7 +77,7 @@ class GlyphDataTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     for (final glyph in glyphList) {
       if (glyph.isEmpty) {

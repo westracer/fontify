@@ -52,15 +52,15 @@ class FlutterClassGenerator {
       final baseName = _getVarName(p.basenameWithoutExtension(g.metadata.name)).snakeCase;
       final usingDefaultName = baseName.isEmpty;
 
-      String variableName = usingDefaultName ? _kUnnamedIconName : baseName;
+      var variableName = usingDefaultName ? _kUnnamedIconName : baseName;
       
       // Handling same names by adding numeration to them
       if (iconNameSet.contains(variableName)) {
         // If name already contains numeration, then splitting it
         final countMatch = RegExp(r'^(.*)_([0-9]+)$').firstMatch(variableName);
 
-        int variableNameCount = 1;
-        String variableWithoutCount = variableName;
+        var variableNameCount = 1;
+        var variableWithoutCount = variableName;
 
         if (countMatch != null) {
           variableNameCount = int.parse(countMatch.group(2));
@@ -106,7 +106,7 @@ class FlutterClassGenerator {
       '$_className._();',
       '',
       _fontFamilyConst,
-      for (int i = 0; i < glyphList.length; i++)
+      for (var i = 0; i < glyphList.length; i++)
         ..._generateIconConst(i),
     ];
 

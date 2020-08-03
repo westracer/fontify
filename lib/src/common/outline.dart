@@ -51,7 +51,7 @@ class Outline {
     }
 
     // Starting with 2, because first point can't be a CP and we need 2 of them
-    for (int i = 2; i < pointList.length; i++) {
+    for (var i = 2; i < pointList.length; i++) {
       // Two control points in a row
       if (!isOnCurveList[i - 1] && !isOnCurveList[i]) {
         final c0 = pointList[i - 1];
@@ -87,7 +87,7 @@ class Outline {
     }
 
     // Starting with 2, because first point can't be a CP and we need 2 of them
-    for (int i = 2; i < pointList.length; i++) {
+    for (var i = 2; i < pointList.length; i++) {
       // Two control points in a row
       if (!isOnCurveList[i - 1] && i + 1 < pointList.length && !isOnCurveList[i + 1]) {
         final c0 = pointList[i - 1];
@@ -125,7 +125,7 @@ class Outline {
     }
 
     // Starting with 1, because first point can't be a CP
-    for (int i = 1; i < pointList.length; i++) {
+    for (var i = 1; i < pointList.length; i++) {
       if (isOnCurveList[i]) {
         continue;
       }

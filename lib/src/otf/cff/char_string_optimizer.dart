@@ -56,7 +56,7 @@ abstract class CharStringOptimizer {
 
     final newCommandList = <CharStringCommand>[commandList.first.copy()];
 
-    for (int i = 1; i < commandList.length; i++) {
+    for (var i = 1; i < commandList.length; i++) {
       final prev = newCommandList.last;
       final next = commandList[i].copy();
       

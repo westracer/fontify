@@ -44,7 +44,7 @@ class CFFOperator implements BinaryCodable {
 
   @override
   String toString() {
-    String name = '<unknown>';
+    var name = '<unknown>';
 
     switch (context) {
       case CFFOperatorContext.dict:

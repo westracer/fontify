@@ -47,9 +47,9 @@ class OTFReader {
   }
 
   int _readTableRecordEntries(Map<String, TableRecordEntry> outputMap) {
-    int offset = kOffsetTableLength;
+    var offset = kOffsetTableLength;
 
-    for (int i = 0; i < _offsetTable.numTables; i++) {
+    for (var i = 0; i < _offsetTable.numTables; i++) {
       final entry = TableRecordEntry.fromByteData(_byteData, offset);
       outputMap[entry.tag] = entry;
       _tagsParseOrder.add(entry.tag);

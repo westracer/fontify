@@ -133,7 +133,7 @@ class GlyphSubstitutionTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int relativeOffset = header.size;
+    var relativeOffset = header.size;
 
     scriptListTable.encodeToBinary(byteData.sublistView(relativeOffset, scriptListTable.size));
     header.scriptListOffset = relativeOffset;

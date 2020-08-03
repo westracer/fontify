@@ -45,7 +45,7 @@ abstract class SvgElement {
   /// Returns result transform matrix or null, if there are no transforms.
   Matrix3 getResultTransformMatrix() {
     final transform = Matrix3.identity();
-    SvgElement element = this;
+    var element = this;
 
     while (element != null) {
       if (element.hasTransform) {

@@ -92,9 +92,9 @@ class HorizontalMetricsTable extends FontTable {
   int get minLeftSideBearing => hMetrics.fold<int>(kInt32Max, (p, v) => math.min(p, v.lsb));
 
   int getMinRightSideBearing(List<GenericGlyphMetrics> glyphMetricsList) {
-    int minRsb = kInt32Max;
+    var minRsb = kInt32Max;
 
-    for (int i = 0; i < glyphMetricsList.length; i++) {
+    for (var i = 0; i < glyphMetricsList.length; i++) {
       final m = glyphMetricsList[i];
       final rsb = hMetrics[i].getRsb(m.xMax, m.xMin);
 
@@ -105,9 +105,9 @@ class HorizontalMetricsTable extends FontTable {
   }
 
   int getMaxExtent(List<GenericGlyphMetrics> glyphMetricsList) {
-    int maxExtent = kInt32Min;
+    var maxExtent = kInt32Min;
 
-    for (int i = 0; i < glyphMetricsList.length; i++) {
+    for (var i = 0; i < glyphMetricsList.length; i++) {
       final m = glyphMetricsList[i];
       final extent = hMetrics[i].lsb + (m.xMax - m.xMin);
 
@@ -119,7 +119,7 @@ class HorizontalMetricsTable extends FontTable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    int offset = 0;
+    var offset = 0;
 
     for (final hMetric in hMetrics) {
       hMetric.encodeToBinary(byteData.sublistView(offset, hMetric.size));
