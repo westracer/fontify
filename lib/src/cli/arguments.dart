@@ -100,9 +100,12 @@ class CliArguments {
     this.configFile,
   );
 
-  /// Takes a map of raw values for each argument and formats them.
+  /// Creates [CliArguments] for a map of raw values.
   /// 
-  /// Throws [CliArgumentException], if there is an error in arg parsing.
+  /// Validates type of each argument and formats them.
+  /// 
+  /// Throws [CliArgumentException], if there is an error in arg parsing 
+  /// or if argument has wrong type.
   factory CliArguments.fromMap(Map<CliArgument, Object> rawArgMap) {
     // Validating types
     for (final e in _kArgAllowedTypes.entries) {
