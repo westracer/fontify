@@ -25,6 +25,13 @@ void defineOptions(ArgParser argParser) {
       help: 'Name for a generated class.',
       valueHelp: 'name',
     )
+    ..addOption(
+      kOptionNames[CliArgument.fontPackage],
+      abbr: 'p',
+      help:
+          'Name of a package that provides a font. Used to provide a font through package dependency.',
+      valueHelp: 'name',
+    )
     ..addSeparator('Font options:')
     ..addOption(
       kOptionNames[CliArgument.fontName],

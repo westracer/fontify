@@ -16,6 +16,7 @@ const _kArgAllowedTypes = <CliArgument, List<Type>>{
   CliArgument.fontFile: [String],
   CliArgument.classFile: [String],
   CliArgument.className: [String],
+  CliArgument.fontPackage: [String],
   CliArgument.indent: [String, int],
   CliArgument.fontName: [String],
   CliArgument.normalize: [bool],
@@ -35,6 +36,7 @@ const kOptionNames = EnumClass<CliArgument, String>({
   CliArgument.classFile: 'output-class-file',
   CliArgument.className: 'class-name',
   CliArgument.indent: 'indent',
+  CliArgument.fontPackage: 'package',
 
   CliArgument.fontName: 'font-name',
   CliArgument.normalize: 'normalize',
@@ -54,6 +56,7 @@ const kConfigKeys = EnumClass<CliArgument, String>({
   CliArgument.classFile: 'output_class_file',
   CliArgument.className: 'class_name',
   CliArgument.indent: 'indent',
+  CliArgument.fontPackage: 'package',
 
   CliArgument.fontName: 'font_name',
   CliArgument.normalize: 'normalize',
@@ -71,14 +74,22 @@ final Map<CliArgument, String> argumentNames = {
 };
 
 enum CliArgument {
+  // Required
   svgDir,
   fontFile,
+
+  // Class-related
   classFile,
   className,
   indent,
+  fontPackage,
+
+  // Font-related
   fontName,
   ignoreShapes,
   normalize,
+
+  // Others
   recursive,
   verbose,
 
@@ -95,6 +106,7 @@ class CliArguments {
     this.classFile,
     this.className,
     this.indent,
+    this.fontPackage,
     this.fontName,
     this.recursive,
     this.ignoreShapes,
@@ -131,6 +143,7 @@ class CliArguments {
       map[CliArgument.classFile] as File,
       map[CliArgument.className] as String,
       map[CliArgument.indent] as int,
+      map[CliArgument.fontPackage] as String,
       map[CliArgument.fontName] as String,
       map[CliArgument.recursive] as bool,
       map[CliArgument.ignoreShapes] as bool,
@@ -144,6 +157,7 @@ class CliArguments {
   final File fontFile;
   final File classFile;
   final String className;
+  final String fontPackage;
   final int indent;
   final String fontName;
   final bool recursive;

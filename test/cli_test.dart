@@ -48,6 +48,7 @@ void main() {
         '--recursive',
         '--verbose',
         '--config-file=test/config.yaml',
+        '--package=test_package',
       ];
 
       final parsedArgs = parseArguments(_argParser, args)..validate();
@@ -63,6 +64,7 @@ void main() {
       expect(parsedArgs.recursive, isTrue);
       expect(parsedArgs.verbose, isTrue);
       expect(parsedArgs.configFile.path, 'test/config.yaml');
+      expect(parsedArgs.fontPackage, 'test_package');
     });
 
     test('All arguments with defaults', () {
@@ -86,6 +88,7 @@ void main() {
       expect(parsedArgs.recursive, isFalse);
       expect(parsedArgs.verbose, isFalse);
       expect(parsedArgs.configFile, isNull);
+      expect(parsedArgs.fontPackage, isNull);
     });
 
     test('Help', () {
@@ -127,6 +130,7 @@ void main() {
         '--ignore-shapes',
         '--recursive',
         '--verbose',
+        '--package=no',
         '--config-file=test/assets/test_config.yaml',
       ];
 
@@ -143,6 +147,7 @@ void main() {
       expect(parsedArgs.recursive, isFalse);
       expect(parsedArgs.verbose, isFalse);
       expect(parsedArgs.configFile, isNull);
+      expect(parsedArgs.fontPackage, 'test_package');
     });
 
     test('No arguments and config', () {
@@ -163,6 +168,7 @@ void main() {
       expect(parsedArgs.recursive, isFalse);
       expect(parsedArgs.verbose, isFalse);
       expect(parsedArgs.configFile, isNull);
+      expect(parsedArgs.fontPackage, 'test_package');
     });
   });
 
@@ -229,6 +235,7 @@ fontify:
   output_class_file: lib/test_font.dart
   class_name: MyIcons
   indent: 4
+  package: test_package
 
   font_name: My Icons
   normalize: false
@@ -248,6 +255,7 @@ fontify:
       expect(parsedArgs.ignoreShapes, isFalse);
       expect(parsedArgs.recursive, isTrue);
       expect(parsedArgs.verbose, isTrue);
+      expect(parsedArgs.fontPackage, 'test_package');
     });
 
     test('All arguments with defaults', () {
@@ -267,6 +275,7 @@ fontify:
       expect(parsedArgs.ignoreShapes, isNull);
       expect(parsedArgs.recursive, isNull);
       expect(parsedArgs.verbose, isNull);
+      expect(parsedArgs.fontPackage, isNull);
     });
 
     test('Type validation', () {
@@ -311,6 +320,12 @@ fontify:
   input_svg_dir: ./
   output_font_file: generated_font.otf
   verbose: 1
+      ''');
+      expectCliArgumentException('''
+fontify:
+  input_svg_dir: ./
+  output_font_file: generated_font.otf
+  package: 1
       ''');
     });
   });

@@ -8,6 +8,7 @@ fontify:
   output_class_file: lib/test_font.dart
   class_name: MyIcons
   indent: 4
+  package: test_package
 
   font_name: My Icons
   normalize: false
