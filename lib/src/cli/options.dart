@@ -8,7 +8,8 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.classFile],
       abbr: 'o',
-      help: 'Output path for Flutter-compatible class that contains identifiers for the icons.',
+      help:
+          'Output path for Flutter-compatible class that contains identifiers for the icons.',
       valueHelp: 'path',
     )
     ..addOption(
@@ -33,7 +34,8 @@ void defineOptions(ArgParser argParser) {
     )
     ..addFlag(
       kOptionNames[CliArgument.normalize],
-      help: 'Enables glyph normalization for the font. Disable this if every icon has the same size and positioning.',
+      help:
+          'Enables glyph normalization for the font. Disable this if every icon has the same size and positioning.',
       defaultsTo: true,
     )
     ..addFlag(
@@ -45,7 +47,8 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.configFile],
       abbr: 'z',
-      help: 'Path to Fontify yaml configuration file. pubspec.yaml and fontify.yaml files are used by default.',
+      help:
+          'Path to Fontify yaml configuration file. pubspec.yaml and fontify.yaml files are used by default.',
       valueHelp: 'path',
     )
     ..addFlag(

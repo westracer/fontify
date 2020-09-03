@@ -11,8 +11,8 @@ class PascalString implements BinaryCodable {
     return PascalString(String.fromCharCodes(bytes), length);
   }
 
-  factory PascalString.fromString(String string) => 
-    PascalString(string, string.length);
+  factory PascalString.fromString(String string) =>
+      PascalString(string, string.length);
 
   final String string;
   final int length;

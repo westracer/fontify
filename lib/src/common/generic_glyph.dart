@@ -30,10 +30,10 @@ class GenericGlyphMetadata {
 class GenericGlyphMetrics {
   GenericGlyphMetrics(this.xMin, this.xMax, this.yMin, this.yMax);
 
-  factory GenericGlyphMetrics.empty() => GenericGlyphMetrics(0,0,0,0);
+  factory GenericGlyphMetrics.empty() => GenericGlyphMetrics(0, 0, 0, 0);
 
   factory GenericGlyphMetrics.square(int unitsPerEm) =>
-    GenericGlyphMetrics(0, unitsPerEm, 0, unitsPerEm);
+      GenericGlyphMetrics(0, unitsPerEm, 0, unitsPerEm);
 
   final int xMin;
   final int xMax;
@@ -45,35 +45,30 @@ class GenericGlyphMetrics {
   int get height => yMax - yMin;
 }
 
-/// Generic glyph. 
+/// Generic glyph.
 /// Used as an intermediate storage between different types of glyphs
 /// (including OpenType's CharString, TrueType outlines).
 class GenericGlyph {
-  GenericGlyph(
-    this.outlines,
-    this.bounds,
-    [GenericGlyphMetadata metadata]
-  )
-  : metadata = metadata ?? GenericGlyphMetadata();
+  GenericGlyph(this.outlines, this.bounds, [GenericGlyphMetadata metadata])
+      : metadata = metadata ?? GenericGlyphMetadata();
 
   GenericGlyph.empty()
-  : outlines = [],
-    bounds = const math.Rectangle(0, 0, 0, 0),
-    metadata = GenericGlyphMetadata();
+      : outlines = [],
+        bounds = const math.Rectangle(0, 0, 0, 0),
+        metadata = GenericGlyphMetadata();
 
   factory GenericGlyph.fromSimpleTrueTypeGlyph(SimpleGlyph glyph) {
     final isOnCurveList = glyph.flags.map((e) => e.onCurvePoint).toList();
     final endPoints = [-1, ...glyph.endPtsOfContours];
-    
+
     final outlines = [
       for (var i = 1; i < endPoints.length; i++)
         Outline(
-          glyph.pointList.sublist(endPoints[i - 1] + 1, endPoints[i] + 1),
-          isOnCurveList.sublist(endPoints[i - 1] + 1, endPoints[i] + 1),
-          true,
-          true,
-          FillRule.nonzero
-        )
+            glyph.pointList.sublist(endPoints[i - 1] + 1, endPoints[i] + 1),
+            isOnCurveList.sublist(endPoints[i - 1] + 1, endPoints[i] + 1),
+            true,
+            true,
+            FillRule.nonzero)
     ];
 
     final bounds = math.Rectangle(
@@ -90,8 +85,7 @@ class GenericGlyph {
     final pathList = svg.elementList.whereType<PathElement>();
 
     final outlines = [
-      for (final p in pathList)
-        ...PathToOutlineConverter(svg, p).convert()
+      for (final p in pathList) ...PathToOutlineConverter(svg, p).convert()
     ];
 
     final metadata = GenericGlyphMetadata(
@@ -112,17 +106,11 @@ class GenericGlyph {
   }
 
   List<bool> _getIsOnCurveList() {
-    return [
-      for (final o in outlines)
-        ...o.isOnCurveList
-    ];
+    return [for (final o in outlines) ...o.isOnCurveList];
   }
 
   List<math.Point> _getPointList() {
-    return [
-      for (final o in outlines)
-        ...o.pointList
-    ];
+    return [for (final o in outlines) ...o.pointList];
   }
 
   List<int> _getEndPoints() {
@@ -145,10 +133,8 @@ class GenericGlyph {
       }
 
       if (outline.fillRule == FillRule.evenodd) {
-        logger.logOnce(
-          Level.warning,
-          'Some of the outlines are using even-odd fill rule. Make sure using a non-zero winding number fill rule for OpenType outlines.'
-        );
+        logger.logOnce(Level.warning,
+            'Some of the outlines are using even-odd fill rule. Make sure using a non-zero winding number fill rule for OpenType outlines.');
       }
     }
 
@@ -158,8 +144,10 @@ class GenericGlyph {
     final endPoints = _getEndPoints();
     final pointList = _getPointList();
 
-    final relX = absToRelCoordinates(pointList.map((e) => e.x.toInt()).toList());
-    final relY = absToRelCoordinates(pointList.map((e) => e.y.toInt()).toList());
+    final relX =
+        absToRelCoordinates(pointList.map((e) => e.x.toInt()).toList());
+    final relY =
+        absToRelCoordinates(pointList.map((e) => e.y.toInt()).toList());
 
     var isContourStart = true;
 
@@ -172,8 +160,7 @@ class GenericGlyph {
 
       if (!isOnCurveList[i] && !isOnCurveList[i + 1]) {
         final points = [
-          for (var p = 0; p < 3; p++)
-            ...[relX[i + p], relY[i + p]]
+          for (var p = 0; p < 3; p++) ...[relX[i + p], relY[i + p]]
         ];
 
         commandList.add(CharStringCommand.curveto(points));
@@ -209,7 +196,8 @@ class GenericGlyph {
 
     final flags = [
       for (var i = 0; i < pointList.length; i++)
-        SimpleGlyphFlag.createForPoint(relXcoordinates[i], relYcoordinates[i], isOnCurveList[i])
+        SimpleGlyphFlag.createForPoint(
+            relXcoordinates[i], relYcoordinates[i], isOnCurveList[i])
     ];
 
     // TODO: compact flags: repeat & not short same flag
@@ -225,10 +213,8 @@ class GenericGlyph {
 
   /// Resizes according to ascender/descender or a font height.
   GenericGlyph resize({int ascender, int descender, int fontHeight}) {
-    assert(
-      (ascender != null && descender != null) || fontHeight != null,
-      'Wrong parameters for resizing'
-    );
+    assert((ascender != null && descender != null) || fontHeight != null,
+        'Wrong parameters for resizing');
 
     final metrics = this.metrics;
 
@@ -247,13 +233,15 @@ class GenericGlyph {
     if ((sideRatio - 1).abs() < .02) {
       return this;
     }
-    
+
     final newOutlines = outlines.map((o) {
       final newOutline = o.copy();
-      final newPointList = newOutline.pointList.map(
-        (e) => math.Point<num>(e.x, e.y) * sideRatio
-      ).toList();
-      newOutline.pointList..clear()..addAll(newPointList);
+      final newPointList = newOutline.pointList
+          .map((e) => math.Point<num>(e.x, e.y) * sideRatio)
+          .toList();
+      newOutline.pointList
+        ..clear()
+        ..addAll(newPointList);
       return newOutline;
     }).toList();
 
@@ -267,16 +255,19 @@ class GenericGlyph {
 
   GenericGlyph center(int ascender, int descender) {
     final metrics = this.metrics;
-    
+
     final offsetX = -metrics.xMin;
-    final offsetY = (ascender + descender) / 2 - metrics.height / 2 - metrics.yMin;
-    
+    final offsetY =
+        (ascender + descender) / 2 - metrics.height / 2 - metrics.yMin;
+
     final newOutlines = outlines.map((o) {
       final newOutline = o.copy();
-      final newPointList = newOutline.pointList.map(
-        (e) => math.Point<num>(e.x + offsetX, e.y + offsetY)
-      ).toList();
-      newOutline.pointList..clear()..addAll(newPointList);
+      final newPointList = newOutline.pointList
+          .map((e) => math.Point<num>(e.x + offsetX, e.y + offsetY))
+          .toList();
+      newOutline.pointList
+        ..clear()
+        ..addAll(newPointList);
       return newOutline;
     }).toList();
 
@@ -298,7 +289,7 @@ class GenericGlyph {
     }
 
     var xMin = kInt32Max, yMin = kInt32Max, xMax = kInt32Min, yMax = kInt32Min;
-    
+
     for (final p in points) {
       xMin = math.min(xMin, p.x.toInt());
       xMax = math.max(xMax, p.x.toInt());

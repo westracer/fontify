@@ -16,12 +16,8 @@ class GlyphDataTable extends FontTable {
     this.glyphList,
   ) : super.fromTableRecordEntry(entry);
 
-  factory GlyphDataTable.fromByteData(
-    ByteData byteData,
-    TableRecordEntry entry,
-    IndexToLocationTable locationTable,
-    int numGlyphs
-  ) {
+  factory GlyphDataTable.fromByteData(ByteData byteData, TableRecordEntry entry,
+      IndexToLocationTable locationTable, int numGlyphs) {
     final glyphList = <SimpleGlyph>[];
 
     for (var i = 0; i < numGlyphs; i++) {
@@ -32,9 +28,12 @@ class GlyphDataTable extends FontTable {
       final header = GlyphHeader.fromByteData(byteData, headerOffset);
 
       if (header.isComposite) {
-        OTFDebugger.debugUnsupportedFeature('Composite glyph (glyph header offset $headerOffset)');
+        OTFDebugger.debugUnsupportedFeature(
+            'Composite glyph (glyph header offset $headerOffset)');
       } else {
-        final glyph = isEmpty ? SimpleGlyph.empty() : SimpleGlyph.fromByteData(byteData, header, headerOffset);
+        final glyph = isEmpty
+            ? SimpleGlyph.empty()
+            : SimpleGlyph.fromByteData(byteData, header, headerOffset);
         glyphList.add(glyph);
       }
     }
@@ -49,14 +48,16 @@ class GlyphDataTable extends FontTable {
       for (final outline in glyph.outlines) {
         if (!outline.hasQuadCurves) {
           // TODO: implement cubic -> quad approximation
-          throw UnimplementedError('Cubic to quadratic curve conversion not supported');
+          throw UnimplementedError(
+              'Cubic to quadratic curve conversion not supported');
         }
 
         outline.compactImplicitPoints();
       }
     }
 
-    final simpleGlyphList = glyphListCopy.map((e) => e.toSimpleTrueTypeGlyph()).toList();
+    final simpleGlyphList =
+        glyphListCopy.map((e) => e.toSimpleTrueTypeGlyph()).toList();
 
     return GlyphDataTable(null, simpleGlyphList);
   }
@@ -64,16 +65,17 @@ class GlyphDataTable extends FontTable {
   final List<SimpleGlyph> glyphList;
 
   @override
-  int get size => glyphList.fold<int>(0, (p, v) => p + getPaddedTableSize(v.size));
+  int get size =>
+      glyphList.fold<int>(0, (p, v) => p + getPaddedTableSize(v.size));
 
   int get maxPoints =>
-    glyphList.fold<int>(0, (p, g) => math.max(p, g.pointList.length));
+      glyphList.fold<int>(0, (p, g) => math.max(p, g.pointList.length));
 
   int get maxContours =>
-    glyphList.fold<int>(0, (p, g) => math.max(p, g.header.numberOfContours));
+      glyphList.fold<int>(0, (p, g) => math.max(p, g.header.numberOfContours));
 
   int get maxSizeOfInstructions =>
-    glyphList.fold<int>(0, (p, g) => math.max(p, g.instructions.length));
+      glyphList.fold<int>(0, (p, g) => math.max(p, g.instructions.length));
 
   @override
   void encodeToBinary(ByteData byteData) {

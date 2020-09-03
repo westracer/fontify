@@ -6,10 +6,7 @@ import '../../utils/otf.dart';
 const kLangSysRecordSize = 6;
 
 class LanguageSystemRecord implements BinaryCodable {
-  LanguageSystemRecord(
-    this.langSysTag,
-    this.langSysOffset
-  );
+  LanguageSystemRecord(this.langSysTag, this.langSysOffset);
 
   factory LanguageSystemRecord.fromByteData(ByteData byteData, int offset) {
     return LanguageSystemRecord(
@@ -34,28 +31,19 @@ class LanguageSystemRecord implements BinaryCodable {
 
 class LanguageSystemTable implements BinaryCodable {
   const LanguageSystemTable(
-    this.lookupOrder, 
-    this.requiredFeatureIndex, 
-    this.featureIndexCount, 
+    this.lookupOrder,
+    this.requiredFeatureIndex,
+    this.featureIndexCount,
     this.featureIndices,
   );
 
-  factory LanguageSystemTable.fromByteData(
-    ByteData byteData,
-    int offset
-  ) {
+  factory LanguageSystemTable.fromByteData(ByteData byteData, int offset) {
     final featureIndexCount = byteData.getUint16(offset + 4);
     final featureIndices = List.generate(
-      featureIndexCount, 
-      (i) => byteData.getUint16(offset + 6 + 2 * i)
-    );
+        featureIndexCount, (i) => byteData.getUint16(offset + 6 + 2 * i));
 
-    return LanguageSystemTable(
-      byteData.getUint16(offset),
-      byteData.getUint16(offset + 2),
-      featureIndexCount,
-      featureIndices
-    );
+    return LanguageSystemTable(byteData.getUint16(offset),
+        byteData.getUint16(offset + 2), featureIndexCount, featureIndices);
   }
 
   final int lookupOrder;

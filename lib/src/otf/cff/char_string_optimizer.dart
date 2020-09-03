@@ -2,7 +2,8 @@ import 'char_string.dart';
 import 'char_string_operator.dart';
 
 abstract class CharStringOptimizer {
-  static CharStringCommand _compactSameOperator(CharStringCommand prev, CharStringCommand next) {
+  static CharStringCommand _compactSameOperator(
+      CharStringCommand prev, CharStringCommand next) {
     final prevOpnds = prev.operandList;
     final currOpnds = next.operandList;
 
@@ -19,7 +20,9 @@ abstract class CharStringOptimizer {
       final prevIsOdd = prevOpnds.length.isOdd;
       final currIsOdd = currOpnds.length.isOdd;
 
-      if (prevIsOdd && currIsOdd && prevOpnds.first.value == currOpnds.first.value) {
+      if (prevIsOdd &&
+          currIsOdd &&
+          prevOpnds.first.value == currOpnds.first.value) {
         currOpnds.removeAt(0);
         prevOpnds.addAll(currOpnds);
         return null;
@@ -45,11 +48,12 @@ abstract class CharStringOptimizer {
         return null;
       }
     }
-    
+
     return next;
   }
 
-  static List<CharStringCommand> _optimizeCommandsWithSameOperators(List<CharStringCommand> commandList) {
+  static List<CharStringCommand> _optimizeCommandsWithSameOperators(
+      List<CharStringCommand> commandList) {
     if (commandList.isEmpty) {
       return [];
     }
@@ -59,7 +63,7 @@ abstract class CharStringOptimizer {
     for (var i = 1; i < commandList.length; i++) {
       final prev = newCommandList.last;
       final next = commandList[i].copy();
-      
+
       final optimized = _compactSameOperator(prev, next) == null;
       if (!optimized) {
         newCommandList.add(next);

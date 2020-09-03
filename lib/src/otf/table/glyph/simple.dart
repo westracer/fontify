@@ -19,7 +19,8 @@ class SimpleGlyph implements BinaryCodable {
     return SimpleGlyph(GlyphHeader(0, 0, 0, 0, 0), [], [], [], []);
   }
 
-  factory SimpleGlyph.fromByteData(ByteData byteData, GlyphHeader header, int glyphOffset) {
+  factory SimpleGlyph.fromByteData(
+      ByteData byteData, GlyphHeader header, int glyphOffset) {
     var offset = glyphOffset + header.size;
 
     final endPtsOfContours = [
@@ -32,8 +33,7 @@ class SimpleGlyph implements BinaryCodable {
     offset += 2;
 
     final instructions = [
-      for (var i = 0; i < instructionLength; i++)
-        byteData.getUint8(offset + i)
+      for (var i = 0; i < instructionLength; i++) byteData.getUint8(offset + i)
     ];
     offset += instructionLength;
 
@@ -57,7 +57,7 @@ class SimpleGlyph implements BinaryCodable {
     for (var i = 0; i < numberOfPoints; i++) {
       final short = flags[i].xShortVector;
       final same = flags[i].xIsSameOrPositive;
-      
+
       if (short) {
         xCoordinates.add((same ? 1 : -1) * byteData.getUint8(offset++));
       } else {
@@ -69,13 +69,13 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
-    
+
     final yCoordinates = <int>[];
 
     for (var i = 0; i < numberOfPoints; i++) {
       final short = flags[i].yShortVector;
       final same = flags[i].yIsSameOrPositive;
-      
+
       if (short) {
         yCoordinates.add((same ? 1 : -1) * byteData.getUint8(offset++));
       } else {
@@ -95,7 +95,7 @@ class SimpleGlyph implements BinaryCodable {
       for (var i = 0; i < xAbsCoordinates.length; i++)
         math.Point<num>(xAbsCoordinates[i], yAbsCoordinates[i])
     ];
-    
+
     return SimpleGlyph(
       header,
       endPtsOfContours,
@@ -189,11 +189,11 @@ class SimpleGlyph implements BinaryCodable {
 
     final xRelCoordinates = absToRelCoordinates(xAbsCoordinates);
     final yRelCoordinates = absToRelCoordinates(yAbsCoordinates);
-    
+
     for (var i = 0; i < numberOfPoints; i++) {
       final short = flags[i].xShortVector;
       final same = flags[i].xIsSameOrPositive;
-      
+
       if (short) {
         byteData.setUint8(offset++, xRelCoordinates[i].abs());
       } else {
@@ -203,11 +203,11 @@ class SimpleGlyph implements BinaryCodable {
         }
       }
     }
-    
+
     for (var i = 0; i < numberOfPoints; i++) {
       final short = flags[i].yShortVector;
       final same = flags[i].yIsSameOrPositive;
-      
+
       if (short) {
         byteData.setUint8(offset++, yRelCoordinates[i].abs());
       } else {
@@ -219,6 +219,6 @@ class SimpleGlyph implements BinaryCodable {
     }
   }
 
-  static int _getNumberOfPoints(List<int> endPtsOfContours) => 
-    endPtsOfContours.isNotEmpty ? endPtsOfContours.last + 1 : 0;
+  static int _getNumberOfPoints(List<int> endPtsOfContours) =>
+      endPtsOfContours.isNotEmpty ? endPtsOfContours.last + 1 : 0;
 }

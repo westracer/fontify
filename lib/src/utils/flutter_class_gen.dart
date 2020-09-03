@@ -11,7 +11,7 @@ const _kDefaultClassName = 'FontifyIcons';
 const _kDefaultFontFileName = 'fontify_icons.otf';
 
 /// Removes any characters that are not valid for variable name.
-/// 
+///
 /// Returns a new string.
 String _getVarName(String string) {
   final replaced = string.replaceAll(RegExp(r'[^a-zA-Z0-9_$]'), '');
@@ -27,16 +27,15 @@ class FlutterClassGenerator {
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
   FlutterClassGenerator(
     this.glyphList, {
-      String className,
-      String familyName,
-      String fontFileName,
-      int indent,
-  }) 
-  : _indent = ' ' * (indent ?? _kDefaultIndent),
-    _className = _getVarName(className ?? _kDefaultClassName),
-    _familyName = familyName ?? kDefaultFontFamily,
-    _fontFileName = fontFileName ?? _kDefaultFontFileName,
-    _iconVarNames = _generateVariableNames(glyphList);
+    String className,
+    String familyName,
+    String fontFileName,
+    int indent,
+  })  : _indent = ' ' * (indent ?? _kDefaultIndent),
+        _className = _getVarName(className ?? _kDefaultClassName),
+        _familyName = familyName ?? kDefaultFontFamily,
+        _fontFileName = fontFileName ?? _kDefaultFontFileName,
+        _iconVarNames = _generateVariableNames(glyphList);
 
   final List<GenericGlyph> glyphList;
   final String _fontFileName;
@@ -49,11 +48,12 @@ class FlutterClassGenerator {
     final iconNameSet = <String>{};
 
     return glyphList.map((g) {
-      final baseName = _getVarName(p.basenameWithoutExtension(g.metadata.name)).snakeCase;
+      final baseName =
+          _getVarName(p.basenameWithoutExtension(g.metadata.name)).snakeCase;
       final usingDefaultName = baseName.isEmpty;
 
       var variableName = usingDefaultName ? _kUnnamedIconName : baseName;
-      
+
       // Handling same names by adding numeration to them
       if (iconNameSet.contains(variableName)) {
         // If name already contains numeration, then splitting it
@@ -70,7 +70,8 @@ class FlutterClassGenerator {
         String variableNameWithCount;
 
         do {
-          variableNameWithCount = '${variableWithoutCount}_${++variableNameCount}';
+          variableNameWithCount =
+              '${variableWithoutCount}_${++variableNameCount}';
         } while (iconNameSet.contains(variableNameWithCount));
 
         variableName = variableNameWithCount;
@@ -106,14 +107,13 @@ class FlutterClassGenerator {
       '$_className._();',
       '',
       _fontFamilyConst,
-      for (var i = 0; i < glyphList.length; i++)
-        ..._generateIconConst(i),
+      for (var i = 0; i < glyphList.length; i++) ..._generateIconConst(i),
     ];
 
-    final classContentString = classContent.map((e) => e.isEmpty ? '' : '$_indent$e').join('\n');
+    final classContentString =
+        classContent.map((e) => e.isEmpty ? '' : '$_indent$e').join('\n');
 
-    return 
-'''
+    return '''
 // Generated code: do not hand-edit.
 
 // Generated using $kVendorName.

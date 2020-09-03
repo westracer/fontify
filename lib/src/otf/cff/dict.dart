@@ -29,9 +29,7 @@ class CFFDictEntry extends BinaryCodable {
         }
 
         return CFFDictEntry(
-          operandList,
-          CFFOperator(CFFOperatorContext.dict, b0, b1)
-        );
+            operandList, CFFOperator(CFFOperatorContext.dict, b0, b1));
       } else {
         final operand = CFFOperand.fromByteData(byteData, offset, b0);
         operandList.add(operand);
@@ -48,18 +46,19 @@ class CFFDictEntry extends BinaryCodable {
   @override
   void encodeToBinary(ByteData byteData) {
     var offset = 0;
-    
+
     for (final operand in operandList) {
       final operandSize = operand.size;
       operand.encodeToBinary(byteData.sublistView(offset, operandSize));
       offset += operandSize;
     }
-    
+
     operator.encodeToBinary(byteData.sublistView(offset, operator.size));
   }
 
   @override
-  int get size => operator.size + operandList.fold<int>(0, (p, e) => p + e.size);
+  int get size =>
+      operator.size + operandList.fold<int>(0, (p, e) => p + e.size);
 
   void recalculatePointers(int operandIndex, num Function() valueCallback) {
     int expectedOperandLength = 0, actualOperandLength;
@@ -69,7 +68,8 @@ class CFFDictEntry extends BinaryCodable {
       expectedOperandLength++;
 
       // Filling with empty value and fixed length
-      operandList.replaceRange(operandIndex, operandIndex + 1, [CFFOperand(null, expectedOperandLength)]);
+      operandList.replaceRange(operandIndex, operandIndex + 1,
+          [CFFOperand(null, expectedOperandLength)]);
 
       // Checking that offset's byte length is the same as current operand's length
       subrsOperand = CFFOperand.fromValue(valueCallback());
@@ -93,7 +93,7 @@ class CFFDictEntry extends BinaryCodable {
 
 class CFFDict extends BinaryCodable {
   CFFDict(this.entryList);
-  
+
   CFFDict.empty() : entryList = [];
 
   factory CFFDict.fromByteData(ByteData byteData) {
@@ -113,10 +113,8 @@ class CFFDict extends BinaryCodable {
   List<CFFDictEntry> entryList;
 
   CFFDictEntry getEntryForOperator(CFFOperator operator) {
-    return entryList.firstWhere(
-      (e) => e.operator == operator,
-      orElse: () => null
-    );
+    return entryList.firstWhere((e) => e.operator == operator,
+        orElse: () => null);
   }
 
   @override

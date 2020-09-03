@@ -22,14 +22,15 @@ class LongHorMetric implements BinaryCodable {
     );
   }
 
-  factory LongHorMetric.createForGlyph(GenericGlyphMetrics metrics, int unitsPerEm) {
+  factory LongHorMetric.createForGlyph(
+      GenericGlyphMetrics metrics, int unitsPerEm) {
     if (metrics.width == 0) {
       return LongHorMetric(unitsPerEm ~/ 3, 0);
     }
 
     return LongHorMetric(metrics.xMax - metrics.xMin, 0);
   }
-  
+
   final int advanceWidth;
   final int lsb;
 
@@ -53,30 +54,23 @@ class HorizontalMetricsTable extends FontTable {
     this.leftSideBearings,
   ) : super.fromTableRecordEntry(entry);
 
-  factory HorizontalMetricsTable.fromByteData(
-    ByteData byteData, 
-    TableRecordEntry entry,
-    HorizontalHeaderTable hhea,
-    int numGlyphs
-  ) {
+  factory HorizontalMetricsTable.fromByteData(ByteData byteData,
+      TableRecordEntry entry, HorizontalHeaderTable hhea, int numGlyphs) {
     final hMetrics = List.generate(
-      hhea.numberOfHMetrics,
-      (i) => LongHorMetric.fromByteData(byteData, entry.offset + _kLongHorMetricSize * i)
-    );
+        hhea.numberOfHMetrics,
+        (i) => LongHorMetric.fromByteData(
+            byteData, entry.offset + _kLongHorMetricSize * i));
     final offset = entry.offset + _kLongHorMetricSize * hhea.numberOfHMetrics;
-    final leftSideBearings = List.generate(
-      numGlyphs - hhea.numberOfHMetrics,
-      (i) => byteData.getInt16(offset + 2 * i)
-    );
+    final leftSideBearings = List.generate(numGlyphs - hhea.numberOfHMetrics,
+        (i) => byteData.getInt16(offset + 2 * i));
 
     return HorizontalMetricsTable(entry, hMetrics, leftSideBearings);
   }
 
-  factory HorizontalMetricsTable.create(List<GenericGlyphMetrics> glyphMetricsList, int unitsPerEm) {
-    final hMetrics = List.generate(
-      glyphMetricsList.length,
-      (i) => LongHorMetric.createForGlyph(glyphMetricsList[i], unitsPerEm)
-    );
+  factory HorizontalMetricsTable.create(
+      List<GenericGlyphMetrics> glyphMetricsList, int unitsPerEm) {
+    final hMetrics = List.generate(glyphMetricsList.length,
+        (i) => LongHorMetric.createForGlyph(glyphMetricsList[i], unitsPerEm));
 
     return HorizontalMetricsTable(null, hMetrics, []);
   }
@@ -85,11 +79,14 @@ class HorizontalMetricsTable extends FontTable {
   final List<int> leftSideBearings;
 
   @override
-  int get size => hMetrics.length * _kLongHorMetricSize + leftSideBearings.length * 2;  
+  int get size =>
+      hMetrics.length * _kLongHorMetricSize + leftSideBearings.length * 2;
 
-  int get advanceWidthMax => hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
+  int get advanceWidthMax =>
+      hMetrics.fold<int>(0, (p, v) => math.max(p, v.advanceWidth));
 
-  int get minLeftSideBearing => hMetrics.fold<int>(kInt32Max, (p, v) => math.min(p, v.lsb));
+  int get minLeftSideBearing =>
+      hMetrics.fold<int>(kInt32Max, (p, v) => math.min(p, v.lsb));
 
   int getMinRightSideBearing(List<GenericGlyphMetrics> glyphMetricsList) {
     var minRsb = kInt32Max;

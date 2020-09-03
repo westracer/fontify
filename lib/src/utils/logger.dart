@@ -19,7 +19,7 @@ extension LoggerExt on Logger {
     if (_loggedOnce.contains(hashCode)) {
       return;
     }
-    
+
     log(level, message);
     _loggedOnce.add(hashCode);
   }

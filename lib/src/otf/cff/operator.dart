@@ -6,12 +6,12 @@ import '../../common/codable/binary.dart';
 import 'char_string_operator.dart';
 import 'dict_operator.dart';
 
-enum CFFOperatorContext {dict, charString}
+enum CFFOperatorContext { dict, charString }
 
 @immutable
 class CFFOperator implements BinaryCodable {
-  const CFFOperator(this.context, this.b0, [this.b1]) 
-  : intValue = b1 != null ? ((b0 << 8) | b1) : b0;
+  const CFFOperator(this.context, this.b0, [this.b1])
+      : intValue = b1 != null ? ((b0 << 8) | b1) : b0;
 
   final int b0;
   final int b1;
@@ -25,7 +25,7 @@ class CFFOperator implements BinaryCodable {
   int get hashCode => intValue.hashCode;
 
   @override
-  bool operator==(Object other) {
+  bool operator ==(Object other) {
     if (other is CFFOperator) {
       return other.intValue == intValue;
     }

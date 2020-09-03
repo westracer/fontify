@@ -6,12 +6,7 @@ const _kGlyphHeaderSize = 10;
 
 class GlyphHeader implements BinaryCodable {
   GlyphHeader(
-    this.numberOfContours, 
-    this.xMin, 
-    this.yMin, 
-    this.xMax, 
-    this.yMax
-  );
+      this.numberOfContours, this.xMin, this.yMin, this.xMax, this.yMax);
 
   factory GlyphHeader.fromByteData(ByteData byteData, int offset) {
     return GlyphHeader(

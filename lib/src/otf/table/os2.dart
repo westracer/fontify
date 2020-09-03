@@ -130,16 +130,13 @@ class OS2Table extends FontTable {
       byteData.getInt16(entry.offset + 72),
       byteData.getUint16(entry.offset + 74),
       byteData.getUint16(entry.offset + 76),
-
       !isV1 ? null : byteData.getUint32(entry.offset + 78),
       !isV1 ? null : byteData.getUint32(entry.offset + 82),
-
       !isV4 ? null : byteData.getInt16(entry.offset + 86),
       !isV4 ? null : byteData.getInt16(entry.offset + 88),
       !isV4 ? null : byteData.getUint16(entry.offset + 90),
       !isV4 ? null : byteData.getUint16(entry.offset + 92),
       !isV4 ? null : byteData.getUint16(entry.offset + 94),
-
       !isV5 ? null : byteData.getUint16(entry.offset + 96),
       !isV5 ? null : byteData.getUint16(entry.offset + 98),
     );
@@ -157,7 +154,8 @@ class OS2Table extends FontTable {
     final asciiAchVendID = achVendID?.getAsciiPrintable();
 
     if (asciiAchVendID?.length != 4) {
-      throw TableDataFormatException('Incorrect achVendID tag format in OS/2 table');
+      throw TableDataFormatException(
+          'Incorrect achVendID tag format in OS/2 table');
     }
 
     final emSize = head.unitsPerEm;
@@ -169,67 +167,66 @@ class OS2Table extends FontTable {
 
     final scriptXsize = (emSize * _kDefaultSubscriptRelativeXsize).round();
     final scriptYsize = (height * _kDefaultSubscriptRelativeYsize).round();
-    final subscriptYoffset = (height * _kDefaultSubscriptRelativeYoffset).round();
-    final superscriptYoffset = (height * _kDefaultSuperscriptRelativeYoffset).round();
+    final subscriptYoffset =
+        (height * _kDefaultSubscriptRelativeYoffset).round();
+    final superscriptYoffset =
+        (height * _kDefaultSuperscriptRelativeYoffset).round();
     final strikeoutSize = (height * _kDefaultStrikeoutRelativeSize).round();
     final strikeoutOffset = (height * _kDefaultStrikeoutRelativeOffset).round();
 
-    final cmapFormat4subtable = cmap.data.whereType<CmapSegmentMappingToDeltaValuesTable>().first;
+    final cmapFormat4subtable =
+        cmap.data.whereType<CmapSegmentMappingToDeltaValuesTable>().first;
 
     return OS2Table._(
-      null,
-      version,
-      _getAverageWidth(hmtx),
-      400,  // Regular weight
-      5,    // Normal width
-      0,    // Installable embedding
-      scriptXsize,
-      scriptYsize,
-      0,    // zero X offset
-      subscriptYoffset,
-      scriptXsize,
-      scriptYsize,
-      0,    // zero X offset
-      superscriptYoffset,
-      strikeoutSize,
-      strikeoutOffset,
-      0,    // No Classification
-      _kDefaultPANOSE,
+        null,
+        version,
+        _getAverageWidth(hmtx),
+        400, // Regular weight
+        5, // Normal width
+        0, // Installable embedding
+        scriptXsize,
+        scriptYsize,
+        0, // zero X offset
+        subscriptYoffset,
+        scriptXsize,
+        scriptYsize,
+        0, // zero X offset
+        superscriptYoffset,
+        strikeoutSize,
+        strikeoutOffset,
+        0, // No Classification
+        _kDefaultPANOSE,
 
-      /// NOTE: Only 2 unicode ranges are used now. 
-      /// 
-      /// Should be made calculated, in case of using other ranges.
+        /// NOTE: Only 2 unicode ranges are used now.
+        ///
+        /// Should be made calculated, in case of using other ranges.
 
-      1,                      // Bit 1: Basic Latin. Includes space
-      (1 << 28) | (1 << 25),  // Bits 57 & 60: Non-Plane 0 and Private Use Area
-      0,
-      0,
+        1, // Bit 1: Basic Latin. Includes space
+        (1 << 28) | (1 << 25), // Bits 57 & 60: Non-Plane 0 and Private Use Area
+        0,
+        0,
+        asciiAchVendID,
+        0x40 | 0x80, // REGULAR and USE_TYPO_METRICS
+        cmapFormat4subtable.startCode.first,
+        cmapFormat4subtable.endCode.last,
+        hhea.ascender,
+        hhea.descender,
+        hhea.lineGap,
+        math.max(head.yMax, hhea.ascender),
+        -math.min(head.yMin, hhea.descender),
+        !isV1 ? null : 0, // The code page is not functional
+        !isV1 ? null : 0,
+        !isV4 ? null : 0,
+        !isV4 ? null : 0,
+        !isV4 ? null : 0,
+        !isV4 ? null : kUnicodeSpaceCharCode,
+        !isV4 ? null : _getMaxContext(gsub),
 
-      asciiAchVendID,
-      0x40 | 0x80, // REGULAR and USE_TYPO_METRICS
-      cmapFormat4subtable.startCode.first,
-      cmapFormat4subtable.endCode.last,
-      hhea.ascender,
-      hhea.descender,
-      hhea.lineGap,
-      math.max(head.yMax, hhea.ascender),
-      -math.min(head.yMin, hhea.descender),
-
-      !isV1 ? null : 0, // The code page is not functional
-      !isV1 ? null : 0,
-
-      !isV4 ? null : 0,
-      !isV4 ? null : 0,
-      !isV4 ? null : 0,
-      !isV4 ? null : kUnicodeSpaceCharCode,
-      !isV4 ? null : _getMaxContext(gsub),
-      
-      /// For fonts that were not designed for multiple optical-size variants,
-      /// usLowerOpticalPointSize should be set to 0 (zero),
-      /// and usUpperOpticalPointSize should be set to 0xFFFF.
-      !isV5 ? null : 0,
-      !isV5 ? null : 0xFFFE
-    );
+        /// For fonts that were not designed for multiple optical-size variants,
+        /// usLowerOpticalPointSize should be set to 0 (zero),
+        /// and usUpperOpticalPointSize should be set to 0xFFFF.
+        !isV5 ? null : 0,
+        !isV5 ? null : 0xFFFE);
   }
 
   final int version;
@@ -283,7 +280,7 @@ class OS2Table extends FontTable {
   @override
   int get size {
     var size = 0;
-    
+
     for (final e in _kVersionDataSize.entries) {
       if (e.key > version) {
         break;
@@ -311,7 +308,7 @@ class OS2Table extends FontTable {
     if (gsub.lookupListTable.lookupTables.isEmpty) {
       return 0;
     }
-    
+
     var maxContext = 0;
 
     for (final lookup in gsub.lookupListTable.lookupTables) {

@@ -4,10 +4,8 @@ class EnumClass<K, V> {
   final Map<K, V> _map;
 
   K getKeyForValue(V value) {
-    final entry = _map.entries.firstWhere(
-      (entry) => entry.value == value, 
-      orElse: () => null
-    );
+    final entry = _map.entries
+        .firstWhere((entry) => entry.value == value, orElse: () => null);
 
     return entry?.key;
   }
@@ -24,5 +22,5 @@ class EnumClass<K, V> {
 
   Map<K, V> get map => _map;
 
-  V operator[](K key) => _map[key];
+  V operator [](K key) => _map[key];
 }

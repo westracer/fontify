@@ -20,15 +20,13 @@ class OTFReader {
   final _tableMap = <String, FontTable>{};
 
   /// Ordered set of table tags to parse first
-  final _tagsParseOrder = <String>{
-    kHeadTag, kMaxpTag, kLocaTag, kHheaTag
-  };
-  
+  final _tagsParseOrder = <String>{kHeadTag, kMaxpTag, kLocaTag, kHheaTag};
+
   int get _indexToLocFormat => _font.head.indexToLocFormat;
   int get numGlyphs => _font.maxp.numGlyphs;
 
   /// Reads an OpenType font file and returns [OpenTypeFont] instance
-  /// 
+  ///
   /// Throws [ChecksumException] if calculated checksum is different than expected
   OpenTypeFont read() {
     _tableMap.clear();
@@ -77,7 +75,7 @@ class OTFReader {
       _tableMap[tag] = table;
     }
   }
-  
+
   FontTable _createTableFromEntry(TableRecordEntry entry) {
     switch (entry.tag) {
       case kHeadTag:
@@ -85,9 +83,11 @@ class OTFReader {
       case kMaxpTag:
         return MaximumProfileTable.fromByteData(_byteData, entry);
       case kLocaTag:
-        return IndexToLocationTable.fromByteData(_byteData, entry, _indexToLocFormat, numGlyphs);
+        return IndexToLocationTable.fromByteData(
+            _byteData, entry, _indexToLocFormat, numGlyphs);
       case kGlyfTag:
-        return GlyphDataTable.fromByteData(_byteData, entry, _font.loca, numGlyphs);
+        return GlyphDataTable.fromByteData(
+            _byteData, entry, _font.loca, numGlyphs);
       case kGSUBTag:
         return GlyphSubstitutionTable.fromByteData(_byteData, entry);
       case kOS2Tag:
@@ -101,7 +101,8 @@ class OTFReader {
       case kHheaTag:
         return HorizontalHeaderTable.fromByteData(_byteData, entry);
       case kHmtxTag:
-        return HorizontalMetricsTable.fromByteData(_byteData, entry, _font.hhea, numGlyphs);
+        return HorizontalMetricsTable.fromByteData(
+            _byteData, entry, _font.hhea, numGlyphs);
       case kCFF2Tag:
         return CFF2Table.fromByteData(_byteData, entry);
       default:
@@ -114,14 +115,17 @@ class OTFReader {
   ///
   /// Throws [ChecksumException] if calculated checksum is different than expected
   void _validateChecksums() {
-    final byteDataCopy = ByteData.sublistView(Uint8List.fromList([..._byteData.buffer.asUint8List().toList()]))
-      ..setUint32(_font.head.entry.offset + 8, 0); // Setting head table's checkSumAdjustment to 0
+    final byteDataCopy = ByteData.sublistView(
+        Uint8List.fromList([..._byteData.buffer.asUint8List().toList()]))
+      ..setUint32(_font.head.entry.offset + 8,
+          0); // Setting head table's checkSumAdjustment to 0
 
     for (final table in _font.tableMap.values) {
       final tableOffset = table.entry.offset;
       final tableLength = table.entry.length;
 
-      final tableByteData = ByteData.sublistView(byteDataCopy, tableOffset, tableOffset + tableLength);
+      final tableByteData = ByteData.sublistView(
+          byteDataCopy, tableOffset, tableOffset + tableLength);
       final actualChecksum = calculateTableChecksum(tableByteData);
       final expectedChecksum = table.entry.checkSum;
 

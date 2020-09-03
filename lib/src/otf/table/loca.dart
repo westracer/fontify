@@ -12,28 +12,22 @@ class IndexToLocationTable extends FontTable {
     this._isShort,
   ) : super.fromTableRecordEntry(entry);
 
-  factory IndexToLocationTable.fromByteData(
-    ByteData byteData, 
-    TableRecordEntry entry, 
-    int indexToLocFormat,
-    int numGlyphs
-  ) {
+  factory IndexToLocationTable.fromByteData(ByteData byteData,
+      TableRecordEntry entry, int indexToLocFormat, int numGlyphs) {
     final isShort = indexToLocFormat == 0;
 
     final offsets = <int>[
       for (var i = 0; i < numGlyphs + 1; i++)
-        isShort 
-          ? byteData.getUint16(entry.offset + 2 * i) * 2
-          : byteData.getUint32(entry.offset + 4 * i)
+        isShort
+            ? byteData.getUint16(entry.offset + 2 * i) * 2
+            : byteData.getUint32(entry.offset + 4 * i)
     ];
 
     return IndexToLocationTable(entry, offsets, isShort);
   }
 
   factory IndexToLocationTable.create(
-    int indexToLocFormat,
-    GlyphDataTable glyf
-  ) {
+      int indexToLocFormat, GlyphDataTable glyf) {
     final isShort = indexToLocFormat == 0;
     final offsets = <int>[];
 

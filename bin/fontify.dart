@@ -13,7 +13,7 @@ final _argParser = ArgParser(allowTrailingOptions: true);
 
 void main(List<String> args) {
   defineOptions(_argParser);
-  
+
   CliArguments parsedArgs;
 
   try {
@@ -29,7 +29,8 @@ void main(List<String> args) {
 
   try {
     _run(parsedArgs);
-  } catch (e) { // ignore: avoid_catches_without_on_clauses
+    // ignore: avoid_catches_without_on_clauses
+  } catch (e) {
     logger.e(e.toString());
     exit(65);
   }
@@ -47,25 +48,24 @@ void _run(CliArguments parsedArgs) {
 
   if (parsedArgs.classFile?.existsSync() ?? false) {
     logger.v(
-      'Output file for a Flutter class already exists (${parsedArgs.classFile.path}) - '
-      'overwriting it'
-    );
+        'Output file for a Flutter class already exists (${parsedArgs.classFile.path}) - '
+        'overwriting it');
   }
 
   if (parsedArgs.fontFile?.existsSync() ?? false) {
     logger.v(
-      'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
-      'overwriting it'
-    );
+        'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
+        'overwriting it');
   }
 
   final svgFileList = parsedArgs.svgDir
-    .listSync(recursive: isRecursive)
-    .where((e) => p.extension(e.path).toLowerCase() == '.svg')
-    .toList();
+      .listSync(recursive: isRecursive)
+      .where((e) => p.extension(e.path).toLowerCase() == '.svg')
+      .toList();
 
   if (svgFileList.isEmpty) {
-    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
+    logger.w(
+        "The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
   }
 
   final svgMap = {
@@ -79,14 +79,12 @@ void _run(CliArguments parsedArgs) {
     normalize: parsedArgs.normalize,
     fontName: parsedArgs.fontName,
   );
-  
+
   writeToFile(parsedArgs.fontFile.path, otfResult.font);
 
   if (parsedArgs.classFile == null) {
-    logger.v(
-      'No output path for Flutter class was specified - '
-      'skipping class generation.'
-    );
+    logger.v('No output path for Flutter class was specified - '
+        'skipping class generation.');
   } else {
     final fontFileName = p.basename(parsedArgs.fontFile.path);
 
@@ -116,9 +114,8 @@ void _usageError(String error) {
 
 void _printUsage([String error]) {
   final message = error ?? _kAbout;
-  
-  stdout.write(
-'''
+
+  stdout.write('''
 $message
 
 $_kUsage
@@ -127,10 +124,10 @@ ${_argParser.usage}
   exit(64);
 }
 
-const _kAbout = 'Converts .svg icons to an OpenType font and generates Flutter-compatible class.';
+const _kAbout =
+    'Converts .svg icons to an OpenType font and generates Flutter-compatible class.';
 
-const _kUsage = 
-'''
+const _kUsage = '''
 Usage:   fontify <input-svg-dir> <output-font-file> [options]
 
 Example: fontify assets/svg/ fonts/my_icons_font.otf --output-class-file=lib/my_icons.dart

@@ -14,18 +14,14 @@ const _kPositionalArguments = [CliArgument.svgDir, CliArgument.fontFile];
 const _kArgAllowedTypes = <CliArgument, List<Type>>{
   CliArgument.svgDir: [String],
   CliArgument.fontFile: [String],
-
   CliArgument.classFile: [String],
   CliArgument.className: [String],
   CliArgument.indent: [String, int],
-
   CliArgument.fontName: [String],
   CliArgument.normalize: [bool],
   CliArgument.ignoreShapes: [bool],
-
   CliArgument.recursive: [bool],
   CliArgument.verbose: [bool],
-  
   CliArgument.help: [bool],
   CliArgument.configFile: [String],
 };
@@ -46,7 +42,7 @@ const kOptionNames = EnumClass<CliArgument, String>({
 
   CliArgument.recursive: 'recursive',
   CliArgument.verbose: 'verbose',
-  
+
   CliArgument.help: 'help',
   CliArgument.configFile: 'config-file',
 });
@@ -75,13 +71,20 @@ final Map<CliArgument, String> argumentNames = {
 };
 
 enum CliArgument {
-  svgDir, fontFile,
-  classFile, className, indent, 
-  fontName, ignoreShapes, normalize,
-  recursive, verbose,
-  
+  svgDir,
+  fontFile,
+  classFile,
+  className,
+  indent,
+  fontName,
+  ignoreShapes,
+  normalize,
+  recursive,
+  verbose,
+
   // Only in CLI
-  help, configFile,
+  help,
+  configFile,
 }
 
 /// Contains all the parsed data for the application.
@@ -101,10 +104,10 @@ class CliArguments {
   );
 
   /// Creates [CliArguments] for a map of raw values.
-  /// 
+  ///
   /// Validates type of each argument and formats them.
-  /// 
-  /// Throws [CliArgumentException], if there is an error in arg parsing 
+  ///
+  /// Throws [CliArgumentException], if there is an error in arg parsing
   /// or if argument has wrong type.
   factory CliArguments.fromMap(Map<CliArgument, Object> rawArgMap) {
     // Validating types
@@ -114,11 +117,9 @@ class CliArguments {
       final allowedTypes = e.value;
 
       if (argType != Null && !allowedTypes.contains(argType)) {
-        throw CliArgumentException(
-          "'${argumentNames[arg]}' argument\'s type "
-          'must be one of following: $allowedTypes, '
-          "instead got '$argType'."
-        );
+        throw CliArgumentException("'${argumentNames[arg]}' argument\'s type "
+            'must be one of following: $allowedTypes, '
+            "instead got '$argType'.");
       }
     }
 
@@ -152,7 +153,7 @@ class CliArguments {
   final File configFile;
 
   /// Validates CLI arguments.
-  /// 
+  ///
   /// Throws [CliArgumentException], if argument is not valid.
   void validate() {
     if (svgDir == null) {
@@ -164,19 +165,21 @@ class CliArguments {
     }
 
     if (svgDir.statSync().type != FileSystemEntityType.directory) {
-      throw CliArgumentException("The input directory is not a directory or it doesn't exist.");
+      throw CliArgumentException(
+          "The input directory is not a directory or it doesn't exist.");
     }
 
     if (indent != null && indent < 0) {
-      throw CliArgumentException('indent must be a non-negative integer, was $indent.');
+      throw CliArgumentException(
+          'indent must be a non-negative integer, was $indent.');
     }
   }
 }
 
 /// Parses argument list.
-/// 
+///
 /// Throws [CliHelpException], if 'help' option is present.
-/// 
+///
 /// Returns an instance of [CliArguments] containing all parsed data.
 CliArguments parseArguments(ArgParser argParser, List<String> args) {
   ArgResults argResults;
@@ -190,14 +193,11 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
     throw CliHelpException();
   }
 
-  final posArgsLength = math.min(
-    _kPositionalArguments.length,
-    argResults.rest.length
-  );
+  final posArgsLength =
+      math.min(_kPositionalArguments.length, argResults.rest.length);
 
   final rawArgMap = <CliArgument, Object>{
-    for (final e in kOptionNames.entries)
-      e.key: argResults[e.value],
+    for (final e in kOptionNames.entries) e.key: argResults[e.value],
     for (var i = 0; i < posArgsLength; i++)
       _kPositionalArguments[i]: argResults.rest[i],
   };
@@ -206,7 +206,7 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
 }
 
 /// Parses config file.
-/// 
+///
 /// Returns an instance of [CliArguments] containing all parsed data or null,
 /// if 'fontify' key is not present in config file.
 CliArguments parseConfig(String config) {
@@ -227,8 +227,7 @@ CliArguments parseConfig(String config) {
 
   final argMap = <CliArgument, Object>{
     for (final e in fontifyYamlMap.entries)
-      if (e.key is String)
-        kConfigKeys.getKeyForValue(e.key as String): e.value,
+      if (e.key is String) kConfigKeys.getKeyForValue(e.key as String): e.value,
   };
 
   return CliArguments.fromMap(argMap);
@@ -236,7 +235,7 @@ CliArguments parseConfig(String config) {
 
 /// Parses argument list and config file, validates parsed data.
 /// Config is used, if it contains 'fontify' section.
-/// 
+///
 /// Throws [CliHelpException], if 'help' option is present.
 /// Throws [CliArgumentException], if there is an error in arg parsing.
 CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {

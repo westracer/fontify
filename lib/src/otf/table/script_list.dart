@@ -10,33 +10,23 @@ const kScriptRecordSize = 6;
 final _defaultScriptRecordList = [
   /// Default
   ScriptRecord('DFLT', null),
-  
+
   /// Latin
   ScriptRecord('latn', null),
 ];
 
 const _kDefaultLangSys = LanguageSystemTable(
-  0,
-  0xFFFF, // no required features
-  1,
-  [0]
-);
+    0,
+    0xFFFF, // no required features
+    1,
+    [0]);
 
-const _kDefaultScriptTable = ScriptTable(
-  4,
-  0,
-  [],
-  [], 
-  _kDefaultLangSys
-);
+const _kDefaultScriptTable = ScriptTable(4, 0, [], [], _kDefaultLangSys);
 
 class ScriptRecord implements BinaryCodable {
-  ScriptRecord(
-    this.scriptTag,
-    this.scriptOffset
-  );
+  ScriptRecord(this.scriptTag, this.scriptOffset);
 
-  factory ScriptRecord.fromByteData(ByteData byteData, int offset) {    
+  factory ScriptRecord.fromByteData(ByteData byteData, int offset) {
     return ScriptRecord(
       byteData.getTag(offset),
       byteData.getUint16(offset + 4),
@@ -67,27 +57,26 @@ class ScriptTable implements BinaryCodable {
   );
 
   factory ScriptTable.fromByteData(
-    ByteData byteData, 
-    int offset,
-    ScriptRecord record
-  ) {
+      ByteData byteData, int offset, ScriptRecord record) {
     offset += record.scriptOffset;
 
     final defaultLangSysOffset = byteData.getUint16(offset);
     LanguageSystemTable defaultLangSys;
     if (defaultLangSysOffset != 0) {
-      defaultLangSys = LanguageSystemTable.fromByteData(byteData, offset + defaultLangSysOffset);
+      defaultLangSys = LanguageSystemTable.fromByteData(
+          byteData, offset + defaultLangSysOffset);
     }
 
     final langSysCount = byteData.getUint16(offset + 2);
     final langSysRecords = List.generate(
-      langSysCount,
-      (i) => LanguageSystemRecord.fromByteData(byteData, offset + 4 + kLangSysRecordSize * i)
-    );
+        langSysCount,
+        (i) => LanguageSystemRecord.fromByteData(
+            byteData, offset + 4 + kLangSysRecordSize * i));
     final langSysTables = langSysRecords
-      .map((r) => LanguageSystemTable.fromByteData(byteData, offset + r.langSysOffset))
-      .toList();
-    
+        .map((r) => LanguageSystemTable.fromByteData(
+            byteData, offset + r.langSysOffset))
+        .toList();
+
     return ScriptTable(
       defaultLangSysOffset,
       langSysCount,
@@ -122,10 +111,12 @@ class ScriptTable implements BinaryCodable {
     for (var i = 0; i < langSysRecords.length; i++) {
       final record = langSysRecords[i]
         ..langSysOffset = tableRelativeOffset
-        ..encodeToBinary(byteData.sublistView(recordOffset, kLangSysRecordSize));
+        ..encodeToBinary(
+            byteData.sublistView(recordOffset, kLangSysRecordSize));
 
       final table = langSysTables[i];
-      table.encodeToBinary(byteData.sublistView(tableRelativeOffset, table.size));
+      table.encodeToBinary(
+          byteData.sublistView(tableRelativeOffset, table.size));
 
       recordOffset += record.size;
       tableRelativeOffset += table.size;
@@ -134,39 +125,31 @@ class ScriptTable implements BinaryCodable {
     final defaultRelativeLangSysOffset = tableRelativeOffset;
     byteData.setUint16(0, defaultRelativeLangSysOffset);
 
-    defaultLangSys.encodeToBinary(byteData.sublistView(defaultRelativeLangSysOffset, defaultLangSys.size));
+    defaultLangSys.encodeToBinary(byteData.sublistView(
+        defaultRelativeLangSysOffset, defaultLangSys.size));
   }
 }
 
 class ScriptListTable implements BinaryCodable {
-  ScriptListTable(
-    this.scriptCount,
-    this.scriptRecords,
-    this.scriptTables
-  );
+  ScriptListTable(this.scriptCount, this.scriptRecords, this.scriptTables);
 
   factory ScriptListTable.fromByteData(ByteData byteData, int offset) {
     final scriptCount = byteData.getUint16(offset);
     final scriptRecords = List.generate(
-      scriptCount, 
-      (i) => ScriptRecord.fromByteData(byteData, offset + 2 + kScriptRecordSize * i)
-    );
-    final scriptTables = List.generate(
-      scriptCount,
-      (i) => ScriptTable.fromByteData(byteData, offset, scriptRecords[i])
-    );
-    
+        scriptCount,
+        (i) => ScriptRecord.fromByteData(
+            byteData, offset + 2 + kScriptRecordSize * i));
+    final scriptTables = List.generate(scriptCount,
+        (i) => ScriptTable.fromByteData(byteData, offset, scriptRecords[i]));
+
     return ScriptListTable(scriptCount, scriptRecords, scriptTables);
   }
 
   factory ScriptListTable.create() {
     final scriptCount = _defaultScriptRecordList.length;
 
-    return ScriptListTable(
-      scriptCount,
-      _defaultScriptRecordList,
-      List.generate(scriptCount, (index) => _kDefaultScriptTable)
-    );
+    return ScriptListTable(scriptCount, _defaultScriptRecordList,
+        List.generate(scriptCount, (index) => _kDefaultScriptTable));
   }
 
   final int scriptCount;
@@ -195,7 +178,8 @@ class ScriptListTable implements BinaryCodable {
         ..encodeToBinary(byteData.sublistView(recordOffset, kScriptRecordSize));
 
       final table = scriptTables[i];
-      table.encodeToBinary(byteData.sublistView(tableRelativeOffset, table.size));
+      table.encodeToBinary(
+          byteData.sublistView(tableRelativeOffset, table.size));
 
       recordOffset += record.size;
       tableRelativeOffset += table.size;

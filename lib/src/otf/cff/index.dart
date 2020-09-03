@@ -11,7 +11,10 @@ const kEmptyIndexSize = 4;
 class CFFIndex extends BinaryCodable {
   CFFIndex(this.count, this.offSize, this.offsetList);
 
-  CFFIndex.empty() : count = 0, offSize = null, offsetList = [];
+  CFFIndex.empty()
+      : count = 0,
+        offSize = null,
+        offsetList = [];
 
   factory CFFIndex.fromByteData(ByteData byteData) {
     var offset = 0;
@@ -99,13 +102,12 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
     final dataList = <T>[];
 
     for (var i = 0; i < index.count; i++) {
-      final relativeOffset = index.offsetList[i] - 1; // -1 because first offset value is always 1
+      final relativeOffset =
+          index.offsetList[i] - 1; // -1 because first offset value is always 1
       final elementLength = index.offsetList[i + 1] - index.offsetList[i];
 
-      final fontDictByteData = byteData.sublistView(
-        indexSize + relativeOffset,
-        elementLength
-      );
+      final fontDictByteData =
+          byteData.sublistView(indexSize + relativeOffset, elementLength);
 
       dataList.add(decoder(fontDictByteData) as T);
     }
@@ -121,7 +123,8 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
   static Object Function(ByteData) _getDecoderForType(Type type) {
     switch (type) {
       case Uint8List:
-        return (bd) => Uint8List.fromList(bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes));
+        return (bd) => Uint8List.fromList(
+            bd.buffer.asUint8List(bd.offsetInBytes, bd.lengthInBytes));
       case CFFDict:
         return (bd) => CFFDict.fromByteData(bd);
       default:
@@ -223,7 +226,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
     for (var i = 0; i < index.count; i++) {
       final element = data[i];
       final elementSize = index.offsetList[i + 1] - index.offsetList[i];
-      
+
       encoder(byteData.sublistView(offset, elementSize), element);
       offset += elementSize;
     }

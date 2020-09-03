@@ -19,8 +19,7 @@ abstract class SubstitutionSubtable implements BinaryCodable {
   const SubstitutionSubtable();
 
   factory SubstitutionSubtable.fromByteData(
-    ByteData byteData, int offset, int lookupType
-  ) {
+      ByteData byteData, int offset, int lookupType) {
     switch (lookupType) {
       case 4:
         return LigatureSubstitutionSubtable.fromByteData(byteData, offset);
@@ -43,18 +42,15 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
   );
 
   factory LigatureSubstitutionSubtable.fromByteData(
-    ByteData byteData, 
-    int offset
-  ) {
+      ByteData byteData, int offset) {
     final coverageOffset = byteData.getUint16(offset + 2);
     final ligatureSetCount = byteData.getUint16(offset + 4);
     final subtableOffsets = List.generate(
-      ligatureSetCount,
-      (i) => byteData.getUint16(offset + 6 + 2 * i)
-    );
+        ligatureSetCount, (i) => byteData.getUint16(offset + 6 + 2 * i));
 
-    final coverageTable = CoverageTable.fromByteData(byteData, offset + coverageOffset);
-    
+    final coverageTable =
+        CoverageTable.fromByteData(byteData, offset + coverageOffset);
+
     return LigatureSubstitutionSubtable(
       byteData.getUint16(offset),
       coverageOffset,
@@ -75,7 +71,7 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
   int get size => 6 + 2 * ligatureSetCount + coverageTable.size;
 
   /// NOTE: Should be calculated considering 'componentCount' of ligatures.
-  /// 
+  ///
   /// Not supported yet - generating 0 ligature sets by default.
   @override
   int get maxContext => 0;
@@ -93,7 +89,8 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       byteData.setInt16(6 + 2 * i, ligatureSetOffsets[i]);
     }
 
-    coverageTable.encodeToBinary(byteData.sublistView(coverageOffset, coverageTable.size));
+    coverageTable.encodeToBinary(
+        byteData.sublistView(coverageOffset, coverageTable.size));
   }
 }
 
@@ -107,29 +104,20 @@ class LookupTable implements BinaryCodable {
     this.subtables,
   );
 
-  factory LookupTable.fromByteData(
-    ByteData byteData, 
-    int offset
-  ) {
+  factory LookupTable.fromByteData(ByteData byteData, int offset) {
     final lookupType = byteData.getUint16(offset);
     final lookupFlag = byteData.getUint16(offset + 2);
     final subTableCount = byteData.getUint16(offset + 4);
     final subtableOffsets = List.generate(
-      subTableCount,
-      (i) => byteData.getUint16(offset + 6 + 2 * i)
-    );
+        subTableCount, (i) => byteData.getUint16(offset + 6 + 2 * i));
     final useMarkFilteringSet = _useMarkFilteringSet(lookupFlag);
     final markFilteringSetOffset = offset + 6 + 2 * subTableCount;
 
     final subtables = List.generate(
-      subTableCount,
-      (i) => SubstitutionSubtable.fromByteData(
-        byteData,
-        offset + subtableOffsets[i],
-        lookupType
-      )
-    );
-    
+        subTableCount,
+        (i) => SubstitutionSubtable.fromByteData(
+            byteData, offset + subtableOffsets[i], lookupType));
+
     return LookupTable(
       lookupType,
       lookupFlag,
@@ -149,7 +137,7 @@ class LookupTable implements BinaryCodable {
   final List<SubstitutionSubtable> subtables;
 
   static bool _useMarkFilteringSet(int lookupFlag) =>
-    checkBitMask(lookupFlag, 0x0010);
+      checkBitMask(lookupFlag, 0x0010);
 
   @override
   int get size {
@@ -169,7 +157,8 @@ class LookupTable implements BinaryCodable {
     final subtableOffsetList = <int>[];
 
     for (final subtable in subtables) {
-      subtable.encodeToBinary(byteData.sublistView(currentRelativeOffset, subtable.size));
+      subtable.encodeToBinary(
+          byteData.sublistView(currentRelativeOffset, subtable.size));
       subtableOffsetList.add(currentRelativeOffset);
       currentRelativeOffset += subtable.size;
     }
@@ -187,27 +176,20 @@ class LookupTable implements BinaryCodable {
 }
 
 class LookupListTable implements BinaryCodable {
-  LookupListTable(
-    this.lookupCount,
-    this.lookups,
-    this.lookupTables
-  );
+  LookupListTable(this.lookupCount, this.lookups, this.lookupTables);
 
   factory LookupListTable.fromByteData(ByteData byteData, int offset) {
     final lookupCount = byteData.getUint16(offset);
     final lookups = List.generate(
-      lookupCount, 
-      (i) => byteData.getUint16(offset + 2 + 2 * i)
-    );
-    final lookupTables = List.generate(
-      lookupCount,
-      (i) => LookupTable.fromByteData(byteData, offset + lookups[i])
-    );
-    
+        lookupCount, (i) => byteData.getUint16(offset + 2 + 2 * i));
+    final lookupTables = List.generate(lookupCount,
+        (i) => LookupTable.fromByteData(byteData, offset + lookups[i]));
+
     return LookupListTable(lookupCount, lookups, lookupTables);
   }
 
-  factory LookupListTable.create() => LookupListTable(1, [4], _kDefaultLookupTableList);
+  factory LookupListTable.create() =>
+      LookupListTable(1, [4], _kDefaultLookupTableList);
 
   final int lookupCount;
   final List<int> lookups;
@@ -229,7 +211,8 @@ class LookupListTable implements BinaryCodable {
 
     for (var i = 0; i < lookupCount; i++) {
       final subtable = lookupTables[i];
-      subtable.encodeToBinary(byteData.sublistView(tableRelativeOffset, subtable.size));
+      subtable.encodeToBinary(
+          byteData.sublistView(tableRelativeOffset, subtable.size));
 
       byteData.setUint16(2 + 2 * i, tableRelativeOffset);
       tableRelativeOffset += subtable.size;

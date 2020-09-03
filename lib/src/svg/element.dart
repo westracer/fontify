@@ -6,14 +6,11 @@ import 'path.dart';
 import 'shapes.dart';
 
 abstract class SvgElement {
-  SvgElement(this.parent, this.xmlElement, {Matrix3 transform}) 
-  : transform = transform ?? xmlElement?.parseTransformMatrix();
+  SvgElement(this.parent, this.xmlElement, {Matrix3 transform})
+      : transform = transform ?? xmlElement?.parseTransformMatrix();
 
   factory SvgElement.fromXmlElement(
-    SvgElement parent,
-    XmlElement element,
-    bool ignoreShapes
-  ) {
+      SvgElement parent, XmlElement element, bool ignoreShapes) {
     switch (element.name.local) {
       case 'path':
         return PathElement.fromXmlElement(parent, element);
@@ -41,7 +38,7 @@ abstract class SvgElement {
   bool get hasTransform => transform != null && !transform.isIdentity();
 
   /// Traverses parent elements and calculates result transform matrix.
-  /// 
+  ///
   /// Returns result transform matrix or null, if there are no transforms.
   Matrix3 getResultTransformMatrix() {
     final transform = Matrix3.identity();
@@ -60,11 +57,8 @@ abstract class SvgElement {
 }
 
 class GroupElement extends SvgElement {
-  GroupElement(
-    this.elementList,
-    SvgElement parent,
-    XmlElement element
-  ) : super(parent, element);
+  GroupElement(this.elementList, SvgElement parent, XmlElement element)
+      : super(parent, element);
 
   factory GroupElement.fromXmlElement(
     SvgElement parent,

@@ -28,9 +28,7 @@ class PostScriptTableHeader implements BinaryCodable {
   );
 
   factory PostScriptTableHeader.fromByteData(
-    ByteData byteData,
-    TableRecordEntry entry
-  ) {
+      ByteData byteData, TableRecordEntry entry) {
     final version = Revision.fromInt32(byteData.getInt32(entry.offset));
 
     return PostScriptTableHeader(
@@ -49,10 +47,10 @@ class PostScriptTableHeader implements BinaryCodable {
   factory PostScriptTableHeader.create(Revision version) {
     return PostScriptTableHeader(
       version,
-      0,  // italicAngle - upright text
-      0,  // underlinePosition
-      0,  // underlineThickness
-      0,  // isFixedPitch - proportionally spaced
+      0, // italicAngle - upright text
+      0, // underlinePosition
+      0, // underlineThickness
+      0, // isFixedPitch - proportionally spaced
       0,
       0,
       0,
@@ -90,12 +88,9 @@ class PostScriptTableHeader implements BinaryCodable {
 
 abstract class PostScriptData implements BinaryCodable {
   PostScriptData();
-  
+
   factory PostScriptData.fromByteData(
-    ByteData byteData,
-    int offset,
-    PostScriptTableHeader header
-  ) {
+      ByteData byteData, int offset, PostScriptTableHeader header) {
     final version = header.version.int32value;
 
     switch (version) {
@@ -127,22 +122,14 @@ class PostScriptVersion30 extends PostScriptData {
 
 class PostScriptVersion20 extends PostScriptData {
   PostScriptVersion20(
-    this.numberOfGlyphs, 
-    this.glyphNameIndex, 
-    this.glyphNames
-  );
+      this.numberOfGlyphs, this.glyphNameIndex, this.glyphNames);
 
-  factory PostScriptVersion20.fromByteData(
-    ByteData byteData,
-    int offset
-  ) {
+  factory PostScriptVersion20.fromByteData(ByteData byteData, int offset) {
     final numberOfGlyphs = byteData.getUint16(offset);
     offset += 2;
 
     final glyphNameIndex = List.generate(
-      numberOfGlyphs,
-      (i) => byteData.getUint16(offset + i * 2)
-    );
+        numberOfGlyphs, (i) => byteData.getUint16(offset + i * 2));
     offset += numberOfGlyphs * 2;
 
     final glyphNames = <PascalString>[];
@@ -154,15 +141,11 @@ class PostScriptVersion20 extends PostScriptData {
 
       final string = PascalString.fromByteData(byteData, offset);
       offset += string.size;
-      
+
       glyphNames.add(string);
     }
 
-    return PostScriptVersion20(
-      numberOfGlyphs,
-      glyphNameIndex,
-      glyphNames
-    );
+    return PostScriptVersion20(numberOfGlyphs, glyphNameIndex, glyphNames);
   }
 
   factory PostScriptVersion20.create(List<String> glyphNameList) {
@@ -174,7 +157,8 @@ class PostScriptVersion20 extends PostScriptData {
 
     final numberOfGlyphs = glyphNameIndex.length;
 
-    final glyphNames = glyphNameList.map((s) => PascalString.fromString(s)).toList();
+    final glyphNames =
+        glyphNameList.map((s) => PascalString.fromString(s)).toList();
 
     return PostScriptVersion20(
       numberOfGlyphs,
@@ -195,7 +179,7 @@ class PostScriptVersion20 extends PostScriptData {
       if (_isGlyphNameStandard(glyphNameIndex[i])) {
         continue;
       }
-      
+
       glyphNamesSize += glyphNames[currentNameIndex++].size;
     }
 
@@ -208,7 +192,7 @@ class PostScriptVersion20 extends PostScriptData {
   @override
   void encodeToBinary(ByteData byteData) {
     byteData.setUint16(0, numberOfGlyphs);
-    
+
     var offset = 2;
 
     for (final glyphIndex in glyphNameIndex) {
@@ -233,41 +217,33 @@ class PostScriptVersion20 extends PostScriptData {
 }
 
 class PostScriptTable extends FontTable {
-  PostScriptTable(
-    TableRecordEntry entry,
-    this.header,
-    this.data
-  ) : super.fromTableRecordEntry(entry);
+  PostScriptTable(TableRecordEntry entry, this.header, this.data)
+      : super.fromTableRecordEntry(entry);
 
   factory PostScriptTable.fromByteData(
-    ByteData byteData,
-    TableRecordEntry entry
-  ) {
+      ByteData byteData, TableRecordEntry entry) {
     final header = PostScriptTableHeader.fromByteData(byteData, entry);
 
     return PostScriptTable(
-      entry, 
-      header,
-      PostScriptData.fromByteData(byteData, entry.offset + _kHeaderSize, header)
-    );
+        entry,
+        header,
+        PostScriptData.fromByteData(
+            byteData, entry.offset + _kHeaderSize, header));
   }
 
   /// Creates post table.
-  /// 
+  ///
   /// [glyphList] contains non-default characters.
   /// If [usePostV2] is true, version 2 table is generated.
   factory PostScriptTable.create(List<GenericGlyph> glyphList, bool usePostV2) {
     final glyphNameList = glyphList.map((e) => e.metadata.name ?? '').toList();
-    
-    final data = usePostV2 
-      ? PostScriptVersion20.create(glyphNameList) 
-      : PostScriptVersion30();
+
+    final data = usePostV2
+        ? PostScriptVersion20.create(glyphNameList)
+        : PostScriptVersion30();
 
     return PostScriptTable(
-      null, 
-      PostScriptTableHeader.create(data.version), 
-      data
-    );
+        null, PostScriptTableHeader.create(data.version), data);
   }
 
   final PostScriptTableHeader header;
@@ -283,35 +259,266 @@ class PostScriptTable extends FontTable {
   }
 }
 
-bool _isGlyphNameStandard(int glyphIndex) => 
+bool _isGlyphNameStandard(int glyphIndex) =>
     glyphIndex < _kMacStandardGlyphNames.length;
 
 const _kMacStandardGlyphNames = [
-  '.notdef', '.null', 'nonmarkingreturn', 'space', 'exclam', 'quotedbl', 'numbersign',
-  'dollar', 'percent', 'ampersand', 'quotesingle', 'parenleft', 'parenright', 'asterisk',
-  'plus', 'comma', 'hyphen', 'period', 'slash', 'zero', 'one', 'two', 'three', 'four',
-  'five', 'six', 'seven', 'eight', 'nine', 'colon', 'semicolon', 'less', 'equal', 'greater',
-  'question', 'at', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-  'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'bracketleft', 'backslash', 'bracketright',
-  'asciicircum', 'underscore', 'grave', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k',
-  'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'braceleft', 'bar',
-  'braceright', 'asciitilde', 'Adieresis', 'Aring', 'Ccedilla', 'Eacute', 'Ntilde', 'Odieresis',
-  'Udieresis', 'aacute', 'agrave', 'acircumflex', 'adieresis', 'atilde', 'aring', 'ccedilla',
-  'eacute', 'egrave', 'ecircumflex', 'edieresis', 'iacute', 'igrave', 'icircumflex', 'idieresis',
-  'ntilde', 'oacute', 'ograve', 'ocircumflex', 'odieresis', 'otilde', 'uacute', 'ugrave', 'ucircumflex',
-  'udieresis', 'dagger', 'degree', 'cent', 'sterling', 'section', 'bullet', 'paragraph', 'germandbls',
-  'registered', 'copyright', 'trademark', 'acute', 'dieresis', 'notequal', 'AE', 'Oslash', 'infinity',
-  'plusminus', 'lessequal', 'greaterequal', 'yen', 'mu', 'partialdiff', 'summation', 'product', 'pi',
-  'integral', 'ordfeminine', 'ordmasculine', 'Omega', 'ae', 'oslash', 'questiondown', 'exclamdown', 'logicalnot',
-  'radical', 'florin', 'approxequal', 'Delta', 'guillemotleft', 'guillemotright', 'ellipsis', 'nonbreakingspace',
-  'Agrave', 'Atilde', 'Otilde', 'OE', 'oe', 'endash', 'emdash', 'quotedblleft', 'quotedblright', 'quoteleft',
-  'quoteright', 'divide', 'lozenge', 'ydieresis', 'Ydieresis', 'fraction', 'currency', 'guilsinglleft',
-  'guilsinglright', 'fi', 'fl', 'daggerdbl', 'periodcentered', 'quotesinglbase', 'quotedblbase', 'perthousand',
-  'Acircumflex', 'Ecircumflex', 'Aacute', 'Edieresis', 'Egrave', 'Iacute', 'Icircumflex', 'Idieresis',
-  'Igrave', 'Oacute', 'Ocircumflex', 'apple', 'Ograve', 'Uacute', 'Ucircumflex', 'Ugrave', 'dotlessi',
-  'circumflex', 'tilde', 'macron', 'breve', 'dotaccent', 'ring', 'cedilla', 'hungarumlaut', 'ogonek',
-  'caron', 'Lslash', 'lslash', 'Scaron', 'scaron', 'Zcaron', 'zcaron', 'brokenbar', 'Eth', 'eth',
-  'Yacute', 'yacute', 'Thorn', 'thorn', 'minus', 'multiply', 'onesuperior', 'twosuperior', 'threesuperior',
-  'onehalf', 'onequarter', 'threequarters', 'franc', 'Gbreve', 'gbreve', 'Idotaccent', 'Scedilla',
-  'scedilla', 'Cacute', 'cacute', 'Ccaron', 'ccaron', 'dcroat'
+  '.notdef',
+  '.null',
+  'nonmarkingreturn',
+  'space',
+  'exclam',
+  'quotedbl',
+  'numbersign',
+  'dollar',
+  'percent',
+  'ampersand',
+  'quotesingle',
+  'parenleft',
+  'parenright',
+  'asterisk',
+  'plus',
+  'comma',
+  'hyphen',
+  'period',
+  'slash',
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'colon',
+  'semicolon',
+  'less',
+  'equal',
+  'greater',
+  'question',
+  'at',
+  'A',
+  'B',
+  'C',
+  'D',
+  'E',
+  'F',
+  'G',
+  'H',
+  'I',
+  'J',
+  'K',
+  'L',
+  'M',
+  'N',
+  'O',
+  'P',
+  'Q',
+  'R',
+  'S',
+  'T',
+  'U',
+  'V',
+  'W',
+  'X',
+  'Y',
+  'Z',
+  'bracketleft',
+  'backslash',
+  'bracketright',
+  'asciicircum',
+  'underscore',
+  'grave',
+  'a',
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h',
+  'i',
+  'j',
+  'k',
+  'l',
+  'm',
+  'n',
+  'o',
+  'p',
+  'q',
+  'r',
+  's',
+  't',
+  'u',
+  'v',
+  'w',
+  'x',
+  'y',
+  'z',
+  'braceleft',
+  'bar',
+  'braceright',
+  'asciitilde',
+  'Adieresis',
+  'Aring',
+  'Ccedilla',
+  'Eacute',
+  'Ntilde',
+  'Odieresis',
+  'Udieresis',
+  'aacute',
+  'agrave',
+  'acircumflex',
+  'adieresis',
+  'atilde',
+  'aring',
+  'ccedilla',
+  'eacute',
+  'egrave',
+  'ecircumflex',
+  'edieresis',
+  'iacute',
+  'igrave',
+  'icircumflex',
+  'idieresis',
+  'ntilde',
+  'oacute',
+  'ograve',
+  'ocircumflex',
+  'odieresis',
+  'otilde',
+  'uacute',
+  'ugrave',
+  'ucircumflex',
+  'udieresis',
+  'dagger',
+  'degree',
+  'cent',
+  'sterling',
+  'section',
+  'bullet',
+  'paragraph',
+  'germandbls',
+  'registered',
+  'copyright',
+  'trademark',
+  'acute',
+  'dieresis',
+  'notequal',
+  'AE',
+  'Oslash',
+  'infinity',
+  'plusminus',
+  'lessequal',
+  'greaterequal',
+  'yen',
+  'mu',
+  'partialdiff',
+  'summation',
+  'product',
+  'pi',
+  'integral',
+  'ordfeminine',
+  'ordmasculine',
+  'Omega',
+  'ae',
+  'oslash',
+  'questiondown',
+  'exclamdown',
+  'logicalnot',
+  'radical',
+  'florin',
+  'approxequal',
+  'Delta',
+  'guillemotleft',
+  'guillemotright',
+  'ellipsis',
+  'nonbreakingspace',
+  'Agrave',
+  'Atilde',
+  'Otilde',
+  'OE',
+  'oe',
+  'endash',
+  'emdash',
+  'quotedblleft',
+  'quotedblright',
+  'quoteleft',
+  'quoteright',
+  'divide',
+  'lozenge',
+  'ydieresis',
+  'Ydieresis',
+  'fraction',
+  'currency',
+  'guilsinglleft',
+  'guilsinglright',
+  'fi',
+  'fl',
+  'daggerdbl',
+  'periodcentered',
+  'quotesinglbase',
+  'quotedblbase',
+  'perthousand',
+  'Acircumflex',
+  'Ecircumflex',
+  'Aacute',
+  'Edieresis',
+  'Egrave',
+  'Iacute',
+  'Icircumflex',
+  'Idieresis',
+  'Igrave',
+  'Oacute',
+  'Ocircumflex',
+  'apple',
+  'Ograve',
+  'Uacute',
+  'Ucircumflex',
+  'Ugrave',
+  'dotlessi',
+  'circumflex',
+  'tilde',
+  'macron',
+  'breve',
+  'dotaccent',
+  'ring',
+  'cedilla',
+  'hungarumlaut',
+  'ogonek',
+  'caron',
+  'Lslash',
+  'lslash',
+  'Scaron',
+  'scaron',
+  'Zcaron',
+  'zcaron',
+  'brokenbar',
+  'Eth',
+  'eth',
+  'Yacute',
+  'yacute',
+  'Thorn',
+  'thorn',
+  'minus',
+  'multiply',
+  'onesuperior',
+  'twosuperior',
+  'threesuperior',
+  'onehalf',
+  'onequarter',
+  'threequarters',
+  'franc',
+  'Gbreve',
+  'gbreve',
+  'Idotaccent',
+  'Scedilla',
+  'scedilla',
+  'Cacute',
+  'cacute',
+  'Ccaron',
+  'ccaron',
+  'dcroat'
 ];

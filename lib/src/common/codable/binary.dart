@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 /// A class that supports decoding from binary representation
-/// 
+///
 /// Every implementation of the interface has *fromByteData* factory
 abstract class BinaryDecodable {}
 

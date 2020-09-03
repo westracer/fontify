@@ -13,7 +13,8 @@ import 'operator.dart';
 class CharStringOperand extends CFFOperand {
   CharStringOperand(num value, [int size]) : super(value, size);
 
-  factory CharStringOperand.fromByteData(ByteData byteData, int offset, int b0) {
+  factory CharStringOperand.fromByteData(
+      ByteData byteData, int offset, int b0) {
     if (b0 == 255) {
       final value = byteData.getUint32(0);
       return CharStringOperand(value / 0x10000, 5);
@@ -48,11 +49,9 @@ class CharStringOperand extends CFFOperand {
 }
 
 class CharStringCommand implements BinaryCodable {
-  CharStringCommand(this.operator, this.operandList) 
-  : assert(
-      operator.context == CFFOperatorContext.charString,
-      "Operator's context must be CharString"
-    );
+  CharStringCommand(this.operator, this.operandList)
+      : assert(operator.context == CFFOperatorContext.charString,
+            "Operator's context must be CharString");
 
   factory CharStringCommand.hmoveto(int dx) {
     return CharStringCommand(hmoveto, _getOperandList([dx]));
@@ -196,10 +195,10 @@ class CharStringCommand implements BinaryCodable {
 /// Doesn't respect interpreter implementation limits.
 class CharStringInterpreter {
   CharStringInterpreter();
-  
+
   final _commandList = <CharStringCommand>[];
   final Queue<num> _stack = Queue();
-  
+
   int getSubrBias(int length) {
     if (length < 1240) {
       return 107;
@@ -209,12 +208,11 @@ class CharStringInterpreter {
       return 32768;
     }
   }
-  
+
   void _pushCommand(Iterable<num> operandValues, int opB0, [int opB1]) {
     final command = CharStringCommand(
-      CFFOperator(CFFOperatorContext.charString, opB0, opB1),
-      operandValues.map((e) => CharStringOperand(e)).toList()
-    );
+        CFFOperator(CFFOperatorContext.charString, opB0, opB1),
+        operandValues.map((e) => CharStringOperand(e)).toList());
 
     _commandList.add(command);
   }
@@ -228,15 +226,15 @@ class CharStringInterpreter {
 
     while (offset < end) {
       var op = byteData.getUint8(offset++);
-      
+
       if (op == 28 || op >= 32) {
         final operandByteData = byteData.sublistView(offset);
         final operand = CharStringOperand.fromByteData(operandByteData, 0, op);
         _stack.add(operand.value);
       } else {
         switch (op) {
-          case 1:  // hstem
-          case 3:  // vstem
+          case 1: // hstem
+          case 3: // vstem
           case 18: // hstemhm
           case 23: // vstemhm
             _stack.clear();
@@ -277,7 +275,7 @@ class CharStringInterpreter {
 
               isX = !isX;
             }
-            
+
             _pushCommand(arguments, op);
             break;
 
@@ -291,7 +289,7 @@ class CharStringInterpreter {
               final dyc2 = _stack.removeFirstOrZero();
               final dx = _stack.removeFirstOrZero();
               final dy = _stack.removeFirstOrZero();
-              
+
               arguments.addAll([dxc1, dyc1, dxc2, dyc2, dx, dy]);
             }
 
@@ -304,11 +302,13 @@ class CharStringInterpreter {
             OTFDebugger.debugUnsupportedFeature('CFF subrs not supported');
             break;
 
-          case 16: { // blend
-            _stack.clear();
-            OTFDebugger.debugUnsupportedFeature('CFF blending not supported');
-            break;
-          }
+          case 16:
+            {
+              // blend
+              _stack.clear();
+              OTFDebugger.debugUnsupportedFeature('CFF blending not supported');
+              break;
+            }
 
           case 19: // hintmask
           case 20: // cntrmask
@@ -339,7 +339,7 @@ class CharStringInterpreter {
               final dyc2 = _stack.removeFirstOrZero();
               final dx = _stack.removeFirstOrZero();
               final dy = _stack.removeFirstOrZero();
-              
+
               arguments.addAll([dxc1, dyc1, dxc2, dyc2, dx, dy]);
             }
 
@@ -355,7 +355,7 @@ class CharStringInterpreter {
             while (_stack.length >= 8) {
               final dx = _stack.removeFirstOrZero();
               final dy = _stack.removeFirstOrZero();
-              
+
               arguments.addAll([dx, dy]);
             }
 
@@ -383,10 +383,10 @@ class CharStringInterpreter {
               final dxc2 = _stack.removeFirstOrZero();
               final dyc2 = _stack.removeFirstOrZero();
               final dy = _stack.removeFirstOrZero();
-              
+
               arguments.addAll([dyc1, dxc2, dyc2, dy]);
             }
-            
+
             _pushCommand(arguments, op);
             break;
 
@@ -404,10 +404,10 @@ class CharStringInterpreter {
               final dxc2 = _stack.removeFirstOrZero();
               final dyc2 = _stack.removeFirstOrZero();
               final dx = _stack.removeFirstOrZero();
-              
+
               arguments.addAll([dxc1, dxc2, dyc2, dx]);
             }
-            
+
             _pushCommand(arguments, op);
             break;
 
@@ -415,14 +415,15 @@ class CharStringInterpreter {
           case 31: // hvcurveto
             var isX = op == 31;
             final arguments = <num>[];
-            
+
             while (_stack.length >= 4) {
               if (isX) {
                 final dxc1 = _stack.removeFirstOrZero();
                 final dxc2 = _stack.removeFirstOrZero();
                 final dyc2 = _stack.removeFirstOrZero();
                 final dy = _stack.removeFirstOrZero();
-                final dx = _stack.length == 1 ? _stack.removeFirstOrZero() : null;
+                final dx =
+                    _stack.length == 1 ? _stack.removeFirstOrZero() : null;
 
                 arguments.addAll([dxc1, dxc2, dyc2, dy, if (dx != null) dx]);
               } else {
@@ -430,39 +431,42 @@ class CharStringInterpreter {
                 final dxc2 = _stack.removeFirstOrZero();
                 final dyc2 = _stack.removeFirstOrZero();
                 final dx = _stack.removeFirstOrZero();
-                final dy = _stack.length == 1 ? _stack.removeFirstOrZero() : null;
+                final dy =
+                    _stack.length == 1 ? _stack.removeFirstOrZero() : null;
 
                 arguments.addAll([dyc1, dxc2, dyc2, dx, if (dy != null) dy]);
               }
 
               isX = !isX;
             }
-            
+
             _pushCommand(arguments, op);
             break;
-          case 12: {
-            op = byteData.getUint8(offset++);
+          case 12:
+            {
+              op = byteData.getUint8(offset++);
 
-            switch (op) {
-              case 34: // hflex
-                _pushCommand(_stack.toList().sublist(0, 7), 12, op);
-                break;
-              case 35: // flex
-                _pushCommand(_stack.toList().sublist(0, 13), 12, op);
-                break;
-              case 36: // hflex1
-                _pushCommand(_stack.toList().sublist(0, 9), 12, op);
-                break;
-              case 37: // flex1
-                _pushCommand(_stack.toList().sublist(0, 11), 12, op);
-                break;
-              default:
-                OTFDebugger.debugUnsupportedFeature('Unknown charString op: 12 $op');
-                _stack.clear();
+              switch (op) {
+                case 34: // hflex
+                  _pushCommand(_stack.toList().sublist(0, 7), 12, op);
+                  break;
+                case 35: // flex
+                  _pushCommand(_stack.toList().sublist(0, 13), 12, op);
+                  break;
+                case 36: // hflex1
+                  _pushCommand(_stack.toList().sublist(0, 9), 12, op);
+                  break;
+                case 37: // flex1
+                  _pushCommand(_stack.toList().sublist(0, 11), 12, op);
+                  break;
+                default:
+                  OTFDebugger.debugUnsupportedFeature(
+                      'Unknown charString op: 12 $op');
+                  _stack.clear();
+              }
+
+              break;
             }
-
-            break;
-          }
 
           default:
             OTFDebugger.debugUnsupportedFeature('Unknown charString op: $op');
@@ -481,7 +485,7 @@ class CharStringInterpreter {
       command.operandList.map((e) {
         final byteData = ByteData(e.size);
         e.encodeToBinary(byteData);
-        
+
         return byteData.buffer.asUint8List();
       }).forEach(list.addAll);
 

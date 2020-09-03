@@ -10,7 +10,7 @@ import 'svg.dart';
 /// A helper for converting SVG path to generic outline format.
 class PathToOutlineConverter extends PathProxy {
   PathToOutlineConverter(this.svg, this.path);
-  
+
   final Svg svg;
   final PathElement path;
 
@@ -25,9 +25,7 @@ class PathToOutlineConverter extends PathProxy {
 
     // Y coordinates have to be flipped
     final bottom = svg.viewBox.top + svg.viewBox.height;
-    var points = _points.map(
-      (p) => math.Point<num>(p.x, bottom - p.y)
-    );
+    var points = _points.map((p) => math.Point<num>(p.x, bottom - p.y));
 
     // Applying transform
     final transform = path.getResultTransformMatrix();
@@ -40,9 +38,8 @@ class PathToOutlineConverter extends PathProxy {
       });
     }
 
-    final outline = Outline(
-      points.toList(), [..._isOnCurve], false, false, fillRule
-    );
+    final outline =
+        Outline(points.toList(), [..._isOnCurve], false, false, fillRule);
     _outlines.add(outline);
 
     _points.clear();
@@ -62,13 +59,14 @@ class PathToOutlineConverter extends PathProxy {
   }
 
   @override
-  void cubicTo(double x1, double y1, double x2, double y2, double x3, double y3) {
+  void cubicTo(
+      double x1, double y1, double x2, double y2, double x3, double y3) {
     final curvePoints = [
       math.Point<num>(x1, y1),
       math.Point<num>(x2, y2),
       math.Point<num>(x3, y3)
     ];
-    
+
     _points.addAll(curvePoints);
     _isOnCurve.addAll([false, false, true]);
   }

@@ -8,8 +8,8 @@ import '../debugger.dart';
 import 'abstract.dart';
 import 'table_record_entry.dart';
 
-const _kFormat0  = 0;
-const _kFormat4  = 4;
+const _kFormat0 = 0;
+const _kFormat4 = 4;
 const _kFormat12 = 12;
 
 const _kEncodingRecordSize = 8;
@@ -18,25 +18,29 @@ const _kByteEncodingTableSize = 256 + 6;
 
 /// Ordered list of encoding record templates, sorted by platform and encoding ID
 List<EncodingRecord> _getDefaultEncodingRecordList() => [
-  /// Unicode (2.0 or later semantics BMP only), format 4
-  EncodingRecord.create(kPlatformUnicode, 3),
-  
-  /// Unicode (Unicode 2.0 or later semantics non-BMP characters allowed), format 12
-  EncodingRecord.create(kPlatformUnicode, 4),
-  
-  /// Macintosh, format 0
-  EncodingRecord.create(kPlatformMacintosh, 0),
+      /// Unicode (2.0 or later semantics BMP only), format 4
+      EncodingRecord.create(kPlatformUnicode, 3),
 
-  /// Windows (Unicode BMP-only UCS-2), format 4
-  EncodingRecord.create(kPlatformWindows, 1),
+      /// Unicode (Unicode 2.0 or later semantics non-BMP characters allowed), format 12
+      EncodingRecord.create(kPlatformUnicode, 4),
 
-  /// Windows (Unicode UCS-4), format 12
-  EncodingRecord.create(kPlatformWindows, 10),
-];
+      /// Macintosh, format 0
+      EncodingRecord.create(kPlatformMacintosh, 0),
+
+      /// Windows (Unicode BMP-only UCS-2), format 4
+      EncodingRecord.create(kPlatformWindows, 1),
+
+      /// Windows (Unicode UCS-4), format 12
+      EncodingRecord.create(kPlatformWindows, 10),
+    ];
 
 /// Ordered list of encoding record format for each template
 const _kDefaultEncodingRecordFormatList = [
-  _kFormat4, _kFormat12, _kFormat0, _kFormat4, _kFormat12
+  _kFormat4,
+  _kFormat12,
+  _kFormat0,
+  _kFormat4,
+  _kFormat12
 ];
 
 class _Segment {
@@ -50,11 +54,7 @@ class _Segment {
 }
 
 class EncodingRecord implements BinaryCodable {
-  EncodingRecord(
-    this.platformID,
-    this.encodingID,
-    this.offset
-  );
+  EncodingRecord(this.platformID, this.encodingID, this.offset);
 
   EncodingRecord.create(
     this.platformID,
@@ -86,11 +86,7 @@ class EncodingRecord implements BinaryCodable {
 }
 
 class SequentialMapGroup implements BinaryCodable {
-  SequentialMapGroup(
-    this.startCharCode,
-    this.endCharCode,
-    this.startGlyphID
-  );
+  SequentialMapGroup(this.startCharCode, this.endCharCode, this.startGlyphID);
 
   factory SequentialMapGroup.fromByteData(ByteData byteData, int offset) {
     return SequentialMapGroup(
@@ -124,18 +120,13 @@ class CharacterToGlyphTableHeader implements BinaryCodable {
   );
 
   factory CharacterToGlyphTableHeader.fromByteData(
-    ByteData byteData,
-    TableRecordEntry entry
-  ) {
+      ByteData byteData, TableRecordEntry entry) {
     final version = byteData.getUint16(entry.offset);
     final numTables = byteData.getUint16(entry.offset + 2);
     final encodingRecords = List.generate(
-      numTables, 
-      (i) => EncodingRecord.fromByteData(
-        byteData, 
-        entry.offset + 4 + _kEncodingRecordSize * i
-      )
-    );
+        numTables,
+        (i) => EncodingRecord.fromByteData(
+            byteData, entry.offset + 4 + _kEncodingRecordSize * i));
 
     return CharacterToGlyphTableHeader(version, numTables, encodingRecords);
   }
@@ -149,13 +140,12 @@ class CharacterToGlyphTableHeader implements BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
-    byteData
-      ..setUint16(0, version)
-      ..setUint16(2, numTables);
+    byteData..setUint16(0, version)..setUint16(2, numTables);
 
     for (var i = 0; i < encodingRecords.length; i++) {
       final r = encodingRecords[i];
-      r.encodeToBinary(byteData.sublistView(4 + _kEncodingRecordSize * i, r.size));
+      r.encodeToBinary(
+          byteData.sublistView(4 + _kEncodingRecordSize * i, r.size));
     }
   }
 }
@@ -170,7 +160,8 @@ abstract class CmapData implements BinaryCodable {
       case _kFormat0:
         return CmapByteEncodingTable.fromByteData(byteData, offset);
       case _kFormat4:
-        return CmapSegmentMappingToDeltaValuesTable.fromByteData(byteData, offset);
+        return CmapSegmentMappingToDeltaValuesTable.fromByteData(
+            byteData, offset);
       case _kFormat12:
         return CmapSegmentedCoverageTable.fromByteData(byteData, offset);
       default:
@@ -178,7 +169,7 @@ abstract class CmapData implements BinaryCodable {
         return null;
     }
   }
-  
+
   factory CmapData.create(List<_Segment> segmentList, int format) {
     switch (format) {
       case _kFormat0:
@@ -198,28 +189,21 @@ abstract class CmapData implements BinaryCodable {
 
 class CmapByteEncodingTable extends CmapData {
   CmapByteEncodingTable(
-    int format,
-    this.length,
-    this.language,
-    this.glyphIdArray
-  ) : super(format);
+      int format, this.length, this.language, this.glyphIdArray)
+      : super(format);
 
   factory CmapByteEncodingTable.fromByteData(ByteData byteData, int offset) {
     return CmapByteEncodingTable(
-      byteData.getUint16(offset),
-      byteData.getUint16(offset + 2),
-      byteData.getUint16(offset + 4),
-      List.generate(256, (i) => byteData.getUint8(offset + 6 + i))
-    );
+        byteData.getUint16(offset),
+        byteData.getUint16(offset + 2),
+        byteData.getUint16(offset + 4),
+        List.generate(256, (i) => byteData.getUint8(offset + 6 + i)));
   }
 
   factory CmapByteEncodingTable.create() {
-    return CmapByteEncodingTable(
-      _kFormat0,
-      _kByteEncodingTableSize,
-      0,
-      List.filled(256, 0) // Not using standard mac glyphs
-    );
+    return CmapByteEncodingTable(_kFormat0, _kByteEncodingTableSize, 0,
+        List.filled(256, 0) // Not using standard mac glyphs
+        );
   }
 
   final int length;
@@ -244,90 +228,78 @@ class CmapByteEncodingTable extends CmapData {
 
 class CmapSegmentMappingToDeltaValuesTable extends CmapData {
   CmapSegmentMappingToDeltaValuesTable(
-    int format,
-    this.length,
-    this.language,
-    this.segCount,
-    this.searchRange,
-    this.entrySelector,
-    this.rangeShift,
-    this.endCode,
-    this.reservedPad,
-    this.startCode,
-    this.idDelta,
-    this.idRangeOffset,
-    this.glyphIdArray
-  ) : super(format);
+      int format,
+      this.length,
+      this.language,
+      this.segCount,
+      this.searchRange,
+      this.entrySelector,
+      this.rangeShift,
+      this.endCode,
+      this.reservedPad,
+      this.startCode,
+      this.idDelta,
+      this.idRangeOffset,
+      this.glyphIdArray)
+      : super(format);
 
-  factory CmapSegmentMappingToDeltaValuesTable.fromByteData(ByteData byteData, int startOffset) {
+  factory CmapSegmentMappingToDeltaValuesTable.fromByteData(
+      ByteData byteData, int startOffset) {
     final length = byteData.getUint16(startOffset + 2);
     final segCount = byteData.getUint16(startOffset + 6) ~/ 2;
 
     var offset = startOffset + 14;
 
-    final endCode = List.generate(
-      segCount, 
-      (i) => byteData.getUint16(offset + 2 * i)
-    );
+    final endCode =
+        List.generate(segCount, (i) => byteData.getUint16(offset + 2 * i));
     offset += 2 * segCount;
 
     final reservedPad = byteData.getUint16(offset);
     offset += 2;
 
-    final startCode = List.generate(
-      segCount, 
-      (i) => byteData.getUint16(offset + 2 * i)
-    );
+    final startCode =
+        List.generate(segCount, (i) => byteData.getUint16(offset + 2 * i));
     offset += 2 * segCount;
 
-    final idDelta = List.generate(
-      segCount, 
-      (i) => byteData.getInt16(offset + 2 * i)
-    );
+    final idDelta =
+        List.generate(segCount, (i) => byteData.getInt16(offset + 2 * i));
     offset += 2 * segCount;
 
-    final idRangeOffset = List.generate(
-      segCount, 
-      (i) => byteData.getUint16(offset + 2 * i)
-    );
+    final idRangeOffset =
+        List.generate(segCount, (i) => byteData.getUint16(offset + 2 * i));
     offset += 2 * segCount;
 
     final glyphIdArrayLength = ((startOffset + length) - offset) >> 1;
     final glyphIdArray = List.generate(
-      glyphIdArrayLength, 
-      (i) => byteData.getUint16(offset + 2 * i)
-    );
+        glyphIdArrayLength, (i) => byteData.getUint16(offset + 2 * i));
 
     return CmapSegmentMappingToDeltaValuesTable(
-      byteData.getUint16(startOffset),
-      length,
-      byteData.getUint16(startOffset + 4),
-      segCount,
-      byteData.getUint16(startOffset + 8),
-      byteData.getUint16(startOffset + 10),
-      byteData.getUint16(startOffset + 12),
-      endCode,
-      reservedPad,
-      startCode,
-      idDelta,
-      idRangeOffset,
-      glyphIdArray
-    );
+        byteData.getUint16(startOffset),
+        length,
+        byteData.getUint16(startOffset + 4),
+        segCount,
+        byteData.getUint16(startOffset + 8),
+        byteData.getUint16(startOffset + 10),
+        byteData.getUint16(startOffset + 12),
+        endCode,
+        reservedPad,
+        startCode,
+        idDelta,
+        idRangeOffset,
+        glyphIdArray);
   }
 
-  factory CmapSegmentMappingToDeltaValuesTable.create(List<_Segment> segmentList) {
+  factory CmapSegmentMappingToDeltaValuesTable.create(
+      List<_Segment> segmentList) {
     final startCode = segmentList.map((e) => e.startCode).toList();
     final endCode = segmentList.map((e) => e.endCode).toList();
     final idDelta = segmentList.map((e) => e.idDelta).toList();
-    
+
     final segCount = segmentList.length;
 
     // Ignoring glyphIdArray
     final glyphIdArray = <int>[];
-    final idRangeOffset = List.generate(
-      segCount,
-      (_) => 0
-    );
+    final idRangeOffset = List.generate(segCount, (_) => 0);
 
     final entrySelector = (math.log(segCount) / math.ln2).floor();
     final searchRange = 2 * math.pow(2, entrySelector).toInt();
@@ -339,20 +311,19 @@ class CmapSegmentMappingToDeltaValuesTable extends CmapData {
     final length = 16 + 4 * 2 * segCount;
 
     return CmapSegmentMappingToDeltaValuesTable(
-      _kFormat4,
-      length,
-      0,    // Roman language
-      segCount,
-      searchRange,
-      entrySelector,
-      rangeShift,
-      endCode,
-      0,  // Reserved
-      startCode,
-      idDelta,
-      idRangeOffset,
-      glyphIdArray
-    );
+        _kFormat4,
+        length,
+        0, // Roman language
+        segCount,
+        searchRange,
+        entrySelector,
+        rangeShift,
+        endCode,
+        0, // Reserved
+        startCode,
+        idDelta,
+        idRangeOffset,
+        glyphIdArray);
   }
 
   final int length;
@@ -424,29 +395,26 @@ class CmapSegmentedCoverageTable extends CmapData {
     this.groups,
   ) : super(format);
 
-  factory CmapSegmentedCoverageTable.fromByteData(ByteData byteData, int offset) {
+  factory CmapSegmentedCoverageTable.fromByteData(
+      ByteData byteData, int offset) {
     final numGroups = byteData.getUint32(offset + 12);
 
     return CmapSegmentedCoverageTable(
-      byteData.getUint16(offset),
-      byteData.getUint16(offset + 2),
-      byteData.getUint32(offset + 4),
-      byteData.getUint32(offset + 8),
-      numGroups,
-      List.generate(
-        numGroups, 
-        (i) => SequentialMapGroup.fromByteData(
-          byteData, 
-          offset + 16 + _kSequentialMapGroupSize * i
-        )
-      )
-    );
+        byteData.getUint16(offset),
+        byteData.getUint16(offset + 2),
+        byteData.getUint32(offset + 4),
+        byteData.getUint32(offset + 8),
+        numGroups,
+        List.generate(
+            numGroups,
+            (i) => SequentialMapGroup.fromByteData(
+                byteData, offset + 16 + _kSequentialMapGroupSize * i)));
   }
 
   factory CmapSegmentedCoverageTable.create(List<_Segment> segmentList) {
-    final groups = segmentList.map(
-      (e) => SequentialMapGroup(e.startCode, e.endCode, e.startGlyphID)
-    ).toList();
+    final groups = segmentList
+        .map((e) => SequentialMapGroup(e.startCode, e.endCode, e.startGlyphID))
+        .toList();
 
     final numGroups = groups.length;
     final groupsSize = numGroups * _kSequentialMapGroupSize;
@@ -457,13 +425,12 @@ class CmapSegmentedCoverageTable extends CmapData {
     final length = 16 + groupsSize;
 
     return CmapSegmentedCoverageTable(
-      _kFormat12,
-      0,
-      length,
-      0, // Roman language
-      numGroups,
-      groups
-    );
+        _kFormat12,
+        0,
+        length,
+        0, // Roman language
+        numGroups,
+        groups);
   }
 
   final int reserved;
@@ -506,9 +473,9 @@ class CharacterToGlyphTable extends FontTable {
   ) {
     final header = CharacterToGlyphTableHeader.fromByteData(byteData, entry);
     final data = List.generate(
-      header.numTables, 
-      (i) => CmapData.fromByteData(byteData, entry.offset + header.encodingRecords[i].offset)
-    );
+        header.numTables,
+        (i) => CmapData.fromByteData(
+            byteData, entry.offset + header.encodingRecords[i].offset));
 
     return CharacterToGlyphTable(entry, header, data);
   }
@@ -520,18 +487,17 @@ class CharacterToGlyphTable extends FontTable {
     final segmentList = _generateSegments(charCodeList);
     final segmentListFormat4 = [
       ...segmentList,
-      _Segment(0xFFFF, 0xFFFF, 1) // Format 4 table must end with 0xFFFF char code
+      _Segment(
+          0xFFFF, 0xFFFF, 1) // Format 4 table must end with 0xFFFF char code
     ];
-    
+
     final subtableByFormat = _kDefaultEncodingRecordFormatList
-      .toSet()
-      .fold<Map<int, CmapData>>(
-        {}, 
-        (p, format) {
-          p[format] = CmapData.create(format == _kFormat4 ? segmentListFormat4 : segmentList, format);
-          return p;
-        }
-      );
+        .toSet()
+        .fold<Map<int, CmapData>>({}, (p, format) {
+      p[format] = CmapData.create(
+          format == _kFormat4 ? segmentListFormat4 : segmentList, format);
+      return p;
+    });
 
     final subtables = [
       for (final format in _kDefaultEncodingRecordFormatList)
@@ -539,10 +505,7 @@ class CharacterToGlyphTable extends FontTable {
     ];
 
     final header = CharacterToGlyphTableHeader(
-      0,
-      subtables.length,
-      _getDefaultEncodingRecordList()
-    );
+        0, subtables.length, _getDefaultEncodingRecordList());
 
     return CharacterToGlyphTable(
       null,
@@ -560,13 +523,9 @@ class CharacterToGlyphTable extends FontTable {
     final segmentList = <_Segment>[];
 
     void saveSegment() {
-      segmentList.add(
-        _Segment(
-          startCharCode,
-          prevCharCode,
-          startGlyphId + 1 // +1 because of .notdef
-        )
-      );
+      segmentList.add(_Segment(
+          startCharCode, prevCharCode, startGlyphId + 1 // +1 because of .notdef
+          ));
     }
 
     for (var glyphId = 0; glyphId < charCodeList.length; glyphId++) {
@@ -611,5 +570,5 @@ class CharacterToGlyphTable extends FontTable {
   }
 
   @override
-  int get size => header.size + data.fold<int>(0, (p, d) => p + d.size); 
+  int get size => header.size + data.fold<int>(0, (p, d) => p + d.size);
 }

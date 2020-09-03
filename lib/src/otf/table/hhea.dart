@@ -27,7 +27,8 @@ class HorizontalHeaderTable extends FontTable {
     this.numberOfHMetrics,
   ) : super.fromTableRecordEntry(entry);
 
-  factory HorizontalHeaderTable.fromByteData(ByteData byteData, TableRecordEntry entry) {
+  factory HorizontalHeaderTable.fromByteData(
+      ByteData byteData, TableRecordEntry entry) {
     return HorizontalHeaderTable(
       entry,
       byteData.getUint16(entry.offset),
@@ -48,45 +49,44 @@ class HorizontalHeaderTable extends FontTable {
   }
 
   factory HorizontalHeaderTable.create(
-    List<GenericGlyphMetrics> glyphMetricsList, 
+    List<GenericGlyphMetrics> glyphMetricsList,
     HorizontalMetricsTable hmtx,
     int ascender,
     int descender,
   ) {
     return HorizontalHeaderTable(
-      null,
-      1,    // major version 1
-      0,    // minor version 0
-      ascender,
-      descender, // descender must be negative
-      0,    // 0 line gap
-      hmtx.advanceWidthMax,
-      hmtx.minLeftSideBearing,
-      hmtx.getMinRightSideBearing(glyphMetricsList),
-      hmtx.getMaxExtent(glyphMetricsList),
-      1, // caretSlopeRise - vertical
-      0, // caretSlopeRun - vertical
-      0, // non-slanted font - no offset
-      0, // 0 for current metric format
-      glyphMetricsList.length
-    );
+        null,
+        1, // major version 1
+        0, // minor version 0
+        ascender,
+        descender, // descender must be negative
+        0, // 0 line gap
+        hmtx.advanceWidthMax,
+        hmtx.minLeftSideBearing,
+        hmtx.getMinRightSideBearing(glyphMetricsList),
+        hmtx.getMaxExtent(glyphMetricsList),
+        1, // caretSlopeRise - vertical
+        0, // caretSlopeRun - vertical
+        0, // non-slanted font - no offset
+        0, // 0 for current metric format
+        glyphMetricsList.length);
   }
 
   final int majorVersion;
   final int minorVersion;
-  final int	ascender;
-  final int	descender;
-  final int	lineGap;
-  final int	advanceWidthMax;
-  final int	minLeftSideBearing;
-  final int	minRightSideBearing;
-  final int	xMaxExtent;
-  final int	caretSlopeRise;
-  final int	caretSlopeRun;
-  final int	caretOffset;
-  
-  final int	metricDataFormat;
-  final int	numberOfHMetrics;
+  final int ascender;
+  final int descender;
+  final int lineGap;
+  final int advanceWidthMax;
+  final int minLeftSideBearing;
+  final int minRightSideBearing;
+  final int xMaxExtent;
+  final int caretSlopeRise;
+  final int caretSlopeRun;
+  final int caretOffset;
+
+  final int metricDataFormat;
+  final int numberOfHMetrics;
 
   @override
   int get size => _kHheaTableSize;

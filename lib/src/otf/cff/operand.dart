@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 
 import '../../common/codable/binary.dart';
@@ -7,8 +6,22 @@ import '../../utils/exception.dart';
 const _kRealNumberTerminator = 0xF;
 
 const _kStringForRealNumberByte = [
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
-  '.', 'E', 'E-', '', '-', '',
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '.',
+  'E',
+  'E-',
+  '',
+  '-',
+  '',
 ];
 
 class CFFOperand extends BinaryCodable {
@@ -43,7 +56,7 @@ class CFFOperand extends BinaryCodable {
 
       return value;
     }
-    
+
     /// -(2^31) to +(2^31 - 1)
     int decodeFiveByte() {
       final value = byteData.getUint32(offset);
@@ -55,7 +68,7 @@ class CFFOperand extends BinaryCodable {
     /// Real number
     double decodeRealNumber() {
       final sb = StringBuffer();
-      
+
       // ignore: literal_only_boolean_expressions
       while (true) {
         final b = byteData.getUint8(offset++);
@@ -71,7 +84,7 @@ class CFFOperand extends BinaryCodable {
         if (n2 == _kRealNumberTerminator) {
           break;
         }
-        
+
         sb.write(_kStringForRealNumberByte[n2]);
       }
 
@@ -84,10 +97,9 @@ class CFFOperand extends BinaryCodable {
       return CFFOperand(decodeFiveByte(), 5);
     } else if (b0 == 30) {
       final startNumberOffset = offset;
-      return CFFOperand(
-        decodeRealNumber(),
-        offset - startNumberOffset + 1  // + 1 because of byte 0
-      );
+      return CFFOperand(decodeRealNumber(),
+          offset - startNumberOffset + 1 // + 1 because of byte 0
+          );
     } else if (b0 >= 32 && b0 <= 246) {
       return CFFOperand(decodeOneByte(), 1);
     } else if (b0 >= 247 && b0 <= 250) {
@@ -95,7 +107,8 @@ class CFFOperand extends BinaryCodable {
     } else if (b0 >= 251 && b0 <= 254) {
       return CFFOperand(decodeTwoByteNegative(), 2);
     } else {
-      throw TableDataFormatException('Unknown operand type in CFF table (offset $offset)');
+      throw TableDataFormatException(
+          'Unknown operand type in CFF table (offset $offset)');
     }
   }
 
@@ -112,18 +125,18 @@ class CFFOperand extends BinaryCodable {
     if (value is! double) {
       return null;
     }
-    
+
     var string = value.toString();
-    
+
     // Removing integer part if it's 0
     string = string.replaceFirst(RegExp(r'^0.'), '.');
-    
+
     // Making exponent char uppercase
     string = string.replaceFirst('e', 'E');
-    
+
     // Removing plus
     string = string.replaceFirst('+', '');
-    
+
     return string;
   }
 
@@ -144,7 +157,7 @@ class CFFOperand extends BinaryCodable {
           char += '-';
           i++;
         }
-        
+
         final nibble = _kStringForRealNumberByte.indexOf(char);
 
         if (firstHalf) {
@@ -155,7 +168,7 @@ class CFFOperand extends BinaryCodable {
 
         firstHalf = !firstHalf;
       }
-      
+
       if (firstHalf) {
         byteData.setUint8(offset++, 0xFF);
       } else {
@@ -168,7 +181,7 @@ class CFFOperand extends BinaryCodable {
       writeDouble();
     } else {
       var intValue = value as int;
-      
+
       if (!forceLargeInt && intValue >= -107 && intValue <= 107) {
         byteData.setUint8(offset++, intValue + 139);
       } else if (!forceLargeInt && intValue >= 108 && intValue <= 1131) {
@@ -206,12 +219,14 @@ class CFFOperand extends BinaryCodable {
     return _size = () {
       if (value is double) {
         var valueString = _doubleToNormalizedString();
-        valueString = valueString.replaceFirst('E-', 'E'); // 'E-' used as a single char
-        
+        valueString =
+            valueString.replaceFirst('E-', 'E'); // 'E-' used as a single char
+
         return 1 + ((valueString.length + 1) / 2).ceil();
       } else if (value >= -107 && value <= 107) {
         return 1;
-      } else if ((value >= 108 && value <= 1131) || (value >= -1131 && value <= -108)) {
+      } else if ((value >= 108 && value <= 1131) ||
+          (value >= -1131 && value <= -108)) {
         return 2;
       } else if (value >= -32768 && value <= 32767) {
         return 3;

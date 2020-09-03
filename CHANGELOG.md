@@ -1,6 +1,7 @@
 ## Next release
 
 * Fixed glyph metrics in a case where normalization setting is off.
+* Formatted code using dartfmt.
 
 ## 0.0.2
 

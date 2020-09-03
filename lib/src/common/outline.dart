@@ -3,19 +3,20 @@ import 'dart:math';
 import '../utils/misc.dart';
 
 /// How shapes with more than one closed outlines are filled.
-/// 
+///
 /// * CharStrings must always be the nonzero
-/// * TrueType is either always nonzero 
+/// * TrueType is either always nonzero
 /// or evenodd/nonzero according to OVERLAP_SIMPLE flag
 /// (depending on rasterizer implementation)
 /// * SVG can be both
-enum FillRule {nonzero, evenodd}
+enum FillRule { nonzero, evenodd }
 
 /// A helper for working with outlines (including transforming).
-/// 
+///
 /// TODO: It's very basic class for now used for generic glyph description. Replace it with a proper Path class (like java.awt.geom.Path2D or dart:ui's Path)
 class Outline {
-  Outline(this.pointList, this.isOnCurveList, this._hasCompactCurves, this._hasQuadCurves, this.fillRule);
+  Outline(this.pointList, this.isOnCurveList, this._hasCompactCurves,
+      this._hasQuadCurves, this.fillRule);
 
   final List<Point<num>> pointList;
   final List<bool> isOnCurveList;
@@ -31,13 +32,8 @@ class Outline {
 
   /// Deep copy of an outline
   Outline copy() {
-    return Outline(
-      [...pointList],
-      [...isOnCurveList],
-      _hasCompactCurves,
-      _hasQuadCurves,
-      fillRule
-    );
+    return Outline([...pointList], [...isOnCurveList], _hasCompactCurves,
+        _hasQuadCurves, fillRule);
   }
 
   /// Decompacts implicit points of quadratic curves (midpoints and end points)
@@ -89,7 +85,9 @@ class Outline {
     // Starting with 2, because first point can't be a CP and we need 2 of them
     for (var i = 2; i < pointList.length; i++) {
       // Two control points in a row
-      if (!isOnCurveList[i - 1] && i + 1 < pointList.length && !isOnCurveList[i + 1]) {
+      if (!isOnCurveList[i - 1] &&
+          i + 1 < pointList.length &&
+          !isOnCurveList[i + 1]) {
         final c0 = pointList[i - 1];
         final p0 = pointList[i];
         final c1 = pointList[i + 1];
@@ -106,7 +104,8 @@ class Outline {
     }
 
     // Last point and end point are same
-    if (pointList.length > 1 && pointList.first.toIntPoint() == pointList.last.toIntPoint()) {
+    if (pointList.length > 1 &&
+        pointList.first.toIntPoint() == pointList.last.toIntPoint()) {
       pointList.removeLast();
       isOnCurveList.removeLast();
     }
@@ -129,7 +128,7 @@ class Outline {
       if (isOnCurveList[i]) {
         continue;
       }
-      
+
       final qp0 = pointList[i - 1];
       final qp1 = pointList[i];
       final qp2 = i + 1 < pointList.length ? pointList[i + 1] : pointList.first;
@@ -138,7 +137,7 @@ class Outline {
       isOnCurveList.insert(i, false);
       i++;
     }
-    
+
     _hasQuadCurves = false;
   }
 }

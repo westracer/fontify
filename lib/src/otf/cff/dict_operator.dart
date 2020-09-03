@@ -50,9 +50,7 @@ final Map<CFFOperator, String> dictOperatorNames = UnmodifiableMapView({
   fdArray: 'FDArray',
   fdSelect: 'FDSelect',
   vstore: 'vstore',
-  
   private: 'Private',
-
   blueValues: 'BlueValues',
   otherBlues: 'OtherBlues',
   familyBlues: 'FamilyBlues',
@@ -64,7 +62,6 @@ final Map<CFFOperator, String> dictOperatorNames = UnmodifiableMapView({
   vsindex: 'vsindex',
   blend: 'blend',
   bcd: 'BCD',
-
   blueScale: 'BlueScale',
   blueShift: 'BlueShift',
   blueFuzz: 'BlueFuzz',

@@ -7,12 +7,10 @@ void main() {
   group('Arguments', () {
     final _argParser = ArgParser(allowTrailingOptions: true);
     defineOptions(_argParser);
-    
+
     void expectCliArgumentException(List<String> args) {
-      expect(
-        () => parseArguments(_argParser, args).validate(),
-        throwsA(const TypeMatcher<CliArgumentException>())
-      );
+      expect(() => parseArguments(_argParser, args).validate(),
+          throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
     test('No positional args', () {
@@ -53,7 +51,7 @@ void main() {
       ];
 
       final parsedArgs = parseArguments(_argParser, args)..validate();
-      
+
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
       expect(parsedArgs.classFile.path, 'test/a/df.dart');
@@ -76,7 +74,7 @@ void main() {
       ];
 
       final parsedArgs = parseArguments(_argParser, args)..validate();
-      
+
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
       expect(parsedArgs.classFile, isNull);
@@ -92,10 +90,8 @@ void main() {
 
     test('Help', () {
       void expectCliHelpException(List<String> args) {
-        expect(
-          () => parseArguments(_argParser, args).validate(),
-          throwsA(const TypeMatcher<CliHelpException>())
-        );
+        expect(() => parseArguments(_argParser, args).validate(),
+            throwsA(const TypeMatcher<CliHelpException>()));
       }
 
       expectCliHelpException(['-h']);
@@ -135,7 +131,7 @@ void main() {
       ];
 
       final parsedArgs = parseArgsAndConfig(_argParser, args)..validate();
-      
+
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
       expect(parsedArgs.classFile.path, 'lib/test_font.dart');
@@ -155,7 +151,7 @@ void main() {
       ];
 
       final parsedArgs = parseArgsAndConfig(_argParser, args)..validate();
-      
+
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
       expect(parsedArgs.classFile.path, 'lib/test_font.dart');
@@ -172,10 +168,8 @@ void main() {
 
   group('Config', () {
     void expectCliArgumentException(String cfg) {
-      expect(
-        () => parseConfig(cfg).validate(),
-        throwsA(const TypeMatcher<CliArgumentException>())
-      );
+      expect(() => parseConfig(cfg).validate(),
+          throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
     test('No required', () {
@@ -243,7 +237,7 @@ fontify:
   recursive: true
   verbose: true
       ''')..validate();
-      
+
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
       expect(parsedArgs.classFile.path, 'lib/test_font.dart');
@@ -262,7 +256,7 @@ fontify:
   input_svg_dir: ./
   output_font_file: generated_font.otf
       ''')..validate();
-      
+
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
       expect(parsedArgs.classFile, isNull);

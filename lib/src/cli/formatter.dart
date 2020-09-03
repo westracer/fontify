@@ -7,18 +7,14 @@ typedef CliArgumentFormatter = Object Function(Object arg);
 const _kArgumentFormatters = <CliArgument, CliArgumentFormatter>{
   CliArgument.svgDir: _dir,
   CliArgument.fontFile: _file,
-
   CliArgument.classFile: _file,
   CliArgument.indent: _indent,
-
   CliArgument.configFile: _file,
 };
 
-Directory _dir(Object arg) =>
-  arg == null ? null : Directory(arg as String);
+Directory _dir(Object arg) => arg == null ? null : Directory(arg as String);
 
-File _file(Object arg) =>
-  arg == null ? null : File(arg as String);
+File _file(Object arg) => arg == null ? null : File(arg as String);
 
 int _indent(Object arg) {
   if (arg is int) {

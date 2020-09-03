@@ -1,7 +1,6 @@
 List<int> toUCS2byteList(String str) {
   return [
-    for (final code in str.codeUnits)
-      ...[code >> 8, code & 0xFF]
+    for (final code in str.codeUnits) ...[code >> 8, code & 0xFF]
   ];
 }
 

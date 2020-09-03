@@ -10,7 +10,8 @@ import 'writer.dart';
 
 /// Reads OpenType font from a file.
 OpenTypeFont readFromFile(String path) =>
-  OTFReader.fromByteData(ByteData.sublistView(File(path).readAsBytesSync())).read();
+    OTFReader.fromByteData(ByteData.sublistView(File(path).readAsBytesSync()))
+        .read();
 
 /// Writes OpenType font to a file.
 void writeToFile(String path, OpenTypeFont font) {
@@ -19,7 +20,8 @@ void writeToFile(String path, OpenTypeFont font) {
   final extension = p.extension(file.path).toLowerCase();
 
   if (extension != '.otf' && font.isOpenType) {
-    logger.w('A font that contains only CFF outline data should have an .OTF extension.');
+    logger.w(
+        'A font that contains only CFF outline data should have an .OTF extension.');
   }
 
   file.writeAsBytesSync(byteData.buffer.asUint8List());
