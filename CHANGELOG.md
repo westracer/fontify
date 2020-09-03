@@ -1,4 +1,4 @@
-## Next release
+## 0.0.3
 
 * Fixed glyph metrics in a case where normalization setting is off.
 * Formatted code using dartfmt.

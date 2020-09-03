@@ -1,5 +1,5 @@
 name: fontify
-version: 0.0.2
+version: 0.0.3
 description: >-
   Converts SVG icons to OTF font and generates Flutter-compatible class.
   Provides an API and a CLI tool.
