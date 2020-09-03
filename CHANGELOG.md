@@ -1,4 +1,4 @@
-## Next release
+## 0.1.0
 
 * `fontPackage` parameter for `IconData` class can now be provided (thanks @jamie1192).
 
