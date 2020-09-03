@@ -32,6 +32,9 @@ class GenericGlyphMetrics {
 
   factory GenericGlyphMetrics.empty() => GenericGlyphMetrics(0,0,0,0);
 
+  factory GenericGlyphMetrics.square(int unitsPerEm) =>
+    GenericGlyphMetrics(0, unitsPerEm, 0, unitsPerEm);
+
   final int xMin;
   final int xMax;
   final int yMin;

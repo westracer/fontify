@@ -85,12 +85,26 @@ class OpenTypeFont implements BinaryCodable {
       fontHeight: normalize ? null : unitsPerEm,
     );
 
+    final defaultGlyphList = generateDefaultGlyphList(ascender);
     final fullGlyphList = [
-      ...generateDefaultGlyphList(ascender),
+      ...defaultGlyphList,
       ...resizedGlyphList,
     ];
 
-    final glyphMetricsList = fullGlyphList.map((g) => g.metrics).toList();
+    final defaultGlyphMetricsList = defaultGlyphList.map((g) => g.metrics).toList();
+
+    // If normalization is off every custom glyph's size equals unitsPerEm
+    final customGlyphMetricsList = normalize 
+      ? resizedGlyphList.map((g) => g.metrics).toList()
+      : List.filled(
+          resizedGlyphList.length,
+          GenericGlyphMetrics.square(unitsPerEm)
+        );
+
+    final glyphMetricsList = [
+      ...defaultGlyphMetricsList,
+      ...customGlyphMetricsList,
+    ];
 
     final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
     final head = HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
@@ -201,6 +215,7 @@ class OpenTypeFont implements BinaryCodable {
   @override
   int get size => kOffsetTableLength + entryListSize + tableListSize;
 
+  // TODO: I don't like this. Refactor it later. Use "strategy" or something.
   static List<GenericGlyph> _resizeAndCenter(
     List<GenericGlyph> glyphList, {
       int ascender,
