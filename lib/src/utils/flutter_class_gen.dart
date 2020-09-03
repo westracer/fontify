@@ -23,6 +23,7 @@ class FlutterClassGenerator {
   /// * [glyphList] is a list of non-default glyphs.
   /// * [className] is generated class' name (preferably, in PascalCase).
   /// * [familyName] is font's family name to use in IconData.
+  /// * [package] is the name of a font package. Used to provide a font through package dependency.
   /// * [fontFileName] is font file's name. Used in generated docs for class.
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
   FlutterClassGenerator(
@@ -30,18 +31,21 @@ class FlutterClassGenerator {
     String className,
     String familyName,
     String fontFileName,
+    String package,
     int indent,
   })  : _indent = ' ' * (indent ?? _kDefaultIndent),
         _className = _getVarName(className ?? _kDefaultClassName),
         _familyName = familyName ?? kDefaultFontFamily,
         _fontFileName = fontFileName ?? _kDefaultFontFileName,
-        _iconVarNames = _generateVariableNames(glyphList);
+        _iconVarNames = _generateVariableNames(glyphList),
+        _package = package?.isEmpty ?? true ? null : package;
 
   final List<GenericGlyph> glyphList;
   final String _fontFileName;
   final String _className;
   final String _familyName;
   final String _indent;
+  final String _package;
   final List<String> _iconVarNames;
 
   static List<String> _generateVariableNames(List<GenericGlyph> glyphList) {
@@ -83,7 +87,12 @@ class FlutterClassGenerator {
     }).toList();
   }
 
-  String get _fontFamilyConst => "static const _kFontFamily = '$_familyName';";
+  bool get _hasPackage => _package != null;
+
+  String get _fontFamilyConst =>
+      "static const iconFontFamily = '$_familyName';";
+
+  String get _fontPackageConst => "static const iconFontPackage = '$_package';";
 
   List<String> _generateIconConst(int index) {
     final glyphMeta = glyphList[index].metadata;
@@ -94,10 +103,17 @@ class FlutterClassGenerator {
     final varName = _iconVarNames[index];
     final hexCode = charCode.toRadixString(16);
 
+    final posParamList = [
+      'fontFamily: iconFontFamily',
+      if (_hasPackage) 'fontPackage: iconFontPackage'
+    ];
+
+    final posParamString = posParamList.join(', ');
+
     return [
       '',
       '/// $iconName',
-      'static const IconData $varName = IconData(0x$hexCode, fontFamily: _kFontFamily);'
+      'static const IconData $varName = IconData(0x$hexCode, $posParamString);'
     ];
   }
 
@@ -107,6 +123,7 @@ class FlutterClassGenerator {
       '$_className._();',
       '',
       _fontFamilyConst,
+      if (_hasPackage) _fontPackageConst,
       for (var i = 0; i < glyphList.length; i++) ..._generateIconConst(i),
     ];
 

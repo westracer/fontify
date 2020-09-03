@@ -74,6 +74,7 @@ SvgToOtfResult svgToOtf({
 /// * [glyphList] is a list of non-default glyphs.
 /// * [className] is generated class' name (preferably, in PascalCase).
 /// * [familyName] is font's family name to use in IconData.
+/// * [package] is the name of a font package. Used to provide a font through package dependency.
 /// * [fontFileName] is font file's name. Used in generated docs for class.
 /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
 ///
@@ -83,6 +84,7 @@ String generateFlutterClass({
   String className,
   String familyName,
   String fontFileName,
+  String package,
   int indent,
 }) {
   final generator = FlutterClassGenerator(
@@ -91,6 +93,7 @@ String generateFlutterClass({
     indent: indent,
     fontFileName: fontFileName,
     familyName: familyName,
+    package: package,
   );
 
   return generator.generate();

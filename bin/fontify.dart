@@ -94,6 +94,7 @@ void _run(CliArguments parsedArgs) {
       indent: parsedArgs.indent,
       fontFileName: fontFileName,
       familyName: otfResult.font.familyName,
+      package: parsedArgs.fontPackage,
     );
 
     parsedArgs.classFile.writeAsStringSync(classString);

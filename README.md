@@ -42,6 +42,8 @@ Number of spaces in leading indentation for Flutter class file.
   (defaults to "2")
 - `-c` or `--class-name=<name>`
 Name for a generated class.
+- `-p` or `--package=<name>`
+Name of a package that provides a font. Used to provide a font through package dependency.
 
 Font options:
 - `-f` or `--font-name=<name>`
@@ -96,12 +98,13 @@ fontify:
   output_class_file: "lib/my_icons.dart"
   class_name: "MyIcons"
   indent: 4
+  package: my_font_package
 
   font_name: "My Icons"
-  normalize: false
-  ignore_shapes: false
+  normalize: true
+  ignore_shapes: true
 
-  recursive: false
+  recursive: true
   verbose: false
 ```
 

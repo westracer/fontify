@@ -1,6 +1,10 @@
+## Next release
+
+* `fontPackage` parameter for `IconData` class can now be provided (thanks @jamie1192).
+
 ## 0.0.3
 
-* Fixed glyph metrics in a case where normalization setting is off.
+* Fixed glyph metrics in a case where normalization setting is off (thanks @dricholm).
 * Formatted code using dartfmt.
 
 ## 0.0.2
