@@ -87,8 +87,9 @@ class OpenTypeFont implements BinaryCodable {
     final unitsPerEm =
         useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
 
-    final ascender = unitsPerEm - kDefaultBaselineExtension;
-    const descender = -kDefaultBaselineExtension;
+    final baselineExtension = normalize ? kDefaultBaselineExtension : 0;
+    final ascender = unitsPerEm - baselineExtension;
+    final descender = -baselineExtension;
 
     final resizedGlyphList = _resizeAndCenter(
       glyphList,
