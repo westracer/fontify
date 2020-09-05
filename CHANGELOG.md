@@ -1,3 +1,7 @@
+## 0.1.1
+
+* Changed values of ascender (to unitsPerEm) and descender (to 0) for non-normalized fonts.
+
 ## 0.1.0
 
 * `fontPackage` parameter for `IconData` class can now be provided (thanks @jamie1192).
