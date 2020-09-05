@@ -29,7 +29,9 @@ void main() {
       final widthList = font.hmtx.hMetrics.map((e) => e.advanceWidth);
       final unitsPerEm = kDefaultOpenTypeUnitsPerEm;
 
-      expect(widthList, [298, 333, unitsPerEm, unitsPerEm, unitsPerEm]);
+      expect(widthList, [350, 333, unitsPerEm, unitsPerEm, unitsPerEm]);
+      expect(font.hhea.ascender, 1000);
+      expect(font.hhea.descender, 0);
     });
 
     test('Metrics, normalization is on', () {
@@ -38,6 +40,8 @@ void main() {
       final widthList = font.hmtx.hMetrics.map((e) => e.advanceWidth);
 
       expect(widthList, [298, 333, 362, 270, 208]);
+      expect(font.hhea.ascender, 850);
+      expect(font.hhea.descender, -150);
     });
   });
 }
