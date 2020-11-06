@@ -21,12 +21,13 @@ const _kTableTagsToEncode = {
   kMaxpTag,
   kOS2Tag,
   kHmtxTag,
+  kNameTag, // NOTE: 'name' should be after 'cmap' for TTF
   kCmapTag,
   kLocaTag,
   kGlyfTag,
-  kCFF2Tag,
-  kNameTag,
   kPostTag,
+  kCFFTag,
+  kCFF2Tag,
   kGSUBTag
 };
 
