@@ -1,3 +1,7 @@
+## Next release
+
+* PostScript name record in the 'name' table now only contains allowed characters.
+
 ## 0.1.1
 
 * Changed values of ascender (to unitsPerEm) and descender (to 0) for non-normalized fonts.
