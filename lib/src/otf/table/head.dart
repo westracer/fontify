@@ -124,7 +124,7 @@ class HeaderTable extends FontTable {
         yMax,
         _kMacStyleRegular,
         _kLowestRecPPEMdefault,
-        !isOpenType && glyf.size < 0x20000
+        isOpenType || glyf.size < 0x20000
             ? _kIndexToLocFormatShort
             : _kIndexToLocFormatLong);
   }
