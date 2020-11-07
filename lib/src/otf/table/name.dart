@@ -286,7 +286,7 @@ class NamingTableFormat0 extends NamingTable {
 
     /// Values for name ids in sorted order
     final stringForNameMap = {
-      NameID.copyright: '$kVendorName © ${now.year}',
+      NameID.copyright: 'Copyright $kVendorName ${now.year}',
       NameID.fontFamily: fontName,
       NameID.fontSubfamily: 'Regular',
       NameID.uniqueID: fontName,

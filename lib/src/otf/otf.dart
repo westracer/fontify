@@ -43,7 +43,8 @@ class OpenTypeFont implements BinaryCodable {
 
   /// Generates new OpenType font.
   ///
-  /// Mutates every glyph's metadata, so that it contains newly generated charcode.
+  /// Mutates every glyph's metadata,
+  /// so that it contains newly generated charcode.
   ///
   /// * [glyphList] is a list of generic glyphs. Required.
   /// * [fontName] is a font name.
@@ -51,7 +52,8 @@ class OpenTypeFont implements BinaryCodable {
   /// * [description] is a font description for naming table.
   /// * [revision] is a font revision. Defaults to 1.0.
   /// * [achVendID] is a vendor ID in OS/2 table. Defaults to 4 spaces.
-  /// * If [useCFF2] is set to true, OpenType outlines in CFF2 table format are generated.
+  /// * If [useOpenType] is set to true, OpenType outlines
+  /// in CFF table format are generated.
   /// Otherwise, a font with TrueType outlines (TTF) is generated.
   /// Defaults to true.
   /// * If [usePostV2] is set to true, post table of version 2 is generated
@@ -67,7 +69,7 @@ class OpenTypeFont implements BinaryCodable {
     String description,
     Revision revision,
     String achVendID,
-    bool useCFF2,
+    bool useOpenType,
     bool usePostV2,
     bool normalize,
   }) {
@@ -78,7 +80,7 @@ class OpenTypeFont implements BinaryCodable {
     revision ??= kDefaultFontRevision;
     achVendID ??= kDefaultAchVendID;
     fontName ??= kDefaultFontFamily;
-    useCFF2 ??= true;
+    useOpenType ??= true;
     normalize ??= true;
     usePostV2 ??= false;
 
@@ -86,7 +88,7 @@ class OpenTypeFont implements BinaryCodable {
 
     // A power of two is recommended only for TrueType outlines
     final unitsPerEm =
-        useCFF2 ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
+        useOpenType ? kDefaultOpenTypeUnitsPerEm : kDefaultTrueTypeUnitsPerEm;
 
     final baselineExtension = normalize ? kDefaultBaselineExtension : 0;
     final ascender = unitsPerEm - baselineExtension;
@@ -119,10 +121,10 @@ class OpenTypeFont implements BinaryCodable {
       ...customGlyphMetricsList,
     ];
 
-    final glyf = useCFF2 ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
+    final glyf = useOpenType ? null : GlyphDataTable.fromGlyphs(fullGlyphList);
     final head =
         HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
-    final loca = useCFF2
+    final loca = useOpenType
         ? null
         : IndexToLocationTable.create(head.indexToLocFormat, glyf);
     final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
@@ -135,14 +137,17 @@ class OpenTypeFont implements BinaryCodable {
     final gsub = GlyphSubstitutionTable.create();
     final os2 = OS2Table.create(hmtx, head, hhea, cmap, gsub, achVendID);
 
-    final cff2 = useCFF2 ? CFF2Table.create(fullGlyphList) : null;
+    final cff =
+        useOpenType ? CFF1Table.create(fullGlyphList, head, hmtx, name) : null;
 
     final tables = {
-      if (!useCFF2) ...{
+      if (!useOpenType) ...{
         kGlyfTag: glyf,
         kLocaTag: loca,
       },
-      if (useCFF2) kCFF2Tag: cff2,
+      if (useOpenType) ...{
+        kCFFTag: cff,
+      },
       kCmapTag: cmap,
       kMaxpTag: maxp,
       kHeadTag: head,
@@ -154,7 +159,7 @@ class OpenTypeFont implements BinaryCodable {
       kOS2Tag: os2,
     };
 
-    final offsetTable = OffsetTable.create(tables.length, useCFF2);
+    final offsetTable = OffsetTable.create(tables.length, useOpenType);
 
     return OpenTypeFont(offsetTable, tables);
   }
@@ -175,6 +180,7 @@ class OpenTypeFont implements BinaryCodable {
   HorizontalHeaderTable get hhea => tableMap[kHheaTag] as HorizontalHeaderTable;
   HorizontalMetricsTable get hmtx =>
       tableMap[kHmtxTag] as HorizontalMetricsTable;
+  CFF1Table get cff => tableMap[kCFFTag] as CFF1Table;
   CFF2Table get cff2 => tableMap[kCFF2Tag] as CFF2Table;
 
   bool get isOpenType => offsetTable.isOpenType;

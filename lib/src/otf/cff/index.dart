@@ -6,24 +6,22 @@ import '../../utils/exception.dart';
 import '../../utils/otf.dart';
 import 'dict.dart';
 
-const kEmptyIndexSize = 4;
-
 class CFFIndex extends BinaryCodable {
-  CFFIndex(this.count, this.offSize, this.offsetList);
+  CFFIndex(this.count, this.offSize, this.offsetList, this.isCFF1);
 
-  CFFIndex.empty()
+  CFFIndex.empty(this.isCFF1)
       : count = 0,
         offSize = null,
         offsetList = [];
 
-  factory CFFIndex.fromByteData(ByteData byteData) {
+  factory CFFIndex.fromByteData(ByteData byteData, bool isCFF1) {
     var offset = 0;
 
-    final count = byteData.getUint32(0);
-    offset += 4;
+    final count = isCFF1 ? byteData.getUint16(0) : byteData.getUint32(0);
+    offset += _getCountSize(isCFF1);
 
     if (count == 0) {
-      return CFFIndex.empty();
+      return CFFIndex.empty(isCFF1);
     }
 
     final offSize = byteData.getUint8(offset++);
@@ -45,12 +43,13 @@ class CFFIndex extends BinaryCodable {
       offsetList.add(value);
     }
 
-    return CFFIndex(count, offSize, offsetList);
+    return CFFIndex(count, offSize, offsetList, isCFF1);
   }
 
   final int count;
   final int offSize;
   final List<int> offsetList;
+  final bool isCFF1;
 
   bool get isEmpty => count == 0;
 
@@ -58,8 +57,13 @@ class CFFIndex extends BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     var offset = 0;
 
-    byteData.setUint32(offset, count);
-    offset += 4;
+    if (isCFF1) {
+      byteData.setUint16(offset, count);
+    } else {
+      byteData.setUint32(offset, count);
+    }
+
+    offset += _getCountSize(isCFF1);
 
     if (isEmpty) {
       return;
@@ -79,24 +83,28 @@ class CFFIndex extends BinaryCodable {
 
   @override
   int get size {
-    var sizeSum = 4;
+    var sizeSum = countSize;
 
     if (isEmpty) {
-      return kEmptyIndexSize;
+      return sizeSum;
     }
 
     return sizeSum += 1 + _offsetListSize;
   }
+
+  int get countSize => _getCountSize(isCFF1);
+
+  static int _getCountSize(bool isCFF1) => isCFF1 ? 2 : 4;
 }
 
 class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
-  CFFIndexWithData(this.index, this.data);
+  CFFIndexWithData(this.index, this.data, this.isCFF1);
 
   /// Decodes INDEX and its data from [ByteData]
-  factory CFFIndexWithData.fromByteData(ByteData byteData) {
+  factory CFFIndexWithData.fromByteData(ByteData byteData, bool isCFF1) {
     final decoder = _getDecoderForType(T);
 
-    final index = CFFIndex.fromByteData(byteData);
+    final index = CFFIndex.fromByteData(byteData, isCFF1);
     final indexSize = index.size;
 
     final dataList = <T>[];
@@ -112,13 +120,15 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
       dataList.add(decoder(fontDictByteData) as T);
     }
 
-    return CFFIndexWithData(index, dataList);
+    return CFFIndexWithData(index, dataList, isCFF1);
   }
 
-  factory CFFIndexWithData.create(List<T> data) => CFFIndexWithData(null, data);
+  factory CFFIndexWithData.create(List<T> data, bool isCFF1) =>
+      CFFIndexWithData(null, data, isCFF1);
 
   CFFIndex index;
   final List<T> data;
+  final bool isCFF1;
 
   static Object Function(ByteData) _getDecoderForType(Type type) {
     switch (type) {
@@ -160,7 +170,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
   @override
   void recalculateOffsets() {
     if (data.isEmpty) {
-      index = CFFIndex.empty();
+      index = CFFIndex.empty(isCFF1);
       return;
     }
 
@@ -186,7 +196,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
 
     do {
       expectedOffSize++;
-      newIndex = CFFIndex(data.length, expectedOffSize, offsetList);
+      newIndex = CFFIndex(data.length, expectedOffSize, offsetList, isCFF1);
       actualOffSize = (offsetList.last.bitLength / 8).ceil();
     } while (actualOffSize != expectedOffSize);
 
@@ -200,7 +210,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
   @override
   int get size {
     if (data.isEmpty) {
-      return kEmptyIndexSize;
+      return CFFIndex._getCountSize(isCFF1);
     }
 
     final newIndex = _calculateIndex();

@@ -194,7 +194,9 @@ class CharStringCommand implements BinaryCodable {
 /// Doesn't support hinting, subroutines, blending.
 /// Doesn't respect interpreter implementation limits.
 class CharStringInterpreter {
-  CharStringInterpreter();
+  CharStringInterpreter(this.isCFF1);
+
+  final bool isCFF1;
 
   final _commandList = <CharStringCommand>[];
   final Queue<num> _stack = Queue();
@@ -478,26 +480,42 @@ class CharStringInterpreter {
     return [..._commandList];
   }
 
-  ByteData writeCommands(List<CharStringCommand> commandList) {
+  ByteData writeCommands(
+    List<CharStringCommand> commandList, {
+    int glyphWidth,
+  }) {
     final list = <int>[];
 
-    void writeCommand(CharStringCommand command) {
-      command.operandList.map((e) {
-        final byteData = ByteData(e.size);
-        e.encodeToBinary(byteData);
-
-        return byteData.buffer.asUint8List();
-      }).forEach(list.addAll);
-
-      final op = command.operator;
-      final opByteData = ByteData(op.size);
-      command.operator.encodeToBinary(opByteData);
-      list.addAll(opByteData.buffer.asUint8List());
+    void encodeAndPush(BinaryEncodable encodable) {
+      final byteData = ByteData(encodable.size);
+      encodable.encodeToBinary(byteData);
+      list.addAll(byteData.buffer.asUint8List());
     }
 
-    commandList.forEach(writeCommand);
+    // CFF1 glyphs contain width value as a first operand
+    if (isCFF1 && glyphWidth != null) {
+      encodeAndPush(CFFOperand.fromValue(glyphWidth));
+    }
+
+    for (final command in commandList) {
+      command.operandList.forEach(encodeAndPush);
+      encodeAndPush(command.operator);
+    }
+
     return ByteData.sublistView(Uint8List.fromList(list));
   }
+}
+
+class CharStringInterpreterLimits {
+  factory CharStringInterpreterLimits(bool isCFF1) => isCFF1
+      ? const CharStringInterpreterLimits._cff1()
+      : const CharStringInterpreterLimits._cff2();
+
+  const CharStringInterpreterLimits._cff1() : argumentStackLimit = 48;
+
+  const CharStringInterpreterLimits._cff2() : argumentStackLimit = 513;
+
+  final int argumentStackLimit;
 }
 
 extension _QueueExt<T> on Queue<T> {

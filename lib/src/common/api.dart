@@ -62,7 +62,7 @@ SvgToOtfResult svgToOtf({
     glyphList: glyphList,
     fontName: fontName,
     normalize: normalize,
-    useCFF2: true,
+    useOpenType: true,
     usePostV2: false,
   );
 

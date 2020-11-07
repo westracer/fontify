@@ -1,6 +1,10 @@
 ## Next release
 
+* **IMPORTANT:** 'CFF' table is generated now instead of 'CFF2'.
+It shouldn't affect glyphs in newly generated fonts. 
+To learn more, refer to the issue: <https://github.com/westracer/fontify/issues/8>
 * PostScript name record in the 'name' table now only contains allowed characters.
+* Added CharString optimization to remove some NOOP commands.
 
 ## 0.1.1
 

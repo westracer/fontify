@@ -123,7 +123,7 @@ The example of API usage is located in [example folder][].
 
 # Notes
 
-- Generated OpenType font is using CFF2 table.
+- Generated OpenType font is using CFF table.
 - Generated font is using PostScript Table (post) of version 3.0, i.e., it doesn't contain glyph names.
 - Supported SVG elements: path, g, circle, rect, polyline, polygon, line.
 - SVG transforms are applied to paths according to specs.
@@ -153,3 +153,7 @@ Suffix '_{i+1}' is added, if name already exists.
 # Contributing
 
 Any suggestions, issues, pull requests are welcomed.
+
+# License
+
+[MIT](https://github.com/westracer/fontify/blob/master/LICENSE)

@@ -352,7 +352,7 @@ void main() {
       recreatedFont = OpenTypeFont.createFromGlyphs(
         glyphList: glyphList,
         fontName: 'TestFont',
-        useCFF2: false,
+        useOpenType: false,
         usePostV2: true,
       );
 
