@@ -52,6 +52,13 @@ abstract class CharStringOptimizer {
     return next;
   }
 
+  static List<CharStringCommand> _optimizeEmpty(
+      List<CharStringCommand> commandList) {
+    return commandList
+        .where((e) => !e.operandList.every((o) => o.value == 0))
+        .toList();
+  }
+
   static List<CharStringCommand> _optimizeCommandsWithSameOperators(
       List<CharStringCommand> commandList) {
     if (commandList.isEmpty) {
@@ -74,6 +81,6 @@ abstract class CharStringOptimizer {
   }
 
   static List<CharStringCommand> optimize(List<CharStringCommand> commandList) {
-    return _optimizeCommandsWithSameOperators(commandList);
+    return _optimizeCommandsWithSameOperators(_optimizeEmpty(commandList));
   }
 }
