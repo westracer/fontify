@@ -1,19 +1,6 @@
-import 'dart:typed_data';
+part of fontify.otf.cff;
 
-import '../../common/calculatable_offsets.dart';
-import '../../common/codable/binary.dart';
-import '../../common/generic_glyph.dart';
-import '../../utils/otf.dart';
-import '../cff/char_string.dart';
-import '../cff/dict.dart';
-import '../cff/dict_operator.dart' as op;
-import '../cff/index.dart';
-import '../cff/operand.dart';
-import '../cff/variations.dart';
-import 'abstract.dart';
-import 'table_record_entry.dart';
-
-const _kHeaderSize = 5;
+const _kCFF2HeaderSize = 5;
 
 class CFF2TableHeader implements BinaryCodable {
   CFF2TableHeader(this.majorVersion, this.minorVersion, this.headerSize,
@@ -28,7 +15,8 @@ class CFF2TableHeader implements BinaryCodable {
     );
   }
 
-  factory CFF2TableHeader.create() => CFF2TableHeader(2, 0, _kHeaderSize, null);
+  factory CFF2TableHeader.create() =>
+      CFF2TableHeader(_kMajorVersion2, 0, _kCFF2HeaderSize, null);
 
   final int majorVersion;
   final int minorVersion;
@@ -45,10 +33,10 @@ class CFF2TableHeader implements BinaryCodable {
   }
 
   @override
-  int get size => _kHeaderSize;
+  int get size => _kCFF2HeaderSize;
 }
 
-class CFF2Table extends FontTable implements CalculatableOffsets {
+class CFF2Table extends CFFTable implements CalculatableOffsets {
   CFF2Table(
     TableRecordEntry entry,
     this.header,
@@ -69,15 +57,15 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     var fixedOffset = entry.offset;
 
     final header = CFF2TableHeader.fromByteData(
-        byteData.sublistView(fixedOffset, _kHeaderSize));
-    fixedOffset += _kHeaderSize;
+        byteData.sublistView(fixedOffset, _kCFF2HeaderSize));
+    fixedOffset += _kCFF2HeaderSize;
 
     final topDict = CFFDict.fromByteData(
         byteData.sublistView(fixedOffset, header.topDictLength));
     fixedOffset += header.topDictLength;
 
     final globalSubrsData = CFFIndexWithData<Uint8List>.fromByteData(
-        byteData.sublistView(fixedOffset));
+        byteData.sublistView(fixedOffset), false);
     fixedOffset += globalSubrsData.index.size;
 
     /// CharStrings INDEX
@@ -87,8 +75,8 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
     final charStringsIndexByteData =
         byteData.sublistView(entry.offset + charStringsIndexOffset);
 
-    final charStringsData =
-        CFFIndexWithData<Uint8List>.fromByteData(charStringsIndexByteData);
+    final charStringsData = CFFIndexWithData<Uint8List>.fromByteData(
+        charStringsIndexByteData, false);
 
     /// VariationStore
     final vstoreEntry = topDict.getEntryForOperator(op.vstore);
@@ -111,7 +99,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
 
     /// List of Font DICT
     final fontDictList =
-        CFFIndexWithData<CFFDict>.fromByteData(fontIndexByteData);
+        CFFIndexWithData<CFFDict>.fromByteData(fontIndexByteData, false);
 
     /// Private DICT list
     final privateDictList = <CFFDict>[];
@@ -138,7 +126,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
         final localSubrByteData =
             byteData.sublistView(dictOffset + localSubrOffset);
         final localSubrsData =
-            CFFIndexWithData<Uint8List>.fromByteData(localSubrByteData);
+            CFFIndexWithData<Uint8List>.fromByteData(localSubrByteData, false);
 
         localSubrsDataList.add(localSubrsData);
       }
@@ -151,10 +139,10 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
   factory CFF2Table.create(List<GenericGlyph> glyphList) {
     final header = CFF2TableHeader.create();
     final topDict = CFFDict.empty();
-    final globalSubrsData = CFFIndexWithData<Uint8List>.create([]);
+    final globalSubrsData = CFFIndexWithData<Uint8List>.create([], false);
     const VariationStoreData vstoreData = null; // omitted - no variations
 
-    final charStringInterpreter = CharStringInterpreter();
+    final charStringInterpreter = CharStringInterpreter(false);
 
     final charStringRawList = glyphList.map((g) {
       final glyph = g.copy();
@@ -165,20 +153,21 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
           ..quadToCubic();
       }
 
-      final commandList = glyph.toCharStringCommands();
+      final commandList =
+          glyph.toCharStringCommands(CharStringOptimizer(false));
       final byteData = charStringInterpreter.writeCommands(commandList);
 
       return byteData.buffer.asUint8List();
     }).toList();
 
     final charStringsData =
-        CFFIndexWithData<Uint8List>.create(charStringRawList);
+        CFFIndexWithData<Uint8List>.create(charStringRawList, false);
 
     final fontDict = CFFDict([CFFDictEntry([], op.private)]);
     final privateDict =
         CFFDict([]); // A Private DICT is required, but can be empty
 
-    final fontDictList = CFFIndexWithData<CFFDict>.create([fontDict]);
+    final fontDictList = CFFIndexWithData<CFFDict>.create([fontDict], false);
     final privateDictList = [privateDict];
     final localSubrsDataList = <CFFIndexWithData<Uint8List>>[];
 
@@ -252,7 +241,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
       fdArrayEntry,
     ];
 
-    _calculateEntryOffsets(entryList, offsetList, 0);
+    _calculateEntryOffsets(entryList, offsetList, operandIndex: 0);
   }
 
   @override
@@ -293,7 +282,7 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
         subrsEntry.recalculatePointers(0, () => privateDict.size);
       }
 
-      _calculateEntryOffsets([privateEntry], [fontDictOffset], 1);
+      _calculateEntryOffsets([privateEntry], [fontDictOffset], operandIndex: 1);
     }
 
     // Recalculating local subrs
@@ -363,39 +352,4 @@ class CFF2Table extends FontTable implements CalculatableOffsets {
       fontDictList.size +
       _privateDictListSize +
       _localSubrsListSize;
-
-  static void _calculateEntryOffsets(
-    List<CFFDictEntry> entryList,
-    List<int> offsetList,
-    int operandIndex,
-  ) {
-    bool sizeChanged;
-
-    /// Iterating and changing offsets while operand size is changing
-    /// A bit dirty, maybe there's easier way to do that
-    do {
-      sizeChanged = false;
-
-      for (var i = 0; i < entryList.length; i++) {
-        final entry = entryList[i];
-        final oldOperand = entry.operandList[operandIndex];
-        final newOperand = CFFOperand.fromValue(offsetList[i]);
-
-        final sizeDiff = newOperand.size - oldOperand.size;
-
-        if (oldOperand.value != newOperand.value) {
-          entry.operandList
-              .replaceRange(operandIndex, operandIndex + 1, [newOperand]);
-        }
-
-        if (sizeDiff > 0) {
-          sizeChanged = true;
-
-          for (var i = 0; i < offsetList.length; i++) {
-            offsetList[i] += sizeDiff;
-          }
-        }
-      }
-    } while (sizeChanged);
-  }
 }

@@ -103,8 +103,9 @@ class OTFReader {
       case kHmtxTag:
         return HorizontalMetricsTable.fromByteData(
             _byteData, entry, _font.hhea, numGlyphs);
+      case kCFFTag:
       case kCFF2Tag:
-        return CFF2Table.fromByteData(_byteData, entry);
+        return CFFTable.fromByteData(_byteData, entry);
       default:
         OTFDebugger.debugUnsupportedTable(entry.tag);
         return null;

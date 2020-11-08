@@ -15,7 +15,7 @@ const _kNameRecordSize = 12;
 
 const _kFormat0 = 0x0;
 
-enum _NameID {
+enum NameID {
   /// 0:  Copyright notice.
   copyright,
 
@@ -47,17 +47,17 @@ enum _NameID {
   urlVendor,
 }
 
-const _kNameIDmap = EnumClass<_NameID, int>({
-  _NameID.copyright: 0,
-  _NameID.fontFamily: 1,
-  _NameID.fontSubfamily: 2,
-  _NameID.uniqueID: 3,
-  _NameID.fullFontName: 4,
-  _NameID.version: 5,
-  _NameID.postScriptName: 6,
-  _NameID.manufacturer: 8,
-  _NameID.description: 10,
-  _NameID.urlVendor: 11,
+const _kNameIDmap = EnumClass<NameID, int>({
+  NameID.copyright: 0,
+  NameID.fontFamily: 1,
+  NameID.fontSubfamily: 2,
+  NameID.uniqueID: 3,
+  NameID.fullFontName: 4,
+  NameID.version: 5,
+  NameID.postScriptName: 6,
+  NameID.manufacturer: 8,
+  NameID.description: 10,
+  NameID.urlVendor: 11,
 });
 
 /// List of name record templates, sorted by platform and encoding ID
@@ -251,6 +251,8 @@ abstract class NamingTable extends FontTable {
   }
 
   String get familyName;
+
+  String getStringByNameId(NameID nameId);
 }
 
 class NamingTableFormat0 extends NamingTable {
@@ -284,16 +286,16 @@ class NamingTableFormat0 extends NamingTable {
 
     /// Values for name ids in sorted order
     final stringForNameMap = {
-      _NameID.copyright: '$kVendorName © ${now.year}',
-      _NameID.fontFamily: fontName,
-      _NameID.fontSubfamily: 'Regular',
-      _NameID.uniqueID: fontName,
-      _NameID.fullFontName: fontName,
-      _NameID.version: 'Version ${revision.major}.${revision.minor}',
-      _NameID.postScriptName: fontName.getAsciiPrintable(),
-      _NameID.manufacturer: kVendorName,
-      _NameID.description: description ?? 'Generated using $kVendorName',
-      _NameID.urlVendor: kVendorUrl,
+      NameID.copyright: 'Copyright $kVendorName ${now.year}',
+      NameID.fontFamily: fontName,
+      NameID.fontSubfamily: 'Regular',
+      NameID.uniqueID: fontName,
+      NameID.fullFontName: fontName,
+      NameID.version: 'Version ${revision.major}.${revision.minor}',
+      NameID.postScriptName: fontName.getPostScriptString(),
+      NameID.manufacturer: kVendorName,
+      NameID.description: description ?? 'Generated using $kVendorName',
+      NameID.urlVendor: kVendorUrl,
     };
 
     final stringList = [
@@ -354,8 +356,11 @@ class NamingTableFormat0 extends NamingTable {
   }
 
   @override
-  String get familyName {
-    final nameID = _kNameIDmap.getValueForKey(_NameID.fontFamily);
+  String get familyName => getStringByNameId(NameID.fontFamily);
+
+  @override
+  String getStringByNameId(NameID nameId) {
+    final nameID = _kNameIDmap.getValueForKey(nameId);
     final familyIndex =
         header.nameRecordList.indexWhere((e) => e.nameID == nameID);
 

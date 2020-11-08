@@ -29,8 +29,7 @@ void main(List<String> args) {
 
   try {
     _run(parsedArgs);
-    // ignore: avoid_catches_without_on_clauses
-  } catch (e) {
+  } on dynamic catch (e) {
     logger.e(e.toString());
     exit(65);
   }

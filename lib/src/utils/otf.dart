@@ -16,6 +16,7 @@ const String kLocaTag = 'loca';
 const String kMaxpTag = 'maxp';
 const String kNameTag = 'name';
 const String kPostTag = 'post';
+const String kCFFTag = 'CFF ';
 const String kCFF2Tag = 'CFF2';
 
 const kPlatformUnicode = 0;
@@ -157,8 +158,13 @@ extension OTFByteDateExt on ByteData {
 }
 
 extension OTFStringExt on String {
+  /// Returns ASCII-printable string
   String getAsciiPrintable() =>
       replaceAll(RegExp(r'([^\x00-\x7E]|[\(\[\]\(\)\{\}<>\/%])'), '');
+
+  /// Returns ASCII-printable and PostScript-compatible string
+  String getPostScriptString() =>
+      getAsciiPrintable().replaceAll(RegExp(r'[^\x21-\x7E]'), '');
 }
 
 @immutable

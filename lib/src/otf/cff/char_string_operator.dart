@@ -33,6 +33,9 @@ const flex = CFFOperator(CFFOperatorContext.charString, 12, 35);
 const hflex1 = CFFOperator(CFFOperatorContext.charString, 12, 36);
 const flex1 = CFFOperator(CFFOperatorContext.charString, 12, 37);
 
+/// CFF1 endchar
+const endchar = CFFOperator(CFFOperatorContext.charString, 14);
+
 final Map<CFFOperator, String> charStringOperatorNames = UnmodifiableMapView({
   vstem: 'vstem',
   vmoveto: 'vmoveto',
@@ -61,4 +64,5 @@ final Map<CFFOperator, String> charStringOperatorNames = UnmodifiableMapView({
   flex: 'flex',
   hflex1: 'hflex1',
   flex1: 'flex1',
+  endchar: 'endchar',
 });

@@ -125,7 +125,7 @@ class GenericGlyph {
     return endPoints;
   }
 
-  List<CharStringCommand> toCharStringCommands() {
+  List<CharStringCommand> toCharStringCommands(CharStringOptimizer optimizer) {
     for (final outline in outlines) {
       if (outline.hasQuadCurves) {
         // NOTE: what about doing it implicitly?
@@ -175,7 +175,7 @@ class GenericGlyph {
       }
     }
 
-    return CharStringOptimizer.optimize(commandList);
+    return optimizer.optimize(commandList);
   }
 
   SimpleGlyph toSimpleTrueTypeGlyph() {

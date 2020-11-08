@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+const int kUint8Max = 255;
 const int kInt32Max = 2147483647;
 const int kInt32Min = -2147483648;
 

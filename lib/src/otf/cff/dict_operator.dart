@@ -19,6 +19,38 @@ const fdSelect = CFFOperator(CFFOperatorContext.dict, 12, 37);
 /// VariationStore structure offset. Omitted if there is no varation data.
 const vstore = CFFOperator(CFFOperatorContext.dict, 24);
 
+// CFF1 Top DICT operators
+
+/// version
+const version = CFFOperator(CFFOperatorContext.dict, 0);
+
+/// Notice
+const notice = CFFOperator(CFFOperatorContext.dict, 1);
+
+/// Copyright
+const copyright = CFFOperator(CFFOperatorContext.dict, 12, 0);
+
+/// Full Name
+const fullName = CFFOperator(CFFOperatorContext.dict, 2);
+
+/// Family Name
+const familyName = CFFOperator(CFFOperatorContext.dict, 3);
+
+/// Weight
+const weight = CFFOperator(CFFOperatorContext.dict, 4);
+
+/// Font BBox
+const fontBBox = CFFOperator(CFFOperatorContext.dict, 5);
+
+/// Charset offset
+const charset = CFFOperator(CFFOperatorContext.dict, 15);
+
+/// Encoding offset
+const encoding = CFFOperator(CFFOperatorContext.dict, 16);
+
+/// Nominal Width X
+const nominalWidthX = CFFOperator(CFFOperatorContext.dict, 21);
+
 // Font DICT operators
 
 /// Private DICT size and offset
@@ -69,4 +101,14 @@ final Map<CFFOperator, String> dictOperatorNames = UnmodifiableMapView({
   stemSnapV: 'StemSnapV',
   languageGroup: 'LanguageGroup',
   expansionFactor: 'ExpansionFactor',
+  charset: 'charset',
+  encoding: 'Encoding',
+  version: 'version',
+  notice: 'Notice',
+  copyright: 'Copyright',
+  fullName: 'FullName',
+  familyName: 'FamilyName',
+  weight: 'Weight',
+  fontBBox: 'FontBBox',
+  nominalWidthX: 'nominalWidthX',
 });

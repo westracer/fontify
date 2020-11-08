@@ -352,7 +352,7 @@ void main() {
       recreatedFont = OpenTypeFont.createFromGlyphs(
         glyphList: glyphList,
         fontName: 'TestFont',
-        useCFF2: false,
+        useOpenType: false,
         usePostV2: true,
       );
 
@@ -493,11 +493,17 @@ void main() {
   });
 
   group('Utils', () {
+    const testString = '[INFO] :谷���新道, ひば���ヶ丘２丁���,'
+        ' ひばりヶ���, 東久留米市 (Higashikurume)';
+
     test('Printable ASCII string', () {
-      const str1 =
-          '[INFO] :谷���新道, ひば���ヶ丘２丁���, ひばりヶ���, 東久留米市 (Higashikurume)';
-      const printableStr1 = 'INFO :, , ,  Higashikurume';
-      expect(str1.getAsciiPrintable(), printableStr1);
+      const expectedString = 'INFO :, , ,  Higashikurume';
+      expect(testString.getAsciiPrintable(), expectedString);
+    });
+
+    test('PostScript ASCII string', () {
+      const expectedString = 'INFO:,,,Higashikurume';
+      expect(testString.getPostScriptString(), expectedString);
     });
   });
 }
