@@ -1,4 +1,4 @@
-## Next release
+## 0.2.0
 
 * **IMPORTANT:** 'CFF' table is generated now instead of 'CFF2'.
 It shouldn't affect glyphs in newly generated fonts. 
