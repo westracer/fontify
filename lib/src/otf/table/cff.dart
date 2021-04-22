@@ -31,10 +31,10 @@ const _kMajorVersion1 = 0x0001;
 const _kMajorVersion2 = 0x0002;
 
 abstract class CFFTable extends FontTable {
-  CFFTable.fromTableRecordEntry(TableRecordEntry entry)
+  CFFTable.fromTableRecordEntry(TableRecordEntry? entry)
       : super.fromTableRecordEntry(entry);
 
-  factory CFFTable.fromByteData(ByteData byteData, TableRecordEntry entry) {
+  static CFFTable? fromByteData(ByteData byteData, TableRecordEntry entry) {
     final major = byteData.getUint8(entry.offset);
 
     switch (major) {
@@ -54,11 +54,12 @@ abstract class CFFTable extends FontTable {
 void _calculateEntryOffsets(
   List<CFFDictEntry> entryList,
   List<int> offsetList, {
-  int operandIndex,
-  List<int> operandIndexList,
+  int? operandIndex,
+  List<int>? operandIndexList,
 }) {
-  assert(operandIndex != null || operandIndexList != null,
-      'Specify operand index');
+  if (operandIndex == null && operandIndexList == null) {
+    throw ArgumentError.notNull('Specify operand index');
+  }
 
   bool sizeChanged;
 
@@ -68,7 +69,7 @@ void _calculateEntryOffsets(
     sizeChanged = false;
 
     for (var i = 0; i < entryList.length; i++) {
-      final entryOperandIndex = operandIndex ?? operandIndexList[i];
+      final entryOperandIndex = operandIndex ?? operandIndexList![i];
       final entry = entryList[i];
       final oldOperand = entry.operandList[entryOperandIndex];
       final newOperand = CFFOperand.fromValue(offsetList[i]);

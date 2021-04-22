@@ -1,3 +1,8 @@
+## 0.3.0-nullsafety.0
+
+* Migrate to null safety
+* Fix unknown config parameters causing a crash and add related warnings
+
 ## 0.2.0
 
 * **IMPORTANT:** 'CFF' table is generated now instead of 'CFF2'.

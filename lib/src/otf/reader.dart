@@ -13,8 +13,8 @@ class OTFReader {
 
   final ByteData _byteData;
 
-  OffsetTable _offsetTable;
-  OpenTypeFont _font;
+  late OffsetTable _offsetTable;
+  late OpenTypeFont _font;
 
   /// Tables by tags
   final _tableMap = <String, FontTable>{};
@@ -66,7 +66,7 @@ class OTFReader {
         continue;
       }
 
-      final table = _createTableFromEntry(entryMap[tag]);
+      final table = _createTableFromEntry(entry);
 
       if (table == null) {
         continue;
@@ -76,7 +76,7 @@ class OTFReader {
     }
   }
 
-  FontTable _createTableFromEntry(TableRecordEntry entry) {
+  FontTable? _createTableFromEntry(TableRecordEntry entry) {
     switch (entry.tag) {
       case kHeadTag:
         return HeaderTable.fromByteData(_byteData, entry);
@@ -118,20 +118,22 @@ class OTFReader {
   void _validateChecksums() {
     final byteDataCopy = ByteData.sublistView(
         Uint8List.fromList([..._byteData.buffer.asUint8List().toList()]))
-      ..setUint32(_font.head.entry.offset + 8,
+      ..setUint32(_font.head.entry!.offset + 8,
           0); // Setting head table's checkSumAdjustment to 0
 
     for (final table in _font.tableMap.values) {
-      final tableOffset = table.entry.offset;
-      final tableLength = table.entry.length;
+      final entry = table.entry!;
+
+      final tableOffset = entry.offset;
+      final tableLength = entry.length;
 
       final tableByteData = ByteData.sublistView(
           byteDataCopy, tableOffset, tableOffset + tableLength);
       final actualChecksum = calculateTableChecksum(tableByteData);
-      final expectedChecksum = table.entry.checkSum;
+      final expectedChecksum = entry.checkSum;
 
       if (actualChecksum != expectedChecksum) {
-        throw ChecksumException.table(table.entry.tag);
+        throw ChecksumException.table(entry.tag);
       }
     }
 

@@ -10,7 +10,7 @@ const _kHheaTableSize = 36;
 
 class HorizontalHeaderTable extends FontTable {
   HorizontalHeaderTable(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.majorVersion,
     this.minorVersion,
     this.ascender,

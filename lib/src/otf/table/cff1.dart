@@ -27,7 +27,7 @@ class CFF1TableHeader implements BinaryCodable {
   final int majorVersion;
   final int minorVersion;
   final int headerSize;
-  int offSize;
+  int? offSize;
 
   @override
   void encodeToBinary(ByteData byteData) {
@@ -35,7 +35,7 @@ class CFF1TableHeader implements BinaryCodable {
       ..setUint8(0, majorVersion)
       ..setUint8(1, minorVersion)
       ..setUint8(2, headerSize)
-      ..setUint8(3, offSize);
+      ..setUint8(3, offSize!);
   }
 
   @override
@@ -44,7 +44,7 @@ class CFF1TableHeader implements BinaryCodable {
 
 class CFF1Table extends CFFTable implements CalculatableOffsets {
   CFF1Table(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.header,
     this.nameIndex,
     this.topDicts,
@@ -94,10 +94,10 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
       byteData.sublistView(fixedOffset),
       true,
     );
-    fixedOffset += globalSubrsData.index.size;
+    fixedOffset += globalSubrsData.index!.size;
 
     /// CharStrings INDEX
-    final charStringsIndexEntry = topDict.getEntryForOperator(op.charStrings);
+    final charStringsIndexEntry = topDict.getEntryForOperator(op.charStrings)!;
     final charStringsIndexOffset =
         charStringsIndexEntry.operandList.first.value as int;
     final charStringsIndexByteData =
@@ -110,16 +110,16 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
 
     /// Charsets
     final charsetsOffset =
-        topDict.getEntryForOperator(op.charset).operandList.first.value as int;
+        topDict.getEntryForOperator(op.charset)!.operandList.first.value as int;
     final charsetsByteData =
         byteData.sublistView(entry.offset + charsetsOffset);
 
     final charsetEntry = CharsetEntry.fromByteData(
       charsetsByteData,
-      charStringsData.index.count,
-    );
+      charStringsData.index!.count,
+    )!;
 
-    final privateEntry = topDict.getEntryForOperator(op.private);
+    final privateEntry = topDict.getEntryForOperator(op.private)!;
     final dictOffset =
         entry.offset + (privateEntry.operandList.last.value as int);
     final dictLength = privateEntry.operandList.first.value as int;
@@ -186,13 +186,13 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
       if (standardSid != null) {
         sidList.add(standardSid);
       } else {
-        putStringInIndex(g.metadata.name);
+        putStringInIndex(g.metadata.name!);
       }
     }
 
     final glyphSidList = [...sidList];
 
-    final fontName = name.getStringByNameId(NameID.fullFontName);
+    final fontName = name.getStringByNameId(NameID.fullFontName)!;
     final copyrightString = '${name.getStringByNameId(NameID.copyright)} '
         '${name.getStringByNameId(NameID.urlVendor)}';
 
@@ -206,10 +206,11 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
     final topDicts = CFFIndexWithData.create([
       CFFDict([
         for (final e in topDictStringEntryMap.entries)
-          CFFDictEntry(
-            [CFFOperand.fromValue(putStringInIndex(e.value))],
-            e.key,
-          ),
+          if (e.value != null)
+            CFFDictEntry(
+              [CFFOperand.fromValue(putStringInIndex(e.value!))],
+              e.key,
+            ),
         CFFDictEntry([
           CFFOperand.fromValue(head.xMin),
           CFFOperand.fromValue(head.yMin),
@@ -330,9 +331,9 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
     final privateDictOffset = offset;
     offset += privateDict.size;
 
-    final charsetEntry = topDict.getEntryForOperator(op.charset);
-    final charStringsEntry = topDict.getEntryForOperator(op.charStrings);
-    final privateEntry = topDict.getEntryForOperator(op.private);
+    final charsetEntry = topDict.getEntryForOperator(op.charset)!;
+    final charStringsEntry = topDict.getEntryForOperator(op.charStrings)!;
+    final privateEntry = topDict.getEntryForOperator(op.private)!;
 
     final offsetList = [
       charsetOffset,
@@ -363,7 +364,7 @@ class CFF1Table extends CFFTable implements CalculatableOffsets {
     localSubrsDataList.forEach((e) => e.recalculateOffsets());
 
     // Last data offset
-    final lastDataEntry = topDict.getEntryForOperator(op.private);
+    final lastDataEntry = topDict.getEntryForOperator(op.private)!;
     final lastDataOffset = lastDataEntry.operandList.last.value as int;
     header.offSize = (lastDataOffset.bitLength / 8).ceil();
   }

@@ -9,7 +9,7 @@ void main() {
     defineOptions(_argParser);
 
     void expectCliArgumentException(List<String> args) {
-      expect(() => parseArguments(_argParser, args).validate(),
+      expect(() => parseArguments(_argParser, args),
           throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
@@ -51,11 +51,11 @@ void main() {
         '--package=test_package',
       ];
 
-      final parsedArgs = parseArguments(_argParser, args)..validate();
+      final parsedArgs = parseArguments(_argParser, args);
 
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
-      expect(parsedArgs.classFile.path, 'test/a/df.dart');
+      expect(parsedArgs.classFile?.path, 'test/a/df.dart');
       expect(parsedArgs.indent, 4);
       expect(parsedArgs.className, 'MyIcons');
       expect(parsedArgs.fontName, 'My Icons');
@@ -63,7 +63,7 @@ void main() {
       expect(parsedArgs.ignoreShapes, isFalse);
       expect(parsedArgs.recursive, isTrue);
       expect(parsedArgs.verbose, isTrue);
-      expect(parsedArgs.configFile.path, 'test/config.yaml');
+      expect(parsedArgs.configFile?.path, 'test/config.yaml');
       expect(parsedArgs.fontPackage, 'test_package');
     });
 
@@ -75,7 +75,7 @@ void main() {
         '--ignore-shapes',
       ];
 
-      final parsedArgs = parseArguments(_argParser, args)..validate();
+      final parsedArgs = parseArguments(_argParser, args);
 
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
@@ -93,7 +93,7 @@ void main() {
 
     test('Help', () {
       void expectCliHelpException(List<String> args) {
-        expect(() => parseArguments(_argParser, args).validate(),
+        expect(() => parseArguments(_argParser, args),
             throwsA(const TypeMatcher<CliHelpException>()));
       }
 
@@ -120,7 +120,7 @@ void main() {
 
     test('All arguments and config', () {
       const args = [
-        'no',
+        './',
         'no',
         '--output-class-file=no',
         '--indent=0',
@@ -134,11 +134,11 @@ void main() {
         '--config-file=test/assets/test_config.yaml',
       ];
 
-      final parsedArgs = parseArgsAndConfig(_argParser, args)..validate();
+      final parsedArgs = parseArgsAndConfig(_argParser, args);
 
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs.classFile.path, 'lib/test_font.dart');
+      expect(parsedArgs.classFile?.path, 'lib/test_font.dart');
       expect(parsedArgs.indent, 4);
       expect(parsedArgs.className, 'MyIcons');
       expect(parsedArgs.fontName, 'My Icons');
@@ -152,14 +152,16 @@ void main() {
 
     test('No arguments and config', () {
       const args = [
+        './',
+        'yes',
         '--config-file=test/assets/test_config.yaml',
       ];
 
-      final parsedArgs = parseArgsAndConfig(_argParser, args)..validate();
+      final parsedArgs = parseArgsAndConfig(_argParser, args);
 
       expect(parsedArgs.svgDir.path, './');
       expect(parsedArgs.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs.classFile.path, 'lib/test_font.dart');
+      expect(parsedArgs.classFile?.path, 'lib/test_font.dart');
       expect(parsedArgs.indent, 4);
       expect(parsedArgs.className, 'MyIcons');
       expect(parsedArgs.fontName, 'My Icons');
@@ -174,7 +176,7 @@ void main() {
 
   group('Config', () {
     void expectCliArgumentException(String cfg) {
-      expect(() => parseConfig(cfg).validate(),
+      expect(() => parseConfig(cfg),
           throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
@@ -243,19 +245,19 @@ fontify:
 
   recursive: true
   verbose: true
-      ''')..validate();
+      ''');
 
-      expect(parsedArgs.svgDir.path, './');
-      expect(parsedArgs.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs.classFile.path, 'lib/test_font.dart');
-      expect(parsedArgs.indent, 4);
-      expect(parsedArgs.className, 'MyIcons');
-      expect(parsedArgs.fontName, 'My Icons');
-      expect(parsedArgs.normalize, isFalse);
-      expect(parsedArgs.ignoreShapes, isFalse);
-      expect(parsedArgs.recursive, isTrue);
-      expect(parsedArgs.verbose, isTrue);
-      expect(parsedArgs.fontPackage, 'test_package');
+      expect(parsedArgs?.svgDir.path, './');
+      expect(parsedArgs?.fontFile.path, 'generated_font.otf');
+      expect(parsedArgs?.classFile?.path, 'lib/test_font.dart');
+      expect(parsedArgs?.indent, 4);
+      expect(parsedArgs?.className, 'MyIcons');
+      expect(parsedArgs?.fontName, 'My Icons');
+      expect(parsedArgs?.normalize, isFalse);
+      expect(parsedArgs?.ignoreShapes, isFalse);
+      expect(parsedArgs?.recursive, isTrue);
+      expect(parsedArgs?.verbose, isTrue);
+      expect(parsedArgs?.fontPackage, 'test_package');
     });
 
     test('All arguments with defaults', () {
@@ -263,19 +265,19 @@ fontify:
 fontify:
   input_svg_dir: ./
   output_font_file: generated_font.otf
-      ''')..validate();
+      ''');
 
-      expect(parsedArgs.svgDir.path, './');
-      expect(parsedArgs.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs.classFile, isNull);
-      expect(parsedArgs.indent, null);
-      expect(parsedArgs.className, isNull);
-      expect(parsedArgs.fontName, isNull);
-      expect(parsedArgs.normalize, isNull);
-      expect(parsedArgs.ignoreShapes, isNull);
-      expect(parsedArgs.recursive, isNull);
-      expect(parsedArgs.verbose, isNull);
-      expect(parsedArgs.fontPackage, isNull);
+      expect(parsedArgs?.svgDir.path, './');
+      expect(parsedArgs?.fontFile.path, 'generated_font.otf');
+      expect(parsedArgs?.classFile, isNull);
+      expect(parsedArgs?.indent, null);
+      expect(parsedArgs?.className, isNull);
+      expect(parsedArgs?.fontName, isNull);
+      expect(parsedArgs?.normalize, isNull);
+      expect(parsedArgs?.ignoreShapes, isNull);
+      expect(parsedArgs?.recursive, isNull);
+      expect(parsedArgs?.verbose, isNull);
+      expect(parsedArgs?.fontPackage, isNull);
     });
 
     test('Type validation', () {

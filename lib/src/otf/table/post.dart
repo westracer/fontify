@@ -89,7 +89,7 @@ class PostScriptTableHeader implements BinaryCodable {
 abstract class PostScriptData implements BinaryCodable {
   PostScriptData();
 
-  factory PostScriptData.fromByteData(
+  static PostScriptData? fromByteData(
       ByteData byteData, int offset, PostScriptTableHeader header) {
     final version = header.version.int32value;
 
@@ -217,7 +217,7 @@ class PostScriptVersion20 extends PostScriptData {
 }
 
 class PostScriptTable extends FontTable {
-  PostScriptTable(TableRecordEntry entry, this.header, this.data)
+  PostScriptTable(TableRecordEntry? entry, this.header, this.data)
       : super.fromTableRecordEntry(entry);
 
   factory PostScriptTable.fromByteData(
@@ -247,15 +247,15 @@ class PostScriptTable extends FontTable {
   }
 
   final PostScriptTableHeader header;
-  final PostScriptData data;
+  final PostScriptData? data;
 
   @override
-  int get size => header.size + data.size;
+  int get size => header.size + (data?.size ?? 0);
 
   @override
   void encodeToBinary(ByteData byteData) {
     header.encodeToBinary(byteData);
-    data.encodeToBinary(byteData.sublistView(header.size, data.size));
+    data?.encodeToBinary(byteData.sublistView(header.size, data!.size));
   }
 }
 

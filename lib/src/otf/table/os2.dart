@@ -45,7 +45,7 @@ const _kDefaultPANOSE = [2, 0, 5, 3, 0, 0, 0, 0, 0, 0];
 
 class OS2Table extends FontTable {
   OS2Table._(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.version,
     this.xAvgCharWidth,
     this.usWeightClass,
@@ -151,9 +151,9 @@ class OS2Table extends FontTable {
     String achVendID, {
     int version = _kVersion5,
   }) {
-    final asciiAchVendID = achVendID?.getAsciiPrintable();
+    final asciiAchVendID = achVendID.getAsciiPrintable();
 
-    if (asciiAchVendID?.length != 4) {
+    if (asciiAchVendID.length != 4) {
       throw TableDataFormatException(
           'Incorrect achVendID tag format in OS/2 table');
     }
@@ -263,19 +263,19 @@ class OS2Table extends FontTable {
   final int usWinDescent;
 
   // Version 1
-  final int ulCodePageRange1;
-  final int ulCodePageRange2;
+  final int? ulCodePageRange1;
+  final int? ulCodePageRange2;
 
   // Version 4
-  final int sxHeight;
-  final int sCapHeight;
-  final int usDefaultChar;
-  final int usBreakChar;
-  final int usMaxContext;
+  final int? sxHeight;
+  final int? sCapHeight;
+  final int? usDefaultChar;
+  final int? usBreakChar;
+  final int? usMaxContext;
 
   // Version 5
-  final int usLowerOpticalPointSize;
-  final int usUpperOpticalPointSize;
+  final int? usLowerOpticalPointSize;
+  final int? usUpperOpticalPointSize;
 
   @override
   int get size {
@@ -367,23 +367,23 @@ class OS2Table extends FontTable {
 
     if (isV1) {
       byteData
-        ..setUint32(78, ulCodePageRange1)
-        ..setUint32(82, ulCodePageRange2);
+        ..setUint32(78, ulCodePageRange1!)
+        ..setUint32(82, ulCodePageRange2!);
     }
 
     if (isV4) {
       byteData
-        ..setInt16(86, sxHeight)
-        ..setInt16(88, sCapHeight)
-        ..setUint16(90, usDefaultChar)
-        ..setUint16(92, usBreakChar)
-        ..setUint16(94, usMaxContext);
+        ..setInt16(86, sxHeight!)
+        ..setInt16(88, sCapHeight!)
+        ..setUint16(90, usDefaultChar!)
+        ..setUint16(92, usBreakChar!)
+        ..setUint16(94, usMaxContext!);
     }
 
     if (isV5) {
       byteData
-        ..setUint16(96, usLowerOpticalPointSize)
-        ..setUint16(98, usUpperOpticalPointSize);
+        ..setUint16(96, usLowerOpticalPointSize!)
+        ..setUint16(98, usUpperOpticalPointSize!);
     }
   }
 }

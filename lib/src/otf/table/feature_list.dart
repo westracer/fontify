@@ -24,7 +24,7 @@ class FeatureRecord implements BinaryCodable {
   }
 
   final String featureTag;
-  int featureOffset;
+  int? featureOffset;
 
   @override
   int get size => kFeatureRecordSize;
@@ -33,7 +33,7 @@ class FeatureRecord implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData
       ..setTag(0, featureTag)
-      ..setUint16(4, featureOffset);
+      ..setUint16(4, featureOffset!);
   }
 }
 
@@ -43,7 +43,7 @@ class FeatureTable implements BinaryCodable {
 
   factory FeatureTable.fromByteData(
       ByteData byteData, int offset, FeatureRecord record) {
-    offset += record.featureOffset;
+    offset += record.featureOffset!;
 
     final lookupIndexCount = byteData.getUint16(offset + 2);
     final lookupListIndices = List.generate(

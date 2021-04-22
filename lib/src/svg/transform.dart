@@ -24,23 +24,23 @@ final _transformParameterRegExp = RegExp(r'[\w.-]+');
 class Transform {
   Transform(this.type, this.parameterList);
 
-  final TransformType type;
+  final TransformType? type;
   final List<double> parameterList;
 
-  static List<Transform> parse(String string) {
+  static List<Transform> parse(String? string) {
     if (string == null) {
       return [];
     }
 
     final transforms = _transformRegExp.allMatches(string).map((m) {
-      final name = m.group(1);
+      final name = m.group(1)!;
       final type = _kTransformNameMap.getKeyForValue(name);
 
-      final parameterString = m.group(2);
+      final parameterString = m.group(2)!;
       final parameterMatches =
           _transformParameterRegExp.allMatches(parameterString);
       final parameterList =
-          parameterMatches.map((m) => double.parse(m.group(0))).toList();
+          parameterMatches.map((m) => double.parse(m.group(0)!)).toList();
 
       return Transform(type, parameterList);
     }).toList();
@@ -48,7 +48,7 @@ class Transform {
     return transforms;
   }
 
-  Matrix3 get matrix {
+  Matrix3? get matrix {
     switch (type) {
       case TransformType.matrix:
         return Matrix3.fromList(
@@ -83,16 +83,16 @@ class Transform {
         return _skewX(parameterList[0]);
       case TransformType.skewY:
         return _skewY(parameterList[0]);
+      case null:
+        return null;
     }
-
-    return null;
   }
 }
 
 /// Generates transform matrix for a list of transforms.
 ///
 /// Returns null, if transformList is empty.
-Matrix3 generateTransformMatrix(List<Transform> transformList) {
+Matrix3? generateTransformMatrix(List<Transform> transformList) {
   if (transformList.isEmpty) {
     return null;
   }
@@ -100,7 +100,9 @@ Matrix3 generateTransformMatrix(List<Transform> transformList) {
   final matrix = Matrix3.identity();
 
   for (final t in transformList) {
-    matrix.multiply(t.matrix);
+    if (t.matrix != null) {
+      matrix.multiply(t.matrix!);
+    }
   }
 
   return matrix;

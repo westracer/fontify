@@ -71,7 +71,7 @@ class EncodingRecord implements BinaryCodable {
 
   final int platformID;
   final int encodingID;
-  int offset;
+  int? offset;
 
   @override
   int get size => _kEncodingRecordSize;
@@ -81,7 +81,7 @@ class EncodingRecord implements BinaryCodable {
     byteData
       ..setUint16(0, platformID)
       ..setUint16(2, encodingID)
-      ..setUint32(4, offset);
+      ..setUint32(4, offset!);
   }
 }
 
@@ -153,7 +153,7 @@ class CharacterToGlyphTableHeader implements BinaryCodable {
 abstract class CmapData implements BinaryCodable {
   CmapData(this.format);
 
-  factory CmapData.fromByteData(ByteData byteData, int offset) {
+  static CmapData? fromByteData(ByteData byteData, int offset) {
     final format = byteData.getUint16(offset);
 
     switch (format) {
@@ -170,7 +170,7 @@ abstract class CmapData implements BinaryCodable {
     }
   }
 
-  factory CmapData.create(List<_Segment> segmentList, int format) {
+  static CmapData? create(List<_Segment> segmentList, int format) {
     switch (format) {
       case _kFormat0:
         return CmapByteEncodingTable.create();
@@ -462,7 +462,7 @@ class CmapSegmentedCoverageTable extends CmapData {
 
 class CharacterToGlyphTable extends FontTable {
   CharacterToGlyphTable(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.header,
     this.data,
   ) : super.fromTableRecordEntry(entry);
@@ -473,16 +473,21 @@ class CharacterToGlyphTable extends FontTable {
   ) {
     final header = CharacterToGlyphTableHeader.fromByteData(byteData, entry);
     final data = List.generate(
-        header.numTables,
-        (i) => CmapData.fromByteData(
-            byteData, entry.offset + header.encodingRecords[i].offset));
+            header.numTables,
+            (i) => CmapData.fromByteData(
+                byteData, entry.offset + header.encodingRecords[i].offset!))
+        .whereType<CmapData>()
+        .toList();
 
     return CharacterToGlyphTable(entry, header, data);
   }
 
   factory CharacterToGlyphTable.create(List<GenericGlyph> fullGlyphList) {
-    final charCodeList = fullGlyphList.map((e) => e.metadata.charCode).toList()
-      ..removeAt(0); // removing .notdef
+    final fullCharCodeList = fullGlyphList
+        .map((e) => e.metadata.charCode)
+        .toList()
+          ..removeAt(0); // removing .notdef
+    final charCodeList = fullCharCodeList.whereType<int>().toList();
 
     final segmentList = _generateSegments(charCodeList);
     final segmentListFormat4 = [
@@ -493,7 +498,7 @@ class CharacterToGlyphTable extends FontTable {
 
     final subtableByFormat = _kDefaultEncodingRecordFormatList
         .toSet()
-        .fold<Map<int, CmapData>>({}, (p, format) {
+        .fold<Map<int, CmapData?>>({}, (p, format) {
       p[format] = CmapData.create(
           format == _kFormat4 ? segmentListFormat4 : segmentList, format);
       return p;
@@ -501,7 +506,7 @@ class CharacterToGlyphTable extends FontTable {
 
     final subtables = [
       for (final format in _kDefaultEncodingRecordFormatList)
-        subtableByFormat[format]
+        if (subtableByFormat[format] != null) subtableByFormat[format]!,
     ];
 
     final header = CharacterToGlyphTableHeader(

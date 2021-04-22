@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import '../../common/codable/binary.dart';
 import '../../common/constant.dart';
 import '../../utils/enum_class.dart';
-import '../../utils/exception.dart';
 import '../../utils/otf.dart';
 import '../../utils/ucs2.dart';
 import '../debugger.dart';
@@ -107,9 +106,9 @@ class NameRecord implements BinaryCodable {
     this.platformID,
     this.encodingID,
     this.languageID,
-  )   : nameID = null,
-        length = null,
-        offset = null;
+  )   : nameID = -1,
+        length = -1,
+        offset = -1;
 
   factory NameRecord.fromByteData(ByteData byteData, int offset) {
     final length = byteData.getUint16(offset + 8);
@@ -133,20 +132,21 @@ class NameRecord implements BinaryCodable {
   final int offset;
 
   NameRecord copyWith({
-    int platformID,
-    int encodingID,
-    int languageID,
-    int nameID,
-    int length,
-    int offset,
+    int? platformID,
+    int? encodingID,
+    int? languageID,
+    int? nameID,
+    int? length,
+    int? offset,
   }) {
     return NameRecord(
-        this.platformID ?? platformID,
-        this.encodingID ?? encodingID,
-        this.languageID ?? languageID,
-        this.nameID ?? nameID,
-        this.length ?? length,
-        this.offset ?? offset);
+      platformID ?? this.platformID,
+      encodingID ?? this.encodingID,
+      languageID ?? this.languageID,
+      nameID ?? this.nameID,
+      length ?? this.length,
+      offset ?? this.offset,
+    );
   }
 
   @override
@@ -172,7 +172,12 @@ class NamingTableFormat0Header implements BinaryCodable {
     this.nameRecordList,
   );
 
-  factory NamingTableFormat0Header.fromByteData(
+  factory NamingTableFormat0Header.create(List<NameRecord> nameRecordList) {
+    return NamingTableFormat0Header(_kFormat0, nameRecordList.length,
+        6 + nameRecordList.length * _kNameRecordSize, nameRecordList);
+  }
+
+  static NamingTableFormat0Header? fromByteData(
     ByteData byteData,
     TableRecordEntry entry,
   ) {
@@ -191,11 +196,6 @@ class NamingTableFormat0Header implements BinaryCodable {
             byteData, entry.offset + 6 + i * _kNameRecordSize));
 
     return NamingTableFormat0Header(format, count, stringOffset, nameRecord);
-  }
-
-  factory NamingTableFormat0Header.create(List<NameRecord> nameRecordList) {
-    return NamingTableFormat0Header(_kFormat0, nameRecordList.length,
-        6 + nameRecordList.length * _kNameRecordSize, nameRecordList);
   }
 
   final int format;
@@ -223,10 +223,10 @@ class NamingTableFormat0Header implements BinaryCodable {
 }
 
 abstract class NamingTable extends FontTable {
-  NamingTable.fromTableRecordEntry(TableRecordEntry entry)
+  NamingTable.fromTableRecordEntry(TableRecordEntry? entry)
       : super.fromTableRecordEntry(entry);
 
-  factory NamingTable.fromByteData(ByteData byteData, TableRecordEntry entry) {
+  static NamingTable? fromByteData(ByteData byteData, TableRecordEntry entry) {
     final format = byteData.getUint16(entry.offset);
 
     switch (format) {
@@ -238,8 +238,8 @@ abstract class NamingTable extends FontTable {
     }
   }
 
-  factory NamingTable.create(
-      String fontName, String description, Revision revision,
+  static NamingTable? create(
+      String fontName, String? description, Revision revision,
       {int format = _kFormat0}) {
     switch (format) {
       case _kFormat0:
@@ -252,40 +252,22 @@ abstract class NamingTable extends FontTable {
 
   String get familyName;
 
-  String getStringByNameId(NameID nameId);
+  String? getStringByNameId(NameID nameId);
 }
 
 class NamingTableFormat0 extends NamingTable {
   NamingTableFormat0(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.header,
     this.stringList,
   ) : super.fromTableRecordEntry(entry);
 
-  factory NamingTableFormat0.fromByteData(
-      ByteData byteData, TableRecordEntry entry) {
-    final header = NamingTableFormat0Header.fromByteData(byteData, entry);
-    final storageAreaOffset = entry.offset + header.size;
-
-    final stringList = [
-      for (final record in header.nameRecordList)
-        _getDecoder(record)(List.generate(record.length,
-            (i) => byteData.getUint8(storageAreaOffset + record.offset + i)))
-    ];
-
-    return NamingTableFormat0(entry, header, stringList);
-  }
-
   factory NamingTableFormat0.create(
-      String fontName, String description, Revision revision) {
-    if (fontName?.isNotEmpty != true) {
-      throw TableDataFormatException('Font name must be not empty');
-    }
-
+      String fontName, String? description, Revision revision) {
     final now = DateTime.now();
 
     /// Values for name ids in sorted order
-    final stringForNameMap = {
+    final stringForNameMap = <NameID, String>{
       NameID.copyright: 'Copyright $kVendorName ${now.year}',
       NameID.fontFamily: fontName,
       NameID.fontSubfamily: 'Regular',
@@ -328,6 +310,25 @@ class NamingTableFormat0 extends NamingTable {
     return NamingTableFormat0(null, header, stringList);
   }
 
+  static NamingTableFormat0? fromByteData(
+      ByteData byteData, TableRecordEntry entry) {
+    final header = NamingTableFormat0Header.fromByteData(byteData, entry);
+
+    if (header == null) {
+      return null;
+    }
+
+    final storageAreaOffset = entry.offset + header.size;
+
+    final stringList = [
+      for (final record in header.nameRecordList)
+        _getDecoder(record)(List.generate(record.length,
+            (i) => byteData.getUint8(storageAreaOffset + record.offset + i)))
+    ];
+
+    return NamingTableFormat0(entry, header, stringList);
+  }
+
   final NamingTableFormat0Header header;
   final List<String> stringList;
 
@@ -356,10 +357,10 @@ class NamingTableFormat0 extends NamingTable {
   }
 
   @override
-  String get familyName => getStringByNameId(NameID.fontFamily);
+  String get familyName => getStringByNameId(NameID.fontFamily)!;
 
   @override
-  String getStringByNameId(NameID nameId) {
+  String? getStringByNameId(NameID nameId) {
     final nameID = _kNameIDmap.getValueForKey(nameId);
     final familyIndex =
         header.nameRecordList.indexWhere((e) => e.nameID == nameID);

@@ -13,15 +13,15 @@ abstract class PathConvertible {
 
 class RectElement extends SvgElement implements PathConvertible {
   RectElement(
-      this.rectangle, this.rx, this.ry, SvgElement parent, XmlElement element)
+      this.rectangle, this.rx, this.ry, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
-  factory RectElement.fromXmlElement(SvgElement parent, XmlElement element) {
+  factory RectElement.fromXmlElement(SvgElement? parent, XmlElement element) {
     final rect = math.Rectangle(
-      element.getScalarAttribute('x'),
-      element.getScalarAttribute('y'),
-      element.getScalarAttribute('width'),
-      element.getScalarAttribute('height'),
+      element.getScalarAttribute('x')!,
+      element.getScalarAttribute('y')!,
+      element.getScalarAttribute('width')!,
+      element.getScalarAttribute('height')!,
     );
 
     var rx = element.getScalarAttribute('rx', zeroIfAbsent: false);
@@ -61,14 +61,14 @@ class RectElement extends SvgElement implements PathConvertible {
 }
 
 class CircleElement extends SvgElement implements PathConvertible {
-  CircleElement(this.center, this.r, SvgElement parent, XmlElement element)
+  CircleElement(this.center, this.r, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
-  factory CircleElement.fromXmlElement(SvgElement parent, XmlElement element) {
+  factory CircleElement.fromXmlElement(SvgElement? parent, XmlElement element) {
     final center = math.Point(
-        element.getScalarAttribute('cx'), element.getScalarAttribute('cy'));
+        element.getScalarAttribute('cx')!, element.getScalarAttribute('cy')!);
 
-    final r = element.getScalarAttribute('r');
+    final r = element.getScalarAttribute('r')!;
 
     return CircleElement(center, r, parent, element);
   }
@@ -90,12 +90,12 @@ class CircleElement extends SvgElement implements PathConvertible {
 }
 
 class PolylineElement extends SvgElement implements PathConvertible {
-  PolylineElement(this.points, SvgElement parent, XmlElement element)
+  PolylineElement(this.points, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
   factory PolylineElement.fromXmlElement(
-      SvgElement parent, XmlElement element) {
-    final points = element.getAttribute('points');
+      SvgElement? parent, XmlElement element) {
+    final points = element.getAttribute('points')!;
 
     return PolylineElement(points, parent, element);
   }
@@ -111,11 +111,12 @@ class PolylineElement extends SvgElement implements PathConvertible {
 }
 
 class PolygonElement extends SvgElement implements PathConvertible {
-  PolygonElement(this.points, SvgElement parent, XmlElement element)
+  PolygonElement(this.points, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
-  factory PolygonElement.fromXmlElement(SvgElement parent, XmlElement element) {
-    final points = element.getAttribute('points');
+  factory PolygonElement.fromXmlElement(
+      SvgElement? parent, XmlElement element) {
+    final points = element.getAttribute('points')!;
 
     return PolygonElement(points, parent, element);
   }
@@ -131,15 +132,15 @@ class PolygonElement extends SvgElement implements PathConvertible {
 }
 
 class LineElement extends SvgElement implements PathConvertible {
-  LineElement(this.p1, this.p2, SvgElement parent, XmlElement element)
+  LineElement(this.p1, this.p2, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
-  factory LineElement.fromXmlElement(SvgElement parent, XmlElement element) {
+  factory LineElement.fromXmlElement(SvgElement? parent, XmlElement element) {
     final p1 = math.Point(
-        element.getScalarAttribute('x1'), element.getScalarAttribute('y1'));
+        element.getScalarAttribute('x1')!, element.getScalarAttribute('y1')!);
 
     final p2 = math.Point(
-        element.getScalarAttribute('x2'), element.getScalarAttribute('y2'));
+        element.getScalarAttribute('x2')!, element.getScalarAttribute('y2')!);
 
     return LineElement(p1, p2, parent, element);
   }

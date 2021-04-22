@@ -16,3 +16,7 @@ fontify:
 
   recursive: false
   verbose: false
+
+  # Unknown config parameters
+  testing: true
+  1: 1

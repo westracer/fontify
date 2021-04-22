@@ -121,7 +121,7 @@ class CliArguments {
   ///
   /// Throws [CliArgumentException], if there is an error in arg parsing
   /// or if argument has wrong type.
-  factory CliArguments.fromMap(Map<CliArgument, Object> rawArgMap) {
+  factory CliArguments.fromMap(Map<CliArgument, dynamic> rawArgMap) {
     // Validating types
     for (final e in _kArgAllowedTypes.entries) {
       final arg = e.key;
@@ -136,58 +136,36 @@ class CliArguments {
     }
 
     final map = formatArguments(rawArgMap);
+    _validate(map);
 
     return CliArguments(
       map[CliArgument.svgDir] as Directory,
       map[CliArgument.fontFile] as File,
-      map[CliArgument.classFile] as File,
-      map[CliArgument.className] as String,
-      map[CliArgument.indent] as int,
-      map[CliArgument.fontPackage] as String,
-      map[CliArgument.fontName] as String,
-      map[CliArgument.recursive] as bool,
-      map[CliArgument.ignoreShapes] as bool,
-      map[CliArgument.normalize] as bool,
-      map[CliArgument.verbose] as bool,
-      map[CliArgument.configFile] as File,
+      map[CliArgument.classFile] as File?,
+      map[CliArgument.className] as String?,
+      map[CliArgument.indent] as int?,
+      map[CliArgument.fontPackage] as String?,
+      map[CliArgument.fontName] as String?,
+      map[CliArgument.recursive] as bool?,
+      map[CliArgument.ignoreShapes] as bool?,
+      map[CliArgument.normalize] as bool?,
+      map[CliArgument.verbose] as bool?,
+      map[CliArgument.configFile] as File?,
     );
   }
 
   final Directory svgDir;
   final File fontFile;
-  final File classFile;
-  final String className;
-  final String fontPackage;
-  final int indent;
-  final String fontName;
-  final bool recursive;
-  final bool ignoreShapes;
-  final bool normalize;
-  final bool verbose;
-  final File configFile;
-
-  /// Validates CLI arguments.
-  ///
-  /// Throws [CliArgumentException], if argument is not valid.
-  void validate() {
-    if (svgDir == null) {
-      throw CliArgumentException('The input directory is not specified.');
-    }
-
-    if (fontFile == null) {
-      throw CliArgumentException('The output font file is not specified.');
-    }
-
-    if (svgDir.statSync().type != FileSystemEntityType.directory) {
-      throw CliArgumentException(
-          "The input directory is not a directory or it doesn't exist.");
-    }
-
-    if (indent != null && indent < 0) {
-      throw CliArgumentException(
-          'indent must be a non-negative integer, was $indent.');
-    }
-  }
+  final File? classFile;
+  final String? className;
+  final String? fontPackage;
+  final int? indent;
+  final String? fontName;
+  final bool? recursive;
+  final bool? ignoreShapes;
+  final bool? normalize;
+  final bool? verbose;
+  final File? configFile;
 }
 
 /// Parses argument list.
@@ -196,7 +174,7 @@ class CliArguments {
 ///
 /// Returns an instance of [CliArguments] containing all parsed data.
 CliArguments parseArguments(ArgParser argParser, List<String> args) {
-  ArgResults argResults;
+  late final ArgResults argResults;
   try {
     argResults = argParser.parse(args);
   } on FormatException catch (err) {
@@ -210,7 +188,7 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
   final posArgsLength =
       math.min(_kPositionalArguments.length, argResults.rest.length);
 
-  final rawArgMap = <CliArgument, Object>{
+  final rawArgMap = <CliArgument, dynamic>{
     for (final e in kOptionNames.entries) e.key: argResults[e.value],
     for (var i = 0; i < posArgsLength; i++)
       _kPositionalArguments[i]: argResults.rest[i],
@@ -219,30 +197,48 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
   return CliArguments.fromMap(rawArgMap);
 }
 
+MapEntry<CliArgument, dynamic>? _mapConfigKeyEntry(
+  MapEntry<dynamic, dynamic> e,
+) {
+  final dynamic rawKey = e.key;
+  void logUnknown() => logger.w('Unknown config parameter "$rawKey"');
+
+  if (rawKey is! String) {
+    logUnknown();
+    return null;
+  }
+
+  final key = kConfigKeys.getKeyForValue(rawKey);
+  if (key == null) {
+    logUnknown();
+    return null;
+  }
+
+  return MapEntry<CliArgument, dynamic>(key, e.value);
+}
+
 /// Parses config file.
 ///
 /// Returns an instance of [CliArguments] containing all parsed data or null,
 /// if 'fontify' key is not present in config file.
-CliArguments parseConfig(String config) {
-  final Object parsedYaml = loadYaml(config);
+CliArguments? parseConfig(String config) {
+  final dynamic yamlMap = loadYaml(config);
 
-  if (parsedYaml is! YamlMap) {
+  if (yamlMap is! YamlMap) {
     return null;
   }
 
-  final yamlMap = parsedYaml as YamlMap;
-  final Object fontifyYaml = yamlMap['fontify'];
+  final dynamic fontifyYamlMap = yamlMap['fontify'];
 
-  if (fontifyYaml is! YamlMap) {
+  if (fontifyYamlMap is! YamlMap) {
     return null;
   }
 
-  final fontifyYamlMap = fontifyYaml as YamlMap;
+  final entries = fontifyYamlMap.entries
+      .map(_mapConfigKeyEntry)
+      .whereType<MapEntry<CliArgument, dynamic>>();
 
-  final argMap = <CliArgument, Object>{
-    for (final e in fontifyYamlMap.entries)
-      if (e.key is String) kConfigKeys.getKeyForValue(e.key as String): e.value,
-  };
+  final argMap = Map<CliArgument, dynamic>.fromEntries(entries);
 
   return CliArguments.fromMap(argMap);
 }
@@ -259,7 +255,7 @@ CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
   final configList = [parsedArgs.configFile, ...defaultConfigList];
 
   for (final configFile in configList) {
-    if (configFile?.existsSync() ?? false) {
+    if (configFile != null && configFile.existsSync()) {
       final parsedConfig = parseConfig(configFile.readAsStringSync());
 
       if (parsedConfig != null) {
@@ -270,8 +266,34 @@ CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
     }
   }
 
-  parsedArgs.validate();
   return parsedArgs;
+}
+
+/// Validates CLI arguments.
+///
+/// Throws [CliArgumentException], if argument is not valid.
+void _validate(Map<CliArgument, dynamic> args) {
+  final svgDir = args[CliArgument.svgDir] as Directory?;
+  final fontFile = args[CliArgument.fontFile] as File?;
+  final indent = args[CliArgument.indent] as int?;
+
+  if (svgDir == null) {
+    throw CliArgumentException('The input directory is not specified.');
+  }
+
+  if (fontFile == null) {
+    throw CliArgumentException('The output font file is not specified.');
+  }
+
+  if (svgDir.statSync().type != FileSystemEntityType.directory) {
+    throw CliArgumentException(
+        "The input directory is not a directory or it doesn't exist.");
+  }
+
+  if (indent != null && indent < 0) {
+    throw CliArgumentException(
+        'indent must be a non-negative integer, was $indent.');
+  }
 }
 
 class CliArgumentException implements Exception {
@@ -284,3 +306,6 @@ class CliArgumentException implements Exception {
 }
 
 class CliHelpException implements Exception {}
+
+// Ignoring as CLI arguments are dynamically typed
+// ignore_for_file: avoid_annotating_with_dynamic

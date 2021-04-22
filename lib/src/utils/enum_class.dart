@@ -1,16 +1,18 @@
+import 'package:collection/collection.dart';
+
 class EnumClass<K, V> {
   const EnumClass(this._map);
 
   final Map<K, V> _map;
 
-  K getKeyForValue(V value) {
-    final entry = _map.entries
-        .firstWhere((entry) => entry.value == value, orElse: () => null);
+  K? getKeyForValue(V value) {
+    final entry =
+        _map.entries.firstWhereOrNull((entry) => entry.value == value);
 
     return entry?.key;
   }
 
-  V getValueForKey(K key) {
+  V? getValueForKey(K key) {
     return _map[key];
   }
 
@@ -22,5 +24,5 @@ class EnumClass<K, V> {
 
   Map<K, V> get map => _map;
 
-  V operator [](K key) => _map[key];
+  V? operator [](K key) => _map[key];
 }

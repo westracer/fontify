@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import '../../common/generic_glyph.dart';
-import '../../utils/exception.dart';
 import '../../utils/misc.dart';
 import '../../utils/otf.dart';
 
@@ -23,7 +22,7 @@ const _kHeaderTableSize = 54;
 
 class HeaderTable extends FontTable {
   HeaderTable(
-      TableRecordEntry entry,
+      TableRecordEntry? entry,
       this.fontRevision,
       this.checkSumAdjustment,
       this.flags,
@@ -90,15 +89,10 @@ class HeaderTable extends FontTable {
 
   factory HeaderTable.create(
     List<GenericGlyphMetrics> glyphMetricsList,
-    GlyphDataTable glyf,
+    GlyphDataTable? glyf,
     Revision revision,
     int unitsPerEm,
   ) {
-    if (revision == null || revision.int32value == 0) {
-      throw TableDataFormatException('revision must not be null');
-    }
-
-    final isOpenType = glyf == null;
     final now = MockableDateTime.now();
 
     final xMin = glyphMetricsList.fold<int>(
@@ -124,7 +118,7 @@ class HeaderTable extends FontTable {
         yMax,
         _kMacStyleRegular,
         _kLowestRecPPEMdefault,
-        isOpenType || glyf.size < 0x20000
+        glyf == null || glyf.size < 0x20000
             ? _kIndexToLocFormatShort
             : _kIndexToLocFormatLong);
   }

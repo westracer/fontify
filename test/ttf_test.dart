@@ -18,7 +18,7 @@ const _kTestFontAssetPath = '$kTestAssetsDir/test_font.ttf';
 const _kTestCFF2fontAssetPath = '$kTestAssetsDir/test_cff2_font.otf';
 
 void main() {
-  OpenTypeFont font;
+  late OpenTypeFont font;
 
   group('Reader', () {
     setUpAll(() {
@@ -285,19 +285,19 @@ void main() {
 
       expect(scriptTable.scriptRecords[0].scriptTag, 'DFLT');
       expect(scriptTable.scriptTables[0].langSysCount, 0);
-      expect(scriptTable.scriptTables[0].defaultLangSys.featureIndexCount, 1);
-      expect(scriptTable.scriptTables[0].defaultLangSys.featureIndices, [0]);
-      expect(scriptTable.scriptTables[0].defaultLangSys.lookupOrder, 0);
+      expect(scriptTable.scriptTables[0].defaultLangSys?.featureIndexCount, 1);
+      expect(scriptTable.scriptTables[0].defaultLangSys?.featureIndices, [0]);
+      expect(scriptTable.scriptTables[0].defaultLangSys?.lookupOrder, 0);
       expect(
-          scriptTable.scriptTables[0].defaultLangSys.requiredFeatureIndex, 0);
+          scriptTable.scriptTables[0].defaultLangSys?.requiredFeatureIndex, 0);
 
       expect(scriptTable.scriptRecords[1].scriptTag, 'latn');
       expect(scriptTable.scriptTables[1].langSysCount, 0);
-      expect(scriptTable.scriptTables[1].defaultLangSys.featureIndexCount, 1);
-      expect(scriptTable.scriptTables[1].defaultLangSys.featureIndices, [0]);
-      expect(scriptTable.scriptTables[1].defaultLangSys.lookupOrder, 0);
+      expect(scriptTable.scriptTables[1].defaultLangSys?.featureIndexCount, 1);
+      expect(scriptTable.scriptTables[1].defaultLangSys?.featureIndices, [0]);
+      expect(scriptTable.scriptTables[1].defaultLangSys?.lookupOrder, 0);
       expect(
-          scriptTable.scriptTables[1].defaultLangSys.requiredFeatureIndex, 0);
+          scriptTable.scriptTables[1].defaultLangSys?.requiredFeatureIndex, 0);
 
       final featureTable = table.featureListTable;
       expect(featureTable.featureCount, 1);
@@ -328,8 +328,8 @@ void main() {
   });
 
   group('Creation & Writer', () {
-    ByteData originalByteData, recreatedByteData;
-    OpenTypeFont recreatedFont;
+    late ByteData originalByteData, recreatedByteData;
+    late OpenTypeFont recreatedFont;
 
     setUpAll(() {
       MockableDateTime.mockedDate = DateTime.utc(2020, 2, 2, 2, 2);
@@ -368,20 +368,20 @@ void main() {
       const expected =
           'AAEAAAABAADXpqNjXw889QALBAAAAAAA2lveGAAAAADaW94Y//X/ZwZkBAAAAAAIAAIAAAAA';
       final actual = base64Encode(recreatedByteData.buffer.asUint8List(
-          recreatedFont.head.entry.offset, recreatedFont.head.entry.length));
+          recreatedFont.head.entry!.offset, recreatedFont.head.entry!.length));
 
       expect(actual, expected);
-      expect(recreatedFont.head.entry.checkSum, 439353492);
+      expect(recreatedFont.head.entry!.checkSum, 439353492);
     }, skip: "Font's checksum is always changing, unskip later");
 
     test('Glyph Substitution table', () {
       const expected =
           'AAEAAAAKADAAPgACREZMVAAObGF0bgAaAAQAAAAA//8AAQAAAAQAAAAA//8AAQAAAAFsaWdhAAgAAAABAAAAAQAEAAQAAAABAAgAAQAGAAAAAQAA';
       final actual = base64Encode(recreatedByteData.buffer.asUint8List(
-          recreatedFont.gsub.entry.offset, recreatedFont.gsub.entry.length));
+          recreatedFont.gsub.entry!.offset, recreatedFont.gsub.entry!.length));
 
       expect(actual, expected);
-      expect(recreatedFont.gsub.entry.checkSum, 546121080);
+      expect(recreatedFont.gsub.entry!.checkSum, 546121080);
     });
 
     test('OS/2 V5', () {
@@ -393,7 +393,7 @@ void main() {
   });
 
   group('CFF', () {
-    ByteData byteData;
+    late ByteData byteData;
 
     setUpAll(() {
       byteData =
@@ -405,10 +405,10 @@ void main() {
       final table = font.cff2;
 
       final originalCFF2byteList =
-          byteData.buffer.asUint8List(table.entry.offset, table.size).toList();
+          byteData.buffer.asUint8List(table.entry!.offset, table.size).toList();
       final encodedCFF2byteData = ByteData(table.size);
 
-      expect(table.size, table.entry.length);
+      expect(table.size, table.entry!.length);
 
       table
         ..recalculateOffsets()

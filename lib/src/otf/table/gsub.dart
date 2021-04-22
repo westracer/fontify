@@ -48,10 +48,10 @@ class GlyphSubstitutionTableHeader implements BinaryCodable {
 
   final int majorVersion;
   final int minorVersion;
-  int scriptListOffset;
-  int featureListOffset;
-  int lookupListOffset;
-  int featureVariationsOffset;
+  int? scriptListOffset;
+  int? featureListOffset;
+  int? lookupListOffset;
+  int? featureVariationsOffset;
 
   bool get isV10 => majorVersion == 1 && minorVersion == 0;
 
@@ -63,9 +63,9 @@ class GlyphSubstitutionTableHeader implements BinaryCodable {
     byteData
       ..setUint16(0, majorVersion)
       ..setUint16(2, minorVersion)
-      ..setUint16(4, scriptListOffset)
-      ..setUint16(6, featureListOffset)
-      ..setUint16(8, lookupListOffset);
+      ..setUint16(4, scriptListOffset!)
+      ..setUint16(6, featureListOffset!)
+      ..setUint16(8, lookupListOffset!);
 
     if (!isV10) {
       byteData.getUint32(10);
@@ -74,7 +74,7 @@ class GlyphSubstitutionTableHeader implements BinaryCodable {
 }
 
 class GlyphSubstitutionTable extends FontTable {
-  GlyphSubstitutionTable(TableRecordEntry entry, this.header,
+  GlyphSubstitutionTable(TableRecordEntry? entry, this.header,
       this.scriptListTable, this.featureListTable, this.lookupListTable)
       : super.fromTableRecordEntry(entry);
 
@@ -85,11 +85,11 @@ class GlyphSubstitutionTable extends FontTable {
     final header = GlyphSubstitutionTableHeader.fromByteData(byteData, entry);
 
     final scriptListTable = ScriptListTable.fromByteData(
-        byteData, entry.offset + header.scriptListOffset);
+        byteData, entry.offset + header.scriptListOffset!);
     final featureListTable = FeatureListTable.fromByteData(
-        byteData, entry.offset + header.featureListOffset);
+        byteData, entry.offset + header.featureListOffset!);
     final lookupListTable = LookupListTable.fromByteData(
-        byteData, entry.offset + header.lookupListOffset);
+        byteData, entry.offset + header.lookupListOffset!);
 
     return GlyphSubstitutionTable(
       entry,

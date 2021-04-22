@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import '../otf.dart';
 import '../svg.dart';
 import '../utils/flutter_class_gen.dart';
@@ -30,12 +28,11 @@ class SvgToOtfResult {
 ///
 /// Returns an instance of [SvgToOtfResult] class containing glyphs and a font.
 SvgToOtfResult svgToOtf({
-  @required Map<String, String> svgMap,
-  bool ignoreShapes,
-  bool normalize,
-  String fontName,
+  required Map<String, String> svgMap,
+  bool? ignoreShapes,
+  bool? normalize,
+  String? fontName,
 }) {
-  svgMap ??= {};
   normalize ??= true;
 
   final svgList = [
@@ -80,12 +77,12 @@ SvgToOtfResult svgToOtf({
 ///
 /// Returns content of a class file.
 String generateFlutterClass({
-  @required List<GenericGlyph> glyphList,
-  String className,
-  String familyName,
-  String fontFileName,
-  String package,
-  int indent,
+  required List<GenericGlyph> glyphList,
+  String? className,
+  String? familyName,
+  String? fontFileName,
+  String? package,
+  int? indent,
 }) {
   final generator = FlutterClassGenerator(
     glyphList,

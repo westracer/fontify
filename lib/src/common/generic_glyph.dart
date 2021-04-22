@@ -17,8 +17,8 @@ import 'outline.dart';
 class GenericGlyphMetadata {
   GenericGlyphMetadata({this.charCode, this.name});
 
-  int charCode;
-  String name;
+  int? charCode;
+  String? name;
 
   /// Deep copy
   GenericGlyphMetadata copy() {
@@ -49,7 +49,7 @@ class GenericGlyphMetrics {
 /// Used as an intermediate storage between different types of glyphs
 /// (including OpenType's CharString, TrueType outlines).
 class GenericGlyph {
-  GenericGlyph(this.outlines, this.bounds, [GenericGlyphMetadata metadata])
+  GenericGlyph(this.outlines, this.bounds, [GenericGlyphMetadata? metadata])
       : metadata = metadata ?? GenericGlyphMetadata();
 
   GenericGlyph.empty()
@@ -212,21 +212,20 @@ class GenericGlyph {
   }
 
   /// Resizes according to ascender/descender or a font height.
-  GenericGlyph resize({int ascender, int descender, int fontHeight}) {
-    assert((ascender != null && descender != null) || fontHeight != null,
-        'Wrong parameters for resizing');
-
+  GenericGlyph resize({int? ascender, int? descender, int? fontHeight}) {
     final metrics = this.metrics;
 
-    int longestSide;
-    double sideRatio;
+    late final int longestSide;
+    late final double sideRatio;
 
-    if (fontHeight == null) {
+    if (ascender != null && descender != null) {
       longestSide = math.max(metrics.height, metrics.width);
       sideRatio = (ascender + descender) / longestSide;
-    } else {
+    } else if (fontHeight != null) {
       longestSide = bounds.height.toInt();
       sideRatio = fontHeight / longestSide;
+    } else {
+      throw ArgumentError('Wrong parameters for resizing');
     }
 
     // No need to resize
