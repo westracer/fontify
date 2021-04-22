@@ -4,13 +4,14 @@ import 'package:xml/xml.dart';
 import '../utils/svg.dart';
 import 'path.dart';
 import 'shapes.dart';
+import 'unknown_element.dart';
 
 abstract class SvgElement {
-  SvgElement(this.parent, this.xmlElement, {Matrix3 transform})
+  SvgElement(this.parent, this.xmlElement, {Matrix3? transform})
       : transform = transform ?? xmlElement?.parseTransformMatrix();
 
   factory SvgElement.fromXmlElement(
-      SvgElement parent, XmlElement element, bool ignoreShapes) {
+      SvgElement? parent, XmlElement element, bool ignoreShapes) {
     switch (element.name.local) {
       case 'path':
         return PathElement.fromXmlElement(parent, element);
@@ -28,25 +29,25 @@ abstract class SvgElement {
         return LineElement.fromXmlElement(parent, element);
     }
 
-    return null;
+    return UnknownElement(parent, element);
   }
 
-  final XmlElement xmlElement;
-  Matrix3 transform;
-  SvgElement parent;
-
-  bool get hasTransform => transform != null && !transform.isIdentity();
+  final XmlElement? xmlElement;
+  Matrix3? transform;
+  SvgElement? parent;
 
   /// Traverses parent elements and calculates result transform matrix.
   ///
   /// Returns result transform matrix or null, if there are no transforms.
-  Matrix3 getResultTransformMatrix() {
+  Matrix3? getResultTransformMatrix() {
     final transform = Matrix3.identity();
-    var element = this;
+    SvgElement? element = this;
 
     while (element != null) {
-      if (element.hasTransform) {
-        transform.multiply(element.transform);
+      final elementTransform = element.transform;
+
+      if (elementTransform != null) {
+        transform.multiply(elementTransform);
       }
 
       element = element.parent;
@@ -57,11 +58,11 @@ abstract class SvgElement {
 }
 
 class GroupElement extends SvgElement {
-  GroupElement(this.elementList, SvgElement parent, XmlElement element)
+  GroupElement(this.elementList, SvgElement? parent, XmlElement element)
       : super(parent, element);
 
   factory GroupElement.fromXmlElement(
-    SvgElement parent,
+    SvgElement? parent,
     XmlElement element,
     bool ignoreShapes,
   ) {
@@ -88,7 +89,7 @@ class GroupElement extends SvgElement {
 
     for (final c in elementList) {
       c.transform ??= Matrix3.identity();
-      c.transform.multiply(transform);
+      c.transform!.multiply(transform!);
     }
 
     transform = null;

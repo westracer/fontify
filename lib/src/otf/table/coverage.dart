@@ -8,7 +8,7 @@ const kDefaultCoverageTable = CoverageTableFormat1(1, 0, []);
 abstract class CoverageTable implements BinaryCodable {
   const CoverageTable();
 
-  factory CoverageTable.fromByteData(ByteData byteData, int offset) {
+  static CoverageTable? fromByteData(ByteData byteData, int offset) {
     final format = byteData.getUint16(offset);
 
     switch (format) {

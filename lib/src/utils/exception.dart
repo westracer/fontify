@@ -21,8 +21,8 @@ class ChecksumException implements Exception {
 class SvgParserException implements Exception {
   SvgParserException([this.message]);
 
-  final String message;
+  final String? message;
 
   @override
-  String toString() => message;
+  String toString() => 'SvgParserException($message)';
 }

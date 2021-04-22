@@ -7,7 +7,7 @@ import 'table_record_entry.dart';
 
 class IndexToLocationTable extends FontTable {
   IndexToLocationTable(
-    TableRecordEntry entry,
+    TableRecordEntry? entry,
     this.glyphOffsets,
     this._isShort,
   ) : super.fromTableRecordEntry(entry);

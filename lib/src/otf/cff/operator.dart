@@ -14,7 +14,7 @@ class CFFOperator implements BinaryCodable {
       : intValue = b1 != null ? ((b0 << 8) | b1) : b0;
 
   final int b0;
-  final int b1;
+  final int? b1;
   final int intValue;
   final CFFOperatorContext context;
 
@@ -38,7 +38,7 @@ class CFFOperator implements BinaryCodable {
     byteData.setUint8(0, b0);
 
     if (b1 != null) {
-      byteData.setUint8(1, b1);
+      byteData.setUint8(1, b1!);
     }
   }
 
@@ -48,10 +48,14 @@ class CFFOperator implements BinaryCodable {
 
     switch (context) {
       case CFFOperatorContext.dict:
-        name = dictOperatorNames[this];
+        if (dictOperatorNames.containsKey(this)) {
+          name = dictOperatorNames[this]!;
+        }
         break;
       case CFFOperatorContext.charString:
-        name = charStringOperatorNames[this];
+        if (charStringOperatorNames.containsKey(this)) {
+          name = charStringOperatorNames[this]!;
+        }
         break;
     }
 

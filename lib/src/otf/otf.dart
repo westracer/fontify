@@ -1,10 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:meta/meta.dart';
-
 import '../common/calculatable_offsets.dart';
 import '../common/codable/binary.dart';
 import '../common/generic_glyph.dart';
+import '../utils.dart';
 import '../utils/misc.dart';
 import '../utils/otf.dart';
 
@@ -64,14 +63,14 @@ class OpenTypeFont implements BinaryCodable {
   /// glyphs are resized and centered to fit in coordinates grid (unitsPerEm).
   /// Defaults to true.
   factory OpenTypeFont.createFromGlyphs({
-    @required List<GenericGlyph> glyphList,
-    String fontName,
-    String description,
-    Revision revision,
-    String achVendID,
-    bool useOpenType,
-    bool usePostV2,
-    bool normalize,
+    required List<GenericGlyph> glyphList,
+    String? fontName,
+    String? description,
+    Revision? revision,
+    String? achVendID,
+    bool? useOpenType,
+    bool? usePostV2,
+    bool? normalize,
   }) {
     if (fontName?.isEmpty ?? false) {
       fontName = null;
@@ -126,12 +125,17 @@ class OpenTypeFont implements BinaryCodable {
         HeaderTable.create(glyphMetricsList, glyf, revision, unitsPerEm);
     final loca = useOpenType
         ? null
-        : IndexToLocationTable.create(head.indexToLocFormat, glyf);
+        : IndexToLocationTable.create(head.indexToLocFormat, glyf!);
     final hmtx = HorizontalMetricsTable.create(glyphMetricsList, unitsPerEm);
     final hhea = HorizontalHeaderTable.create(
         glyphMetricsList, hmtx, ascender, descender);
     final post = PostScriptTable.create(resizedGlyphList, usePostV2);
     final name = NamingTable.create(fontName, description, revision);
+
+    if (name == null) {
+      throw TableDataFormatException('Unknown "name" table format');
+    }
+
     final maxp = MaximumProfileTable.create(fullGlyphList.length, glyf);
     final cmap = CharacterToGlyphTable.create(fullGlyphList);
     final gsub = GlyphSubstitutionTable.create();
@@ -140,13 +144,13 @@ class OpenTypeFont implements BinaryCodable {
     final cff =
         useOpenType ? CFF1Table.create(fullGlyphList, head, hmtx, name) : null;
 
-    final tables = {
+    final tables = <String, FontTable>{
       if (!useOpenType) ...{
-        kGlyfTag: glyf,
-        kLocaTag: loca,
+        kGlyfTag: glyf!,
+        kLocaTag: loca!,
       },
       if (useOpenType) ...{
-        kCFFTag: cff,
+        kCFFTag: cff!,
       },
       kCmapTag: cmap,
       kMaxpTag: maxp,
@@ -212,7 +216,7 @@ class OpenTypeFont implements BinaryCodable {
 
       table.entry = TableRecordEntry(tag, calculateTableChecksum(encodedTable),
           currentTableOffset, tableSize);
-      entryList.add(table.entry);
+      entryList.add(table.entry!);
 
       currentTableOffset += getPaddedTableSize(tableSize);
     }
@@ -231,7 +235,7 @@ class OpenTypeFont implements BinaryCodable {
 
     // Setting checksum for whole font in the head table
     final fontChecksum = calculateFontChecksum(byteData);
-    byteData.setUint32(head.entry.offset + 8, fontChecksum);
+    byteData.setUint32(head.entry!.offset + 8, fontChecksum);
   }
 
   int get entryListSize => kTableRecordEntryLength * tableMap.length;
@@ -245,9 +249,9 @@ class OpenTypeFont implements BinaryCodable {
   // TODO: I don't like this. Refactor it later. Use "strategy" or something.
   static List<GenericGlyph> _resizeAndCenter(
     List<GenericGlyph> glyphList, {
-    int ascender,
-    int descender,
-    int fontHeight,
+    int? ascender,
+    int? descender,
+    int? fontHeight,
   }) {
     return glyphList.map((g) {
       if (fontHeight != null) {
@@ -255,9 +259,13 @@ class OpenTypeFont implements BinaryCodable {
         return g.resize(fontHeight: fontHeight);
       }
 
-      return g
-          .resize(ascender: ascender, descender: descender)
-          .center(ascender, descender);
+      if (ascender != null && descender != null) {
+        return g
+            .resize(ascender: ascender, descender: descender)
+            .center(ascender, descender);
+      }
+
+      throw ArgumentError('ascender/descender or fontHeight must not be null');
     }).toList();
   }
 

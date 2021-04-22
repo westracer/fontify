@@ -16,7 +16,7 @@ const _kTableSizeForVersion = {
 };
 
 class MaximumProfileTable extends FontTable {
-  MaximumProfileTable.v0(TableRecordEntry entry, this.numGlyphs)
+  MaximumProfileTable.v0(TableRecordEntry? entry, this.numGlyphs)
       : version = _kVersion0,
         maxPoints = null,
         maxContours = null,
@@ -34,7 +34,7 @@ class MaximumProfileTable extends FontTable {
         super.fromTableRecordEntry(entry);
 
   MaximumProfileTable.v1(
-      TableRecordEntry entry,
+      TableRecordEntry? entry,
       this.numGlyphs,
       this.maxPoints,
       this.maxContours,
@@ -52,7 +52,34 @@ class MaximumProfileTable extends FontTable {
       : version = _kVersion1,
         super.fromTableRecordEntry(entry);
 
-  factory MaximumProfileTable.fromByteData(
+  factory MaximumProfileTable.create(int numGlyphs, GlyphDataTable? glyf) {
+    final isOpenType = glyf == null;
+
+    if (isOpenType) {
+      return MaximumProfileTable.v0(null, numGlyphs);
+    }
+
+    return MaximumProfileTable.v1(
+        null,
+        numGlyphs,
+        glyf!.maxPoints,
+        glyf.maxContours,
+        0, // Composite glyphs are not supported
+        0, // Composite glyphs are not supported
+        2, // The twilight zone is used
+        0, // 0 max points for the twilight zone
+
+        /// Constants taken from FontForge
+        1,
+        1,
+        0,
+        64,
+        glyf.maxSizeOfInstructions,
+        0,
+        0);
+  }
+
+  static MaximumProfileTable? fromByteData(
       ByteData data, TableRecordEntry entry) {
     final version = data.getInt32(entry.offset);
 
@@ -83,51 +110,24 @@ class MaximumProfileTable extends FontTable {
     }
   }
 
-  factory MaximumProfileTable.create(int numGlyphs, GlyphDataTable glyf) {
-    final isOpenType = glyf == null;
-
-    if (isOpenType) {
-      return MaximumProfileTable.v0(null, numGlyphs);
-    }
-
-    return MaximumProfileTable.v1(
-        null,
-        numGlyphs,
-        glyf.maxPoints,
-        glyf.maxContours,
-        0, // Composite glyphs are not supported
-        0, // Composite glyphs are not supported
-        2, // The twilight zone is used
-        0, // 0 max points for the twilight zone
-
-        /// Constants taken from FontForge
-        1,
-        1,
-        0,
-        64,
-        glyf.maxSizeOfInstructions,
-        0,
-        0);
-  }
-
   // Version 0.5
   final int version;
   final int numGlyphs;
 
   // Version 1.0
-  final int maxPoints;
-  final int maxContours;
-  final int maxCompositePoints;
-  final int maxCompositeContours;
-  final int maxZones;
-  final int maxTwilightPoints;
-  final int maxStorage;
-  final int maxFunctionDefs;
-  final int maxInstructionDefs;
-  final int maxStackElements;
-  final int maxSizeOfInstructions;
-  final int maxComponentElements;
-  final int maxComponentDepth;
+  final int? maxPoints;
+  final int? maxContours;
+  final int? maxCompositePoints;
+  final int? maxCompositeContours;
+  final int? maxZones;
+  final int? maxTwilightPoints;
+  final int? maxStorage;
+  final int? maxFunctionDefs;
+  final int? maxInstructionDefs;
+  final int? maxStackElements;
+  final int? maxSizeOfInstructions;
+  final int? maxComponentElements;
+  final int? maxComponentDepth;
 
   @override
   void encodeToBinary(ByteData byteData) {
@@ -137,24 +137,24 @@ class MaximumProfileTable extends FontTable {
 
     if (version == _kVersion1) {
       byteData
-        ..setUint16(6, maxPoints)
-        ..setUint16(8, maxContours)
-        ..setUint16(10, maxCompositePoints)
-        ..setUint16(12, maxCompositeContours)
-        ..setUint16(14, maxZones)
-        ..setUint16(16, maxTwilightPoints)
-        ..setUint16(18, maxStorage)
-        ..setUint16(20, maxFunctionDefs)
-        ..setUint16(22, maxInstructionDefs)
-        ..setUint16(24, maxStackElements)
-        ..setUint16(26, maxSizeOfInstructions)
-        ..setUint16(28, maxComponentElements)
-        ..setUint16(30, maxComponentDepth);
+        ..setUint16(6, maxPoints!)
+        ..setUint16(8, maxContours!)
+        ..setUint16(10, maxCompositePoints!)
+        ..setUint16(12, maxCompositeContours!)
+        ..setUint16(14, maxZones!)
+        ..setUint16(16, maxTwilightPoints!)
+        ..setUint16(18, maxStorage!)
+        ..setUint16(20, maxFunctionDefs!)
+        ..setUint16(22, maxInstructionDefs!)
+        ..setUint16(24, maxStackElements!)
+        ..setUint16(26, maxSizeOfInstructions!)
+        ..setUint16(28, maxComponentElements!)
+        ..setUint16(30, maxComponentDepth!);
     } else if (version != _kVersion0) {
       OTFDebugger.debugUnsupportedTableVersion(kMaxpTag, version);
     }
   }
 
   @override
-  int get size => _kTableSizeForVersion[version];
+  int get size => _kTableSizeForVersion[version]!;
 }

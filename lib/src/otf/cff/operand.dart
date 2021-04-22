@@ -113,17 +113,17 @@ class CFFOperand extends BinaryCodable {
   }
 
   /// Either real or integer number
-  final num value;
+  final num? value;
 
   /// Weather should force max-length integer or not (used for offset pointers)
   final bool forceLargeInt;
 
-  int _size;
+  int? _size;
 
   /// Returns normalized string representation of a real number
   String _doubleToNormalizedString() {
     if (value is! double) {
-      return null;
+      throw StateError('Value type is not double');
     }
 
     var string = value.toString();
@@ -140,15 +140,24 @@ class CFFOperand extends BinaryCodable {
     return string;
   }
 
+  num get _guardedValue {
+    if (value == null) {
+      throw ArgumentError.notNull('Value must not be null');
+    }
+
+    return value!;
+  }
+
   @override
   void encodeToBinary(ByteData byteData) {
     var offset = 0;
+    final value = _guardedValue;
 
     void writeDouble() {
       final s = _doubleToNormalizedString();
 
       var firstHalf = true;
-      int prevNibble;
+      late int prevNibble;
 
       for (var i = 0; i < s.length; i++) {
         var char = s[i];
@@ -213,8 +222,10 @@ class CFFOperand extends BinaryCodable {
   @override
   int get size {
     if (_size != null) {
-      return _size;
+      return _size!;
     }
+
+    final value = _guardedValue;
 
     return _size = () {
       if (value is double) {

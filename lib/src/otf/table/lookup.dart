@@ -18,7 +18,7 @@ const _kDefaultLookupTableList = [
 abstract class SubstitutionSubtable implements BinaryCodable {
   const SubstitutionSubtable();
 
-  factory SubstitutionSubtable.fromByteData(
+  static SubstitutionSubtable? fromByteData(
       ByteData byteData, int offset, int lookupType) {
     switch (lookupType) {
       case 4:
@@ -65,10 +65,10 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
   final int ligatureSetCount;
   final List<int> ligatureSetOffsets;
 
-  final CoverageTable coverageTable;
+  final CoverageTable? coverageTable;
 
   @override
-  int get size => 6 + 2 * ligatureSetCount + coverageTable.size;
+  int get size => 6 + 2 * ligatureSetCount + (coverageTable?.size ?? 0);
 
   /// NOTE: Should be calculated considering 'componentCount' of ligatures.
   ///
@@ -89,8 +89,8 @@ class LigatureSubstitutionSubtable extends SubstitutionSubtable {
       byteData.setInt16(6 + 2 * i, ligatureSetOffsets[i]);
     }
 
-    coverageTable.encodeToBinary(
-        byteData.sublistView(coverageOffset, coverageTable.size));
+    coverageTable?.encodeToBinary(
+        byteData.sublistView(coverageOffset, coverageTable!.size));
   }
 }
 
@@ -114,9 +114,11 @@ class LookupTable implements BinaryCodable {
     final markFilteringSetOffset = offset + 6 + 2 * subTableCount;
 
     final subtables = List.generate(
-        subTableCount,
-        (i) => SubstitutionSubtable.fromByteData(
-            byteData, offset + subtableOffsets[i], lookupType));
+            subTableCount,
+            (i) => SubstitutionSubtable.fromByteData(
+                byteData, offset + subtableOffsets[i], lookupType))
+        .whereType<SubstitutionSubtable>()
+        .toList();
 
     return LookupTable(
       lookupType,
@@ -132,7 +134,7 @@ class LookupTable implements BinaryCodable {
   final int lookupFlag;
   final int subTableCount;
   final List<int> subtableOffsets;
-  final int markFilteringSet;
+  final int? markFilteringSet;
 
   final List<SubstitutionSubtable> subtables;
 
@@ -170,7 +172,7 @@ class LookupTable implements BinaryCodable {
     final useMarkFilteringSet = _useMarkFilteringSet(lookupFlag);
 
     if (useMarkFilteringSet) {
-      byteData.setUint16(6 + 2 * subTableCount, markFilteringSet);
+      byteData.setUint16(6 + 2 * subTableCount, markFilteringSet!);
     }
   }
 }

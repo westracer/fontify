@@ -28,11 +28,11 @@ class FlutterClassGenerator {
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
   FlutterClassGenerator(
     this.glyphList, {
-    String className,
-    String familyName,
-    String fontFileName,
-    String package,
-    int indent,
+    String? className,
+    String? familyName,
+    String? fontFileName,
+    String? package,
+    int? indent,
   })  : _indent = ' ' * (indent ?? _kDefaultIndent),
         _className = _getVarName(className ?? _kDefaultClassName),
         _familyName = familyName ?? kDefaultFontFamily,
@@ -45,7 +45,7 @@ class FlutterClassGenerator {
   final String _className;
   final String _familyName;
   final String _indent;
-  final String _package;
+  final String? _package;
   final List<String> _iconVarNames;
 
   static List<String> _generateVariableNames(List<GenericGlyph> glyphList) {
@@ -53,7 +53,7 @@ class FlutterClassGenerator {
 
     return glyphList.map((g) {
       final baseName =
-          _getVarName(p.basenameWithoutExtension(g.metadata.name)).snakeCase;
+          _getVarName(p.basenameWithoutExtension(g.metadata.name!)).snakeCase;
       final usingDefaultName = baseName.isEmpty;
 
       var variableName = usingDefaultName ? _kUnnamedIconName : baseName;
@@ -67,8 +67,8 @@ class FlutterClassGenerator {
         var variableWithoutCount = variableName;
 
         if (countMatch != null) {
-          variableNameCount = int.parse(countMatch.group(2));
-          variableWithoutCount = countMatch.group(1);
+          variableNameCount = int.parse(countMatch.group(2)!);
+          variableWithoutCount = countMatch.group(1)!;
         }
 
         String variableNameWithCount;
@@ -97,8 +97,8 @@ class FlutterClassGenerator {
   List<String> _generateIconConst(int index) {
     final glyphMeta = glyphList[index].metadata;
 
-    final charCode = glyphMeta.charCode;
-    final iconName = glyphMeta.name;
+    final charCode = glyphMeta.charCode!;
+    final iconName = glyphMeta.name!;
 
     final varName = _iconVarNames[index];
     final hexCode = charCode.toRadixString(16);

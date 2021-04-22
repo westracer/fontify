@@ -24,7 +24,7 @@ class Svg extends SvgElement {
   ///
   /// Throws [XmlParserException] if XML parsing exception occurs.
   /// Throws [SvgParserException] on any problem related to SVG parsing.
-  factory Svg.parse(String name, String xmlString, {bool ignoreShapes}) {
+  factory Svg.parse(String name, String xmlString, {bool? ignoreShapes}) {
     ignoreShapes ??= true;
 
     final xml = XmlDocument.parse(xmlString);
@@ -34,12 +34,12 @@ class Svg extends SvgElement {
       throw SvgParserException('Root element must be SVG');
     }
 
-    final vb = root
+    final parsedVb = root
         .getAttribute('viewBox')
-        .split(RegExp(r'[\s|,]'))
-        .where((e) => e != null)
-        .map(num.parse)
-        .toList();
+        ?.split(RegExp(r'[\s|,]'))
+        .where((e) => e.isNotEmpty)
+        .map(num.parse);
+    final vb = [...?parsedVb];
 
     if (vb.isEmpty || vb.length > 4) {
       throw SvgParserException('viewBox must contain 1..4 parameters');

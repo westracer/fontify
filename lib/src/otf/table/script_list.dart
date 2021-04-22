@@ -34,7 +34,7 @@ class ScriptRecord implements BinaryCodable {
   }
 
   final String scriptTag;
-  int scriptOffset;
+  int? scriptOffset;
 
   @override
   int get size => kScriptRecordSize;
@@ -43,7 +43,7 @@ class ScriptRecord implements BinaryCodable {
   void encodeToBinary(ByteData byteData) {
     byteData
       ..setTag(0, scriptTag)
-      ..setUint16(4, scriptOffset);
+      ..setUint16(4, scriptOffset!);
   }
 }
 
@@ -58,10 +58,10 @@ class ScriptTable implements BinaryCodable {
 
   factory ScriptTable.fromByteData(
       ByteData byteData, int offset, ScriptRecord record) {
-    offset += record.scriptOffset;
+    offset += record.scriptOffset!;
 
     final defaultLangSysOffset = byteData.getUint16(offset);
-    LanguageSystemTable defaultLangSys;
+    LanguageSystemTable? defaultLangSys;
     if (defaultLangSysOffset != 0) {
       defaultLangSys = LanguageSystemTable.fromByteData(
           byteData, offset + defaultLangSysOffset);
@@ -91,7 +91,7 @@ class ScriptTable implements BinaryCodable {
   final List<LanguageSystemRecord> langSysRecords;
 
   final List<LanguageSystemTable> langSysTables;
-  final LanguageSystemTable defaultLangSys;
+  final LanguageSystemTable? defaultLangSys;
 
   @override
   int get size {
@@ -125,8 +125,8 @@ class ScriptTable implements BinaryCodable {
     final defaultRelativeLangSysOffset = tableRelativeOffset;
     byteData.setUint16(0, defaultRelativeLangSysOffset);
 
-    defaultLangSys.encodeToBinary(byteData.sublistView(
-        defaultRelativeLangSysOffset, defaultLangSys.size));
+    defaultLangSys?.encodeToBinary(byteData.sublistView(
+        defaultRelativeLangSysOffset, defaultLangSys!.size));
   }
 }
 

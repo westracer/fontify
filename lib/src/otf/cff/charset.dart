@@ -9,9 +9,9 @@ const _kRange1Size = 3;
 abstract class CharsetEntry implements BinaryCodable {
   const CharsetEntry(this.format);
 
-  factory CharsetEntry.fromByteData(ByteData byteData, int glyphCount) {
-    final format = byteData.getUint8(0);
-    byteData = byteData.sublistView(1);
+  static CharsetEntry? fromByteData(ByteData bd, int glyphCount) {
+    final format = bd.getUint8(0);
+    final byteData = bd.sublistView(1);
 
     switch (format) {
       case _kFormat1:

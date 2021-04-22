@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:collection/collection.dart';
 
 import '../../common/codable/binary.dart';
 import '../../utils/exception.dart';
@@ -21,7 +22,7 @@ class CFFDictEntry extends BinaryCodable {
 
       if (b0 < 28) {
         /// Reading an operator (b0 is not in operand range)
-        int b1;
+        int? b1;
 
         if (b0 == _kOperatorEscapeByte) {
           /// An operator is 2-byte long
@@ -112,9 +113,8 @@ class CFFDict extends BinaryCodable {
 
   List<CFFDictEntry> entryList;
 
-  CFFDictEntry getEntryForOperator(CFFOperator operator) {
-    return entryList.firstWhere((e) => e.operator == operator,
-        orElse: () => null);
+  CFFDictEntry? getEntryForOperator(CFFOperator operator) {
+    return entryList.firstWhereOrNull((e) => e.operator == operator);
   }
 
   @override

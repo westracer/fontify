@@ -30,7 +30,7 @@ List<math.Point<num>> quadCurveToCubic(
 }
 
 extension MockableDateTime on DateTime {
-  static DateTime mockedDate;
+  static DateTime? mockedDate;
 
   static DateTime now() => mockedDate ?? DateTime.now();
 }

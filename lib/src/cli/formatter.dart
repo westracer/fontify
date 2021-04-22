@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'arguments.dart';
 
-typedef CliArgumentFormatter = Object Function(Object arg);
+typedef CliArgumentFormatter = dynamic Function(dynamic arg);
 
 const _kArgumentFormatters = <CliArgument, CliArgumentFormatter>{
   CliArgument.svgDir: _dir,
@@ -12,11 +12,11 @@ const _kArgumentFormatters = <CliArgument, CliArgumentFormatter>{
   CliArgument.configFile: _file,
 };
 
-Directory _dir(Object arg) => arg == null ? null : Directory(arg as String);
+Directory _dir(dynamic arg) => Directory(arg as String);
 
-File _file(Object arg) => arg == null ? null : File(arg as String);
+File _file(dynamic arg) => File(arg as String);
 
-int _indent(Object arg) {
+int _indent(dynamic arg) {
   if (arg is int) {
     return arg;
   }
@@ -29,13 +29,11 @@ int _indent(Object arg) {
     throwException();
   }
 
-  int indent;
+  late final int indent;
   final indentArg = arg as String;
 
   try {
-    if (indentArg != null) {
-      indent = int.parse(indentArg);
-    }
+    indent = int.parse(indentArg);
   } on FormatException catch (_) {
     throwException();
   }
@@ -44,14 +42,17 @@ int _indent(Object arg) {
 }
 
 /// Formats arguments.
-Map<CliArgument, Object> formatArguments(Map<CliArgument, Object> args) {
-  return args.map((k, v) {
+Map<CliArgument, dynamic> formatArguments(Map<CliArgument, dynamic> args) {
+  return args.map<CliArgument, dynamic>((k, dynamic v) {
     final formatter = _kArgumentFormatters[k];
 
-    if (formatter == null) {
-      return MapEntry(k, v);
+    if (formatter == null || v == null) {
+      return MapEntry<CliArgument, dynamic>(k, v);
     }
 
-    return MapEntry(k, formatter(v));
+    return MapEntry<CliArgument, dynamic>(k, formatter(v));
   });
 }
+
+// Ignoring as CLI arguments are dynamically typed
+// ignore_for_file: avoid_annotating_with_dynamic

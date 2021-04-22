@@ -1,3 +1,7 @@
+## 0.3.0-nullsafety.0 (unreleased)
+
+* Migrate to null safety
+
 ## 0.2.0
 
 * **IMPORTANT:** 'CFF' table is generated now instead of 'CFF2'.

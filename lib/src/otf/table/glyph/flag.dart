@@ -23,7 +23,7 @@ class SimpleGlyphFlag implements BinaryCodable {
       this.overlapSimple,
       this.reserved);
 
-  factory SimpleGlyphFlag.fromIntValue(int flag, [int repeatTimes]) {
+  factory SimpleGlyphFlag.fromIntValue(int flag, [int? repeatTimes]) {
     return SimpleGlyphFlag(
         checkBitMask(flag, _kOnCurvePointValue),
         checkBitMask(flag, _kXshortVectorValue),
@@ -61,7 +61,7 @@ class SimpleGlyphFlag implements BinaryCodable {
   final bool onCurvePoint;
   final bool xShortVector;
   final bool yShortVector;
-  final int repeat;
+  final int? repeat;
   final bool xIsSameOrPositive;
   final bool yIsSameOrPositive;
   final bool overlapSimple;

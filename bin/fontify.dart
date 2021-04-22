@@ -14,7 +14,7 @@ final _argParser = ArgParser(allowTrailingOptions: true);
 void main(List<String> args) {
   defineOptions(_argParser);
 
-  CliArguments parsedArgs;
+  late final CliArguments parsedArgs;
 
   try {
     parsedArgs = parseArgsAndConfig(_argParser, args);
@@ -29,7 +29,7 @@ void main(List<String> args) {
 
   try {
     _run(parsedArgs);
-  } on dynamic catch (e) {
+  } on Object catch (e) {
     logger.e(e.toString());
     exit(65);
   }
@@ -47,11 +47,11 @@ void _run(CliArguments parsedArgs) {
 
   if (parsedArgs.classFile?.existsSync() ?? false) {
     logger.v(
-        'Output file for a Flutter class already exists (${parsedArgs.classFile.path}) - '
+        'Output file for a Flutter class already exists (${parsedArgs.classFile!.path}) - '
         'overwriting it');
   }
 
-  if (parsedArgs.fontFile?.existsSync() ?? false) {
+  if (!parsedArgs.fontFile.existsSync()) {
     logger.v(
         'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
         'overwriting it');
@@ -96,7 +96,7 @@ void _run(CliArguments parsedArgs) {
       package: parsedArgs.fontPackage,
     );
 
-    parsedArgs.classFile.writeAsStringSync(classString);
+    parsedArgs.classFile!.writeAsStringSync(classString);
   }
 
   logger.i('Generated in ${stopwatch.elapsedMilliseconds}ms');
@@ -112,7 +112,7 @@ void _usageError(String error) {
   exit(64);
 }
 
-void _printUsage([String error]) {
+void _printUsage([String? error]) {
   final message = error ?? _kAbout;
 
   stdout.write('''

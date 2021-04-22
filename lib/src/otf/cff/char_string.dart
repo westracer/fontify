@@ -11,7 +11,7 @@ import 'operand.dart';
 import 'operator.dart';
 
 class CharStringOperand extends CFFOperand {
-  CharStringOperand(num value, [int size]) : super(value, size);
+  CharStringOperand(num? value, [int? size]) : super(value, size);
 
   factory CharStringOperand.fromByteData(
       ByteData byteData, int offset, int b0) {
@@ -31,7 +31,7 @@ class CharStringOperand extends CFFOperand {
     if (value is double) {
       byteData
         ..setUint8(offset++, 255)
-        ..setUint32(offset, (value * 0x10000).round().toInt());
+        ..setUint32(offset, (value! * 0x10000).round().toInt());
       offset += 4;
     } else {
       super.encodeToBinary(byteData);
@@ -211,7 +211,7 @@ class CharStringInterpreter {
     }
   }
 
-  void _pushCommand(Iterable<num> operandValues, int opB0, [int opB1]) {
+  void _pushCommand(Iterable<num?> operandValues, int opB0, [int? opB1]) {
     final command = CharStringCommand(
         CFFOperator(CFFOperatorContext.charString, opB0, opB1),
         operandValues.map((e) => CharStringOperand(e)).toList());
@@ -232,7 +232,7 @@ class CharStringInterpreter {
       if (op == 28 || op >= 32) {
         final operandByteData = byteData.sublistView(offset);
         final operand = CharStringOperand.fromByteData(operandByteData, 0, op);
-        _stack.add(operand.value);
+        _stack.add(operand.value!);
       } else {
         switch (op) {
           case 1: // hstem
@@ -249,7 +249,7 @@ class CharStringInterpreter {
             break;
 
           case 5: // rlineto
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             while (_stack.length >= 2) {
               final dx = _stack.removeFirstOrZero();
@@ -263,7 +263,7 @@ class CharStringInterpreter {
 
           case 6: // hlineto
           case 7: // vlineto
-            final arguments = <num>[];
+            final arguments = <num?>[];
             var isX = op == 6;
 
             while (_stack.isNotEmpty) {
@@ -282,7 +282,7 @@ class CharStringInterpreter {
             break;
 
           case 8: // rrcurveto
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             while (_stack.length >= 6) {
               final dxc1 = _stack.removeFirstOrZero();
@@ -332,7 +332,7 @@ class CharStringInterpreter {
             break;
 
           case 24: // rcurveline
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             while (_stack.length >= 8) {
               final dxc1 = _stack.removeFirstOrZero();
@@ -352,7 +352,7 @@ class CharStringInterpreter {
             break;
 
           case 25: // rlinecurve
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             while (_stack.length >= 8) {
               final dx = _stack.removeFirstOrZero();
@@ -372,7 +372,7 @@ class CharStringInterpreter {
             break;
 
           case 26: // vvcurveto
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             if (_stack.length.isOdd) {
               final dx = _stack.removeFirstOrZero();
@@ -393,7 +393,7 @@ class CharStringInterpreter {
             break;
 
           case 27: // hhcurveto
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             if (_stack.length.isOdd) {
               final dy = _stack.removeFirstOrZero();
@@ -416,7 +416,7 @@ class CharStringInterpreter {
           case 30: // vhcurveto
           case 31: // hvcurveto
             var isX = op == 31;
-            final arguments = <num>[];
+            final arguments = <num?>[];
 
             while (_stack.length >= 4) {
               if (isX) {
@@ -482,7 +482,7 @@ class CharStringInterpreter {
 
   ByteData writeCommands(
     List<CharStringCommand> commandList, {
-    int glyphWidth,
+    int? glyphWidth,
   }) {
     final list = <int>[];
 
@@ -519,7 +519,7 @@ class CharStringInterpreterLimits {
 }
 
 extension _QueueExt<T> on Queue<T> {
-  T removeFirstOrZero() {
+  T? removeFirstOrZero() {
     if (isEmpty) {
       if (T == num) {
         return 0 as T;

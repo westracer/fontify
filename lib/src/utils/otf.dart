@@ -151,7 +151,7 @@ extension OTFByteDateExt on ByteData {
     setInt64(offset, dateTime.difference(_longDateTimeStart).inSeconds);
   }
 
-  ByteData sublistView(int offset, [int length]) {
+  ByteData sublistView(int offset, [int? length]) {
     return ByteData.sublistView(
         this, offset, length == null ? null : offset + length);
   }
@@ -169,7 +169,7 @@ extension OTFStringExt on String {
 
 @immutable
 class Revision {
-  const Revision(int major, int minor)
+  const Revision(int? major, int? minor)
       : major = major ?? 0,
         minor = minor ?? 0;
 

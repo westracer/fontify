@@ -11,7 +11,7 @@ class CFFIndex extends BinaryCodable {
 
   CFFIndex.empty(this.isCFF1)
       : count = 0,
-        offSize = null,
+        offSize = 0,
         offsetList = [];
 
   factory CFFIndex.fromByteData(ByteData byteData, bool isCFF1) {
@@ -55,6 +55,10 @@ class CFFIndex extends BinaryCodable {
 
   @override
   void encodeToBinary(ByteData byteData) {
+    if (offSize == -1) {
+      throw ArgumentError('Tried to encode with offSize == -1');
+    }
+
     var offset = 0;
 
     if (isCFF1) {
@@ -126,7 +130,7 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
   factory CFFIndexWithData.create(List<T> data, bool isCFF1) =>
       CFFIndexWithData(null, data, isCFF1);
 
-  CFFIndex index;
+  CFFIndex? index;
   final List<T> data;
   final bool isCFF1;
 
@@ -218,8 +222,18 @@ class CFFIndexWithData<T> implements BinaryCodable, CalculatableOffsets {
     return newIndex.size + newIndex.offsetList.last - 1;
   }
 
+  CFFIndex get _guardedIndex {
+    if (index == null) {
+      throw ArgumentError.notNull('index must not be null');
+    }
+
+    return index!;
+  }
+
   @override
   void encodeToBinary(ByteData byteData) {
+    final index = _guardedIndex;
+
     if (data.isEmpty) {
       index.encodeToBinary(byteData.sublistView(0, index.size));
     }
