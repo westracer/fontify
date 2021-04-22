@@ -1,4 +1,4 @@
-## 0.3.0-nullsafety.0 (unreleased)
+## 0.3.0-nullsafety.0
 
 * Migrate to null safety
 * Fix unknown config parameters causing a crash and add related warnings
