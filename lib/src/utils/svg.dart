@@ -30,9 +30,8 @@ extension XmlElementExt on XmlElement {
         return [e];
       }
 
-      final g = e..applyTransformOnChildren();
-
-      return g.elementList;
+      e.applyTransformOnChildren();
+      return e.elementList;
     });
 
     if (!ignoreShapes) {

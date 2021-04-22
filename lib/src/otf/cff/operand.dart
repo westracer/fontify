@@ -142,7 +142,7 @@ class CFFOperand extends BinaryCodable {
 
   num get _guardedValue {
     if (value == null) {
-      throw ArgumentError.notNull('Value must not be null');
+      throw StateError('Value must not be null');
     }
 
     return value!;

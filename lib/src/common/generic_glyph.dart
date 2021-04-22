@@ -213,10 +213,6 @@ class GenericGlyph {
 
   /// Resizes according to ascender/descender or a font height.
   GenericGlyph resize({int? ascender, int? descender, int? fontHeight}) {
-    if ((ascender == null || descender == null) && fontHeight == null) {
-      throw ArgumentError('Wrong parameters for resizing');
-    }
-
     final metrics = this.metrics;
 
     late final int longestSide;
@@ -228,6 +224,8 @@ class GenericGlyph {
     } else if (fontHeight != null) {
       longestSide = bounds.height.toInt();
       sideRatio = fontHeight / longestSide;
+    } else {
+      throw ArgumentError('Wrong parameters for resizing');
     }
 
     // No need to resize
