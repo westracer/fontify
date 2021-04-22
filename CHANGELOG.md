@@ -1,6 +1,7 @@
 ## 0.3.0-nullsafety.0 (unreleased)
 
 * Migrate to null safety
+* Fix unknown config parameters causing a crash and add related warnings
 
 ## 0.2.0
 

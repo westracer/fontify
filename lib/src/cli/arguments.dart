@@ -197,6 +197,26 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
   return CliArguments.fromMap(rawArgMap);
 }
 
+MapEntry<CliArgument, dynamic>? _mapConfigKeyEntry(
+  MapEntry<dynamic, dynamic> e,
+) {
+  final dynamic rawKey = e.key;
+  void logUnknown() => logger.w('Unknown config parameter "$rawKey"');
+
+  if (rawKey is! String) {
+    logUnknown();
+    return null;
+  }
+
+  final key = kConfigKeys.getKeyForValue(rawKey);
+  if (key == null) {
+    logUnknown();
+    return null;
+  }
+
+  return MapEntry<CliArgument, dynamic>(key, e.value);
+}
+
 /// Parses config file.
 ///
 /// Returns an instance of [CliArguments] containing all parsed data or null,
@@ -214,11 +234,11 @@ CliArguments? parseConfig(String config) {
     return null;
   }
 
-  final argMap = <CliArgument, dynamic>{
-    for (final e in fontifyYamlMap.entries)
-      if (e.key is String)
-        kConfigKeys.getKeyForValue(e.key as String)!: e.value,
-  };
+  final entries = fontifyYamlMap.entries
+      .map(_mapConfigKeyEntry)
+      .whereType<MapEntry<CliArgument, dynamic>>();
+
+  final argMap = Map<CliArgument, dynamic>.fromEntries(entries);
 
   return CliArguments.fromMap(argMap);
 }
