@@ -1,3 +1,7 @@
+## 0.3.0-nullsafety.1
+
+* Fix regression related to CLI options (#13)
+
 ## 0.3.0-nullsafety.0
 
 * Migrate to null safety

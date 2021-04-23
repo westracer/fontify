@@ -1,15 +1,18 @@
+import 'dart:io';
+
 import 'package:args/args.dart';
 import 'package:fontify/src/cli/arguments.dart';
 import 'package:fontify/src/cli/options.dart';
 import 'package:test/test.dart';
 
 void main() {
+  final _argParser = ArgParser(allowTrailingOptions: true);
+
   group('Arguments', () {
-    final _argParser = ArgParser(allowTrailingOptions: true);
     defineOptions(_argParser);
 
     void expectCliArgumentException(List<String> args) {
-      expect(() => parseArguments(_argParser, args),
+      expect(() => parseArgsAndConfig(_argParser, args),
           throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
@@ -51,7 +54,7 @@ void main() {
         '--package=test_package',
       ];
 
-      final parsedArgs = parseArguments(_argParser, args);
+      final parsedArgs = parseArgsAndConfig(_argParser, args);
 
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
@@ -75,7 +78,7 @@ void main() {
         '--ignore-shapes',
       ];
 
-      final parsedArgs = parseArguments(_argParser, args);
+      final parsedArgs = parseArgsAndConfig(_argParser, args);
 
       expect(parsedArgs.svgDir.path, args.first);
       expect(parsedArgs.fontFile.path, args[1]);
@@ -93,7 +96,7 @@ void main() {
 
     test('Help', () {
       void expectCliHelpException(List<String> args) {
-        expect(() => parseArguments(_argParser, args),
+        expect(() => parseArgsAndConfig(_argParser, args),
             throwsA(const TypeMatcher<CliHelpException>()));
       }
 
@@ -152,8 +155,6 @@ void main() {
 
     test('No arguments and config', () {
       const args = [
-        './',
-        'yes',
         '--config-file=test/assets/test_config.yaml',
       ];
 
@@ -175,8 +176,17 @@ void main() {
   });
 
   group('Config', () {
+    final _configFile = File('fontify.yaml');
+
+    tearDown(_configFile.deleteSync);
+
+    CliArguments _parseConfig(String config) {
+      _configFile.writeAsStringSync(config);
+      return parseArgsAndConfig(_argParser, []);
+    }
+
     void expectCliArgumentException(String cfg) {
-      expect(() => parseConfig(cfg),
+      expect(() => _parseConfig(cfg),
           throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
@@ -229,7 +239,7 @@ fontify:
     });
 
     test('All arguments with non-defaults', () {
-      final parsedArgs = parseConfig('''
+      final rawParsedArgs = _parseConfig('''
 fontify:
   input_svg_dir: ./
   output_font_file: generated_font.otf
@@ -246,38 +256,40 @@ fontify:
   recursive: true
   verbose: true
       ''');
+      final parsedArgs = rawParsedArgs;
 
-      expect(parsedArgs?.svgDir.path, './');
-      expect(parsedArgs?.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs?.classFile?.path, 'lib/test_font.dart');
-      expect(parsedArgs?.indent, 4);
-      expect(parsedArgs?.className, 'MyIcons');
-      expect(parsedArgs?.fontName, 'My Icons');
-      expect(parsedArgs?.normalize, isFalse);
-      expect(parsedArgs?.ignoreShapes, isFalse);
-      expect(parsedArgs?.recursive, isTrue);
-      expect(parsedArgs?.verbose, isTrue);
-      expect(parsedArgs?.fontPackage, 'test_package');
+      expect(parsedArgs.svgDir.path, './');
+      expect(parsedArgs.fontFile.path, 'generated_font.otf');
+      expect(parsedArgs.classFile?.path, 'lib/test_font.dart');
+      expect(parsedArgs.indent, 4);
+      expect(parsedArgs.className, 'MyIcons');
+      expect(parsedArgs.fontName, 'My Icons');
+      expect(parsedArgs.normalize, isFalse);
+      expect(parsedArgs.ignoreShapes, isFalse);
+      expect(parsedArgs.recursive, isTrue);
+      expect(parsedArgs.verbose, isTrue);
+      expect(parsedArgs.fontPackage, 'test_package');
     });
 
     test('All arguments with defaults', () {
-      final parsedArgs = parseConfig('''
+      final rawParsedArgs = _parseConfig('''
 fontify:
   input_svg_dir: ./
   output_font_file: generated_font.otf
       ''');
+      final parsedArgs = rawParsedArgs;
 
-      expect(parsedArgs?.svgDir.path, './');
-      expect(parsedArgs?.fontFile.path, 'generated_font.otf');
-      expect(parsedArgs?.classFile, isNull);
-      expect(parsedArgs?.indent, null);
-      expect(parsedArgs?.className, isNull);
-      expect(parsedArgs?.fontName, isNull);
-      expect(parsedArgs?.normalize, isNull);
-      expect(parsedArgs?.ignoreShapes, isNull);
-      expect(parsedArgs?.recursive, isNull);
-      expect(parsedArgs?.verbose, isNull);
-      expect(parsedArgs?.fontPackage, isNull);
+      expect(parsedArgs.svgDir.path, './');
+      expect(parsedArgs.fontFile.path, 'generated_font.otf');
+      expect(parsedArgs.classFile, isNull);
+      expect(parsedArgs.indent, null);
+      expect(parsedArgs.className, isNull);
+      expect(parsedArgs.fontName, isNull);
+      expect(parsedArgs.normalize, isNull);
+      expect(parsedArgs.ignoreShapes, isNull);
+      expect(parsedArgs.recursive, isNull);
+      expect(parsedArgs.verbose, isNull);
+      expect(parsedArgs.fontPackage, isNull);
     });
 
     test('Type validation', () {

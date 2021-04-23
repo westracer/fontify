@@ -121,23 +121,7 @@ class CliArguments {
   ///
   /// Throws [CliArgumentException], if there is an error in arg parsing
   /// or if argument has wrong type.
-  factory CliArguments.fromMap(Map<CliArgument, dynamic> rawArgMap) {
-    // Validating types
-    for (final e in _kArgAllowedTypes.entries) {
-      final arg = e.key;
-      final argType = rawArgMap[arg].runtimeType;
-      final allowedTypes = e.value;
-
-      if (argType != Null && !allowedTypes.contains(argType)) {
-        throw CliArgumentException("'${argumentNames[arg]}' argument\'s type "
-            'must be one of following: $allowedTypes, '
-            "instead got '$argType'.");
-      }
-    }
-
-    final map = formatArguments(rawArgMap);
-    _validate(map);
-
+  factory CliArguments.fromMap(Map<CliArgument, dynamic> map) {
     return CliArguments(
       map[CliArgument.svgDir] as Directory,
       map[CliArgument.fontFile] as File,
@@ -173,7 +157,8 @@ class CliArguments {
 /// Throws [CliHelpException], if 'help' option is present.
 ///
 /// Returns an instance of [CliArguments] containing all parsed data.
-CliArguments parseArguments(ArgParser argParser, List<String> args) {
+Map<CliArgument, dynamic> parseArguments(
+    ArgParser argParser, List<String> args) {
   late final ArgResults argResults;
   try {
     argResults = argParser.parse(args);
@@ -194,7 +179,7 @@ CliArguments parseArguments(ArgParser argParser, List<String> args) {
       _kPositionalArguments[i]: argResults.rest[i],
   };
 
-  return CliArguments.fromMap(rawArgMap);
+  return rawArgMap;
 }
 
 MapEntry<CliArgument, dynamic>? _mapConfigKeyEntry(
@@ -221,7 +206,7 @@ MapEntry<CliArgument, dynamic>? _mapConfigKeyEntry(
 ///
 /// Returns an instance of [CliArguments] containing all parsed data or null,
 /// if 'fontify' key is not present in config file.
-CliArguments? parseConfig(String config) {
+Map<CliArgument, dynamic>? parseConfig(String config) {
   final dynamic yamlMap = loadYaml(config);
 
   if (yamlMap is! YamlMap) {
@@ -238,9 +223,7 @@ CliArguments? parseConfig(String config) {
       .map(_mapConfigKeyEntry)
       .whereType<MapEntry<CliArgument, dynamic>>();
 
-  final argMap = Map<CliArgument, dynamic>.fromEntries(entries);
-
-  return CliArguments.fromMap(argMap);
+  return Map<CliArgument, dynamic>.fromEntries(entries);
 }
 
 /// Parses argument list and config file, validates parsed data.
@@ -250,12 +233,15 @@ CliArguments? parseConfig(String config) {
 /// Throws [CliArgumentException], if there is an error in arg parsing.
 CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
   var parsedArgs = parseArguments(argParser, args);
+  final dynamic configFile = parsedArgs[CliArgument.configFile];
 
-  final defaultConfigList = _kDefaultConfigPathList.map((e) => File(e));
-  final configList = [parsedArgs.configFile, ...defaultConfigList];
+  final configList = <String>[
+    if (configFile is String) configFile,
+    ..._kDefaultConfigPathList
+  ].map((e) => File(e));
 
   for (final configFile in configList) {
-    if (configFile != null && configFile.existsSync()) {
+    if (configFile.existsSync()) {
       final parsedConfig = parseConfig(configFile.readAsStringSync());
 
       if (parsedConfig != null) {
@@ -266,34 +252,7 @@ CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
     }
   }
 
-  return parsedArgs;
-}
-
-/// Validates CLI arguments.
-///
-/// Throws [CliArgumentException], if argument is not valid.
-void _validate(Map<CliArgument, dynamic> args) {
-  final svgDir = args[CliArgument.svgDir] as Directory?;
-  final fontFile = args[CliArgument.fontFile] as File?;
-  final indent = args[CliArgument.indent] as int?;
-
-  if (svgDir == null) {
-    throw CliArgumentException('The input directory is not specified.');
-  }
-
-  if (fontFile == null) {
-    throw CliArgumentException('The output font file is not specified.');
-  }
-
-  if (svgDir.statSync().type != FileSystemEntityType.directory) {
-    throw CliArgumentException(
-        "The input directory is not a directory or it doesn't exist.");
-  }
-
-  if (indent != null && indent < 0) {
-    throw CliArgumentException(
-        'indent must be a non-negative integer, was $indent.');
-  }
+  return CliArguments.fromMap(parsedArgs.validateAndFormat());
 }
 
 class CliArgumentException implements Exception {
@@ -306,6 +265,63 @@ class CliArgumentException implements Exception {
 }
 
 class CliHelpException implements Exception {}
+
+extension CliArgumentMapExtension on Map<CliArgument, dynamic> {
+  /// Validates raw CLI arguments.
+  ///
+  /// Throws [CliArgumentException], if argument is not valid.
+  void _validateRaw() {
+    // Validating types
+    for (final e in _kArgAllowedTypes.entries) {
+      final arg = e.key;
+      final argType = this[arg].runtimeType;
+      final allowedTypes = e.value;
+
+      if (argType != Null && !allowedTypes.contains(argType)) {
+        throw CliArgumentException("'${argumentNames[arg]}' argument\'s type "
+            'must be one of following: $allowedTypes, '
+            "instead got '$argType'.");
+      }
+    }
+  }
+
+  /// Validates formatted CLI arguments.
+  ///
+  /// Throws [CliArgumentException], if argument is not valid.
+  void _validateFormatted() {
+    final args = this;
+
+    final svgDir = args[CliArgument.svgDir] as Directory?;
+    final fontFile = args[CliArgument.fontFile] as File?;
+    final indent = args[CliArgument.indent] as int?;
+
+    if (svgDir == null) {
+      throw CliArgumentException('The input directory is not specified.');
+    }
+
+    if (fontFile == null) {
+      throw CliArgumentException('The output font file is not specified.');
+    }
+
+    if (svgDir.statSync().type != FileSystemEntityType.directory) {
+      throw CliArgumentException(
+          "The input directory is not a directory or it doesn't exist.");
+    }
+
+    if (indent != null && indent < 0) {
+      throw CliArgumentException(
+          'indent must be a non-negative integer, was $indent.');
+    }
+  }
+
+  /// Validates and formats CLI arguments.
+  ///
+  /// Throws [CliArgumentException], if argument is not valid.
+  Map<CliArgument, dynamic> validateAndFormat() {
+    _validateRaw();
+    return formatArguments(this).._validateFormatted();
+  }
+}
 
 // Ignoring as CLI arguments are dynamically typed
 // ignore_for_file: avoid_annotating_with_dynamic
