@@ -25,6 +25,7 @@ const _kArgAllowedTypes = <CliArgument, List<Type>>{
   CliArgument.verbose: [bool],
   CliArgument.help: [bool],
   CliArgument.configFile: [String],
+  CliArgument.variableNameCase: [String]
 };
 
 const kDefaultVerbose = false;
@@ -44,6 +45,7 @@ const kOptionNames = EnumClass<CliArgument, String>({
 
   CliArgument.recursive: 'recursive',
   CliArgument.verbose: 'verbose',
+  CliArgument.variableNameCase: 'variable-name-case',
 
   CliArgument.help: 'help',
   CliArgument.configFile: 'config-file',
@@ -61,6 +63,7 @@ const kConfigKeys = EnumClass<CliArgument, String>({
   CliArgument.fontName: 'font_name',
   CliArgument.normalize: 'normalize',
   CliArgument.ignoreShapes: 'ignore_shapes',
+  CliArgument.variableNameCase: 'variable_name_case',
 
   CliArgument.recursive: 'recursive',
   CliArgument.verbose: 'verbose',
@@ -92,6 +95,7 @@ enum CliArgument {
   // Others
   recursive,
   verbose,
+  variableNameCase,
 
   // Only in CLI
   help,
@@ -113,6 +117,7 @@ class CliArguments {
     this.normalize,
     this.verbose,
     this.configFile,
+    this.variableNameCase,
   );
 
   /// Creates [CliArguments] for a map of raw values.
@@ -135,6 +140,7 @@ class CliArguments {
       map[CliArgument.normalize] as bool?,
       map[CliArgument.verbose] as bool?,
       map[CliArgument.configFile] as File?,
+      map[CliArgument.variableNameCase] as String?,
     );
   }
 
@@ -150,6 +156,7 @@ class CliArguments {
   final bool? normalize;
   final bool? verbose;
   final File? configFile;
+  final String? variableNameCase;
 }
 
 /// Parses argument list.
@@ -157,8 +164,7 @@ class CliArguments {
 /// Throws [CliHelpException], if 'help' option is present.
 ///
 /// Returns an instance of [CliArguments] containing all parsed data.
-Map<CliArgument, dynamic> parseArguments(
-    ArgParser argParser, List<String> args) {
+Map<CliArgument, dynamic> parseArguments(ArgParser argParser, List<String> args) {
   late final ArgResults argResults;
   try {
     argResults = argParser.parse(args);
@@ -170,13 +176,11 @@ Map<CliArgument, dynamic> parseArguments(
     throw CliHelpException();
   }
 
-  final posArgsLength =
-      math.min(_kPositionalArguments.length, argResults.rest.length);
+  final posArgsLength = math.min(_kPositionalArguments.length, argResults.rest.length);
 
   final rawArgMap = <CliArgument, dynamic>{
     for (final e in kOptionNames.entries) e.key: argResults[e.value],
-    for (var i = 0; i < posArgsLength; i++)
-      _kPositionalArguments[i]: argResults.rest[i],
+    for (var i = 0; i < posArgsLength; i++) _kPositionalArguments[i]: argResults.rest[i],
   };
 
   return rawArgMap;
@@ -219,9 +223,7 @@ Map<CliArgument, dynamic>? parseConfig(String config) {
     return null;
   }
 
-  final entries = fontifyYamlMap.entries
-      .map(_mapConfigKeyEntry)
-      .whereType<MapEntry<CliArgument, dynamic>>();
+  final entries = fontifyYamlMap.entries.map(_mapConfigKeyEntry).whereType<MapEntry<CliArgument, dynamic>>();
 
   return Map<CliArgument, dynamic>.fromEntries(entries);
 }
@@ -235,10 +237,7 @@ CliArguments parseArgsAndConfig(ArgParser argParser, List<String> args) {
   var parsedArgs = parseArguments(argParser, args);
   final dynamic configFile = parsedArgs[CliArgument.configFile];
 
-  final configList = <String>[
-    if (configFile is String) configFile,
-    ..._kDefaultConfigPathList
-  ].map((e) => File(e));
+  final configList = <String>[if (configFile is String) configFile, ..._kDefaultConfigPathList].map((e) => File(e));
 
   for (final configFile in configList) {
     if (configFile.existsSync()) {
@@ -304,13 +303,11 @@ extension CliArgumentMapExtension on Map<CliArgument, dynamic> {
     }
 
     if (svgDir.statSync().type != FileSystemEntityType.directory) {
-      throw CliArgumentException(
-          "The input directory is not a directory or it doesn't exist.");
+      throw CliArgumentException("The input directory is not a directory or it doesn't exist.");
     }
 
     if (indent != null && indent < 0) {
-      throw CliArgumentException(
-          'indent must be a non-negative integer, was $indent.');
+      throw CliArgumentException('indent must be a non-negative integer, was $indent.');
     }
   }
 

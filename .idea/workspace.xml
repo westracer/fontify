@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e50e6f1d-3af9-4a1c-9c5e-da5ea53dc25d" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/bin/fontify.dart" beforeDir="false" afterPath="$PROJECT_DIR$/bin/fontify.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/example.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/example.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/cli/arguments.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/cli/arguments.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/cli/options.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/cli/options.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/common/api.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/common/api.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/otf/table/maxp.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/otf/table/maxp.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/utils/flutter_class_gen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/utils/flutter_class_gen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/cli_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/cli_test.dart" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2Vcag02ypr6GQpm3aEkZ8E673WT" />
+  <component name="ProjectViewState">
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "last_opened_file_path": "/Users/PGR783/repos/fontify",
+    "settings.editor.selected.configurable": "flutter.settings",
+    "show.migrate.to.gradle.popup": "false"
+  }
+}]]></component>
+  <component name="RunManager" selected="Dart Test.Tests in fontify">
+    <configuration name="example.dart" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/example/example.dart" />
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="All arguments with non-defaults in cli_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/cli_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="All arguments with non-defaults" />
+      <method v="2" />
+    </configuration>
+    <configuration name="No positional args in cli_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/cli_test.dart" />
+      <option name="scope" value="GROUP_OR_TEST_BY_NAME" />
+      <option name="testName" value="No positional args" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Tests in cli_test.dart" type="DartTestRunConfigurationType" factoryName="Dart Test" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$/test/cli_test.dart" />
+      <option name="testName" value="cli_test.dart" />
+      <method v="2" />
+    </configuration>
+    <configuration name="Tests in fontify" type="DartTestRunConfigurationType" factoryName="Dart Test" temporary="true" nameIsGenerated="true">
+      <option name="filePath" value="$PROJECT_DIR$" />
+      <option name="scope" value="FOLDER" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Dart Test.Tests in fontify" />
+        <item itemvalue="Dart Test.Tests in cli_test.dart" />
+        <item itemvalue="Dart Command Line App.example.dart" />
+        <item itemvalue="Dart Test.All arguments with non-defaults in cli_test.dart" />
+        <item itemvalue="Dart Test.No positional args in cli_test.dart" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e50e6f1d-3af9-4a1c-9c5e-da5ea53dc25d" name="Changes" comment="" />
+      <created>1695137929883</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1695137929883</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$USER_HOME$/.pub-cache/hosted/pub.dev/args-2.4.2/lib/src/arg_results.dart</url>
+          <line>64</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

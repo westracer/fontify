@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:fontify/src/cli/arguments.dart';
 import 'package:fontify/src/cli/options.dart';
-import 'package:fontify/src/common/api.dart';
+import 'package:fontify/src/common.dart';
 import 'package:fontify/src/otf/io.dart';
+import 'package:fontify/src/utils/flutter_class_gen.dart';
 import 'package:fontify/src/utils/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
@@ -46,14 +47,12 @@ void _run(CliArguments parsedArgs) {
   }
 
   if (parsedArgs.classFile?.existsSync() ?? false) {
-    logger.v(
-        'Output file for a Flutter class already exists (${parsedArgs.classFile!.path}) - '
+    logger.v('Output file for a Flutter class already exists (${parsedArgs.classFile!.path}) - '
         'overwriting it');
   }
 
   if (!parsedArgs.fontFile.existsSync()) {
-    logger.v(
-        'Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
+    logger.v('Output file for a font file already exists (${parsedArgs.fontFile.path}) - '
         'overwriting it');
   }
 
@@ -63,13 +62,11 @@ void _run(CliArguments parsedArgs) {
       .toList();
 
   if (svgFileList.isEmpty) {
-    logger.w(
-        "The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
+    logger.w("The input directory doesn't contain any SVG file (${parsedArgs.svgDir.path}).");
   }
 
   final svgMap = {
-    for (final f in svgFileList)
-      p.basenameWithoutExtension(f.path): File(f.path).readAsStringSync(),
+    for (final f in svgFileList) p.basenameWithoutExtension(f.path): File(f.path).readAsStringSync(),
   };
 
   final otfResult = svgToOtf(
@@ -88,13 +85,13 @@ void _run(CliArguments parsedArgs) {
     final fontFileName = p.basename(parsedArgs.fontFile.path);
 
     final classString = generateFlutterClass(
-      glyphList: otfResult.glyphList,
-      className: parsedArgs.className,
-      indent: parsedArgs.indent,
-      fontFileName: fontFileName,
-      familyName: otfResult.font.familyName,
-      package: parsedArgs.fontPackage,
-    );
+        glyphList: otfResult.glyphList,
+        className: parsedArgs.className,
+        indent: parsedArgs.indent,
+        fontFileName: fontFileName,
+        familyName: otfResult.font.familyName,
+        package: parsedArgs.fontPackage,
+        variableNameCase: VariableNameCase.values.firstWhere((e) => e.option == parsedArgs.variableNameCase));
 
     parsedArgs.classFile!.writeAsStringSync(classString);
   }
@@ -124,8 +121,7 @@ ${_argParser.usage}
   exit(64);
 }
 
-const _kAbout =
-    'Converts .svg icons to an OpenType font and generates Flutter-compatible class.';
+const _kAbout = 'Converts .svg icons to an OpenType font and generates Flutter-compatible class.';
 
 const _kUsage = '''
 Usage:   fontify <input-svg-dir> <output-font-file> [options]

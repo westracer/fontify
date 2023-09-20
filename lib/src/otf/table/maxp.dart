@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import '../../utils/otf.dart';
 import '../debugger.dart';
-
 import 'abstract.dart';
 import 'glyf.dart';
 import 'table_record_entry.dart';
@@ -62,7 +61,7 @@ class MaximumProfileTable extends FontTable {
     return MaximumProfileTable.v1(
         null,
         numGlyphs,
-        glyf!.maxPoints,
+        glyf.maxPoints,
         glyf.maxContours,
         0, // Composite glyphs are not supported
         0, // Composite glyphs are not supported
@@ -79,8 +78,7 @@ class MaximumProfileTable extends FontTable {
         0);
   }
 
-  static MaximumProfileTable? fromByteData(
-      ByteData data, TableRecordEntry entry) {
+  static MaximumProfileTable? fromByteData(ByteData data, TableRecordEntry entry) {
     final version = data.getInt32(entry.offset);
 
     if (version == _kVersion0) {

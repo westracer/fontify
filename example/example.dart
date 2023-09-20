@@ -24,6 +24,7 @@ void main() {
     familyName: svgToOtfResult.font.familyName,
     className: 'MyIcons',
     fontFileName: fontFileName,
+    variableNameCase: VariableNameCase.camel,
   );
 
   // Writing class content to a file

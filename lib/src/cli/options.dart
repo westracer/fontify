@@ -1,5 +1,6 @@
 import 'package:args/args.dart';
 
+import '../../fontify.dart';
 import 'arguments.dart';
 
 void defineOptions(ArgParser argParser) {
@@ -8,8 +9,7 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.classFile]!,
       abbr: 'o',
-      help:
-          'Output path for Flutter-compatible class that contains identifiers for the icons.',
+      help: 'Output path for Flutter-compatible class that contains identifiers for the icons.',
       valueHelp: 'path',
     )
     ..addOption(
@@ -28,9 +28,16 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.fontPackage]!,
       abbr: 'p',
-      help:
-          'Name of a package that provides a font. Used to provide a font through package dependency.',
+      help: 'Name of a package that provides a font. Used to provide a font through package dependency.',
       valueHelp: 'name',
+    )
+    ..addOption(
+      kOptionNames[CliArgument.variableNameCase]!,
+      abbr: 'n',
+      help: 'The case to use when generating variable names.',
+      valueHelp: 'name',
+      allowed: VariableNameCase.values.map((e) => e.option),
+      defaultsTo: VariableNameCase.camel.option,
     )
     ..addSeparator('Font options:')
     ..addOption(
@@ -41,8 +48,7 @@ void defineOptions(ArgParser argParser) {
     )
     ..addFlag(
       kOptionNames[CliArgument.normalize]!,
-      help:
-          'Enables glyph normalization for the font. Disable this if every icon has the same size and positioning.',
+      help: 'Enables glyph normalization for the font. Disable this if every icon has the same size and positioning.',
       defaultsTo: true,
     )
     ..addFlag(
@@ -54,8 +60,7 @@ void defineOptions(ArgParser argParser) {
     ..addOption(
       kOptionNames[CliArgument.configFile]!,
       abbr: 'z',
-      help:
-          'Path to Fontify yaml configuration file. pubspec.yaml and fontify.yaml files are used by default.',
+      help: 'Path to Fontify yaml configuration file. pubspec.yaml and fontify.yaml files are used by default.',
       valueHelp: 'path',
     )
     ..addFlag(
