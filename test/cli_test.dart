@@ -12,8 +12,7 @@ void main() {
     defineOptions(_argParser);
 
     void expectCliArgumentException(List<String> args) {
-      expect(() => parseArgsAndConfig(_argParser, args),
-          throwsA(const TypeMatcher<CliArgumentException>()));
+      expect(() => parseArgsAndConfig(_argParser, args), throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
     test('No positional args', () {
@@ -52,6 +51,7 @@ void main() {
         '--verbose',
         '--config-file=test/config.yaml',
         '--package=test_package',
+        '--variable-name-case=snake'
       ];
 
       final parsedArgs = parseArgsAndConfig(_argParser, args);
@@ -68,6 +68,7 @@ void main() {
       expect(parsedArgs.verbose, isTrue);
       expect(parsedArgs.configFile?.path, 'test/config.yaml');
       expect(parsedArgs.fontPackage, 'test_package');
+      expect(parsedArgs.variableNameCase, 'snake');
     });
 
     test('All arguments with defaults', () {
@@ -96,8 +97,7 @@ void main() {
 
     test('Help', () {
       void expectCliHelpException(List<String> args) {
-        expect(() => parseArgsAndConfig(_argParser, args),
-            throwsA(const TypeMatcher<CliHelpException>()));
+        expect(() => parseArgsAndConfig(_argParser, args), throwsA(const TypeMatcher<CliHelpException>()));
       }
 
       expectCliHelpException(['-h']);
@@ -186,8 +186,7 @@ void main() {
     }
 
     void expectCliArgumentException(String cfg) {
-      expect(() => _parseConfig(cfg),
-          throwsA(const TypeMatcher<CliArgumentException>()));
+      expect(() => _parseConfig(cfg), throwsA(const TypeMatcher<CliArgumentException>()));
     }
 
     test('No required', () {

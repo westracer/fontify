@@ -35,10 +35,7 @@ SvgToOtfResult svgToOtf({
 }) {
   normalize ??= true;
 
-  final svgList = [
-    for (final e in svgMap.entries)
-      Svg.parse(e.key, e.value, ignoreShapes: ignoreShapes)
-  ];
+  final svgList = [for (final e in svgMap.entries) Svg.parse(e.key, e.value, ignoreShapes: ignoreShapes)];
 
   if (!normalize) {
     for (var i = 1; i < svgList.length; i++) {
@@ -74,6 +71,7 @@ SvgToOtfResult svgToOtf({
 /// * [package] is the name of a font package. Used to provide a font through package dependency.
 /// * [fontFileName] is font file's name. Used in generated docs for class.
 /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
+/// * [variableNameCase] is the generated variable name case (e.g. camelCase, snake_case)
 ///
 /// Returns content of a class file.
 String generateFlutterClass({
@@ -83,6 +81,7 @@ String generateFlutterClass({
   String? fontFileName,
   String? package,
   int? indent,
+  VariableNameCase variableNameCase = VariableNameCase.camel,
 }) {
   final generator = FlutterClassGenerator(
     glyphList,
@@ -91,6 +90,7 @@ String generateFlutterClass({
     fontFileName: fontFileName,
     familyName: familyName,
     package: package,
+    variableNameCase: variableNameCase,
   );
 
   return generator.generate();

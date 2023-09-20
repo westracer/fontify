@@ -1,5 +1,5 @@
-import 'package:recase/recase.dart';
 import 'package:path/path.dart' as p;
+import 'package:recase/recase.dart';
 
 import '../common/constant.dart';
 import '../common/generic_glyph.dart';
@@ -26,6 +26,7 @@ class FlutterClassGenerator {
   /// * [package] is the name of a font package. Used to provide a font through package dependency.
   /// * [fontFileName] is font file's name. Used in generated docs for class.
   /// * [indent] is a number of spaces in leading indentation for class' members. Defaults to 2.
+  /// * [variableNameCase] is the generated variable name case (e.g. camelCase, snake_case)
   FlutterClassGenerator(
     this.glyphList, {
     String? className,
@@ -33,11 +34,12 @@ class FlutterClassGenerator {
     String? fontFileName,
     String? package,
     int? indent,
+    VariableNameCase variableNameCase = VariableNameCase.camel,
   })  : _indent = ' ' * (indent ?? _kDefaultIndent),
         _className = _getVarName(className ?? _kDefaultClassName),
         _familyName = familyName ?? kDefaultFontFamily,
         _fontFileName = fontFileName ?? _kDefaultFontFileName,
-        _iconVarNames = _generateVariableNames(glyphList),
+        _iconVarNames = _generateVariableNames(glyphList, variableNameCase),
         _package = package?.isEmpty ?? true ? null : package;
 
   final List<GenericGlyph> glyphList;
@@ -48,12 +50,12 @@ class FlutterClassGenerator {
   final String? _package;
   final List<String> _iconVarNames;
 
-  static List<String> _generateVariableNames(List<GenericGlyph> glyphList) {
+  static List<String> _generateVariableNames(List<GenericGlyph> glyphList, VariableNameCase variableNameCase) {
     final iconNameSet = <String>{};
 
     return glyphList.map((g) {
-      final baseName =
-          _getVarName(p.basenameWithoutExtension(g.metadata.name!)).snakeCase;
+      final rc = ReCase(_getVarName(p.basenameWithoutExtension(g.metadata.name!)));
+      final baseName = variableNameCase == VariableNameCase.camel ? rc.camelCase : rc.snakeCase;
       final usingDefaultName = baseName.isEmpty;
 
       var variableName = usingDefaultName ? _kUnnamedIconName : baseName;
@@ -74,8 +76,7 @@ class FlutterClassGenerator {
         String variableNameWithCount;
 
         do {
-          variableNameWithCount =
-              '${variableWithoutCount}_${++variableNameCount}';
+          variableNameWithCount = '${variableWithoutCount}_${++variableNameCount}';
         } while (iconNameSet.contains(variableNameWithCount));
 
         variableName = variableNameWithCount;
@@ -89,8 +90,7 @@ class FlutterClassGenerator {
 
   bool get _hasPackage => _package != null;
 
-  String get _fontFamilyConst =>
-      "static const iconFontFamily = '$_familyName';";
+  String get _fontFamilyConst => "static const iconFontFamily = '$_familyName';";
 
   String get _fontPackageConst => "static const iconFontPackage = '$_package';";
 
@@ -103,18 +103,11 @@ class FlutterClassGenerator {
     final varName = _iconVarNames[index];
     final hexCode = charCode.toRadixString(16);
 
-    final posParamList = [
-      'fontFamily: iconFontFamily',
-      if (_hasPackage) 'fontPackage: iconFontPackage'
-    ];
+    final posParamList = ['fontFamily: iconFontFamily', if (_hasPackage) 'fontPackage: iconFontPackage'];
 
     final posParamString = posParamList.join(', ');
 
-    return [
-      '',
-      '/// $iconName',
-      'static const IconData $varName = IconData(0x$hexCode, $posParamString);'
-    ];
+    return ['', '/// $iconName', 'static const IconData $varName = IconData(0x$hexCode, $posParamString);'];
   }
 
   /// Generates content for a class' file.
@@ -127,8 +120,15 @@ class FlutterClassGenerator {
       for (var i = 0; i < glyphList.length; i++) ..._generateIconConst(i),
     ];
 
-    final classContentString =
-        classContent.map((e) => e.isEmpty ? '' : '$_indent$e').join('\n');
+    var classContentString = classContent.map((e) => e.isEmpty ? '' : '$_indent$e').join('\n');
+
+    classContentString += '\n\n${_indent}static const Map<String, IconData> allIcons = <String, IconData>{\n';
+
+    for (final name in _iconVarNames) {
+      classContentString += "${_indent}${_indent}'$name': $name,\n";
+    }
+
+    classContentString += '$_indent};';
 
     return '''
 // Generated code: do not hand-edit.
@@ -161,4 +161,13 @@ $classContentString
 }
 ''';
   }
+}
+
+/// Represents the case of the variable names.
+enum VariableNameCase {
+  camel(option: 'camel'),
+  snake(option: 'snake');
+
+  const VariableNameCase({required this.option});
+  final String option;
 }
